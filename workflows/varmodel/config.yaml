@@ -1,0 +1,21 @@
+varmodel:
+  # Keep legacy modeller implementation untouched; this wrapper calls it.
+  legacy_script: varmodel/modeller/modeller6.py
+
+  # Optional Python executable to run legacy script. Leave empty to use the active
+  # varmdyn_env Python after MODELLER is installed/configured.
+  python_exe: ""
+
+  # WT input PDB. The public clone reuses the clustering seed structure; users may
+  # point this to a private or updated PDB under data_private/ if needed.
+  wt_pdb: clustering/data/raw/target.B99990001_with_cryst.pdb
+
+  # One mutation per line, e.g. L119R.
+  mutations_list: varmodel/modeller/mutations.txt
+
+  chain: A
+  seed: -49837
+
+  # Top-level wrappers override this to $VARMDYN_RUN_ROOT/varmodel.
+  out_root: varmodel/outputs
+  run_name: ""

@@ -1,0 +1,44 @@
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local run products. Wrappers write here by default.
+runs/
+outputs/
+run_*/
+reference_outputs/
+*.log
+
+# Private or user-supplied data. Keep GitHub scripts-only.
+data_private/
+private_data/
+inputs_private/
+private_inputs/
+
+# Generated workflow data and heavy simulation products.
+/workflows/**/outputs/
+/workflows/**/data/derived/*
+!/workflows/**/data/derived/.gitkeep
+/workflows/**/*.png
+/workflows/**/*.pdf
+/workflows/**/*.jpg
+/workflows/**/*.jpeg
+/workflows/**/*.svg
+/workflows/**/*.nc
+/workflows/**/*.dcd
+/workflows/**/*.xtc
+/workflows/**/*.trr
+/workflows/**/*.agr
+/workflows/**/*.tsv
+
+# OS/editor noise.
+.DS_Store
+desktop.ini
+
+# Local maintainer/agent notes, not public docs.
+CHECKPOINT.md
+.local_notes/
+
+# Runtime job state.
+.last_palmetto_job_id

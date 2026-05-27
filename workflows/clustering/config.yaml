@@ -1,0 +1,146 @@
+paths:
+  pdb: data/raw/target.B99990001_with_cryst.pdb
+  ddg_excel: data/raw/ddG_Fmax.xlsx
+  sasa_txt: data/derived/target.B99990001_with_cryst_sasarelativepymol.txt
+  with_sasa_excel: data/derived/ddG_Fmax_with_rel_sasa_from_pymol.xlsx
+  exposure_excel: data/derived/ddG_Fmax_exposure.xlsx
+  buried_excel: data/derived/ddG_Fmax_buried.xlsx
+  calpha_outdir: null
+  com_outdir: null
+
+sasa:
+  run_headless: true
+  run_merge: true
+  chain: null
+  selection: null
+  legacy_mode: true
+  pymol_executable: null
+  min_lines: 200
+  merge_sheet: null
+  mutation_col: mutation
+
+exposure:
+  sheet: null
+  buried_threshold: 10.0
+  exposed_threshold: 40.0
+
+buried:
+  sheet: null
+  class_col: sasa_class
+  buried_threshold: 10.0
+
+calpha:
+  sheet: null
+  chain: A
+  mutation_col: mutation
+  ddg_col: ddG_Fmax
+  linkage: complete
+  k_min: 2
+  k_max: 10
+  pos_range: "108-303"
+  pos_min: null
+  pos_max: null
+  excel_out: null
+
+com:
+  sheet: null
+  chain: A
+  mutation_col: mutation
+  ddg_col: ddG_Fmax
+  linkage: complete
+  k_min: 2
+  k_max: 10
+  pos_range: "108-303"
+  pos_min: null
+  pos_max: null
+  excel_out: null
+
+dendrogram:
+  target: auto
+  method: complete
+  distance_csv: full_distance_matrix.csv
+  assign_csv: cluster_assignments.csv
+  width: 4.0
+  height: 4.0
+  dpi: 300
+  title_font: 9.0
+  xlabel_font: 9.0
+  ylabel_font: 9.0
+  xtick_font: 9.0
+  ytick_font: 9.0
+  label_rotation: 90.0
+  line_width: 1.2
+  line_alpha: 1.0
+  above_color: "#444444"
+  colors: null
+  threshold: null
+
+visual:
+  target: auto
+  out_prefix_name: report
+  excel: null
+  excel_mutation_sources:
+    - data/raw/ddG_Fmax.xlsx
+  mutation_col: mutation
+  ddg_col: ddG_Fmax
+  linkage: complete
+  colors:
+    - "#2ca02c"
+    - "#ff7f0e"
+    - "#9467bd"
+    - "#8c564b"
+    - "#e377c2"
+  legend: true
+  heatmap_strip: true
+  heatmap_width: 7.5
+  heatmap_height: 6.0
+  heatmap_dpi: 150
+  heatmap_title_font: 12
+  heatmap_tick_font: 7
+  ddg_fig_width: 7.5
+  ddg_dpi: 150
+  ddg_font: 9
+  barlabel_fs: 8
+  mut_col_width: 2.8
+  mut_fig_height: 4.5
+  mut_bar_height: 0.4
+  mut_label_offset_frac: 0.03
+  distance_csv: full_distance_matrix.csv
+  assign_csv: cluster_assignments.csv
+  silhouette_csv: silhouette_trials.csv
+
+exposureplot:
+  target: auto
+  excel: data/derived/ddG_Fmax_with_rel_sasa_from_pymol.xlsx
+  sheet: null
+  pos_col: null
+  rel_col: null
+  buried_thr: 0.10
+  exposed_thr: 0.40
+  out_prefix_name: exposure
+  colors_exposure:
+    - "#FFD700"
+    - "#1F4E79"
+    - "#A8A8A8"
+  dpi: 300
+  figw: 4.0
+  hist_height: 4.0
+  scatter_height: 4.0
+  counts_height: 4.0
+  title_font: 9.0
+  xlabel_font: 9.0
+  ylabel_font: 9.0
+  xtick_font: 9.0
+  ytick_font: 9.0
+  legend_font: 9.0
+  bins: 25
+  shade: true
+  line_width: 1.0
+  legend_inside: true
+  legend_two_line: true
+  legend_x: 0.02
+  legend_y: 0.98
+  legend_anchor: upper left
+  legend_ncol: 3
+  legend_boxalpha: 0.2
+  legend_edgecolor: none
