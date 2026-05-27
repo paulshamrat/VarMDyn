@@ -45,8 +45,20 @@ python scripts/check_private_inputs.py --module network
 Remote check:
 
 ```bash
-python scripts/check_private_inputs.py --module network --remote
+python scripts/check_private_inputs.py --module network --remote --timeout-seconds 10
 ```
+
+If this stalls or reports SSH timeouts, first verify the Palmetto bridge in your
+own terminal:
+
+```bash
+palmetto
+ssh -S ~/.ssh/palmetto.sock shamrap@slogin.palmetto.clemson.edu "hostname && whoami"
+```
+
+If a command says to look for a Duo push, approve that push before rerunning the
+remote check. For scheduler work, the hostname should be a login node such as
+`vm-slurm-p-loginXX.palmetto.clemson.edu`.
 
 ## 4. Validate Supplied Tables
 
