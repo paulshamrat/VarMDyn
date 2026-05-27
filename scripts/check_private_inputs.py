@@ -45,12 +45,8 @@ def path_check(label: str, path: str | Path | None, *, kind: str = "path") -> Ch
     return Check(label, ok, str(p))
 
 
-def remote_check(
-    host: str | None, path: str | Path, *, kind: str = "path", timeout_seconds: int = 15
-) -> Check:
-    if not host:
-        return Check(f"remote:{path}", False, "VARMDYN_PALMETTO_HOST not set")
-    test_flag = "-f" if kind == "file" else "-d" if kind == "dir" else "-e"
+
+def ssh_base(timeout_seconds: int) -> list[str]:
     ssh = [
         "ssh",
         "-o",
@@ -66,6 +62,32 @@ def remote_check(
     socket = Path(socket_env) if socket_env else None
     if socket and socket.exists():
         ssh += ["-S", str(socket)]
+    return ssh
+
+
+def remote_bridge_check(host: str | None, *, timeout_seconds: int) -> Check:
+    if not host:
+        return Check("remote bridge host", False, "VARMDYN_PALMETTO_HOST not set")
+    cmd = ssh_base(timeout_seconds) + [host, "hostname && whoami"]
+    try:
+        proc = subprocess.run(
+            cmd, text=True, capture_output=True, check=False, timeout=timeout_seconds + 5
+        )
+    except subprocess.TimeoutExpired:
+        return Check("remote bridge host", False, f"SSH command timed out after {timeout_seconds}s")
+    if proc.returncode == 0:
+        detail = " / ".join(line.strip() for line in proc.stdout.splitlines() if line.strip())
+        return Check("remote bridge host", True, detail or "connected")
+    detail = (proc.stderr or proc.stdout or "remote command failed").strip().splitlines()
+    return Check("remote bridge host", False, detail[-1] if detail else "remote command failed")
+
+def remote_check(
+    host: str | None, path: str | Path, *, kind: str = "path", timeout_seconds: int = 15
+) -> Check:
+    if not host:
+        return Check(f"remote:{path}", False, "VARMDYN_PALMETTO_HOST not set")
+    test_flag = "-f" if kind == "file" else "-d" if kind == "dir" else "-e"
+    ssh = ssh_base(timeout_seconds)
     ssh += [host, f"test {test_flag} {path}"]
     try:
         proc = subprocess.run(
@@ -109,6 +131,11 @@ def network_checks(*, remote: bool, timeout_seconds: int) -> list[Check]:
     ]
 
     if not remote:
+        return checks
+
+    bridge = remote_bridge_check(host, timeout_seconds=timeout_seconds)
+    checks.append(bridge)
+    if not bridge.ok:
         return checks
 
     if project:

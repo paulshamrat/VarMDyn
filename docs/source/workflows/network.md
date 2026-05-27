@@ -48,15 +48,17 @@ Remote check:
 python scripts/check_private_inputs.py --module network --remote --timeout-seconds 10
 ```
 
-If this stalls or reports SSH timeouts, first verify the Palmetto bridge in your
-own terminal:
+The remote check first runs one real bridge command, `hostname && whoami`. If
+that command times out, fix the bridge before checking individual paths:
 
 ```bash
-palmetto
+palmettoensure
 ssh -S ~/.ssh/palmetto.sock shamrap@slogin.palmetto.clemson.edu "hostname && whoami"
 ```
 
-If a command says to look for a Duo push, approve that push before rerunning the
+`palmettostatus` or `palmettoensure` can report an active socket even when a real
+remote command is waiting on Duo or has a stalled ControlMaster connection. If a
+command says to look for a Duo push, approve that push before rerunning the
 remote check. For scheduler work, the hostname should be a login node such as
 `vm-slurm-p-loginXX.palmetto.clemson.edu`.
 
