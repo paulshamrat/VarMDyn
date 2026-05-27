@@ -25,6 +25,9 @@ REQUIRED_FILES = [
     "workflows/mdan/rmsd_apo_holo/summarize_analysis2_rmsd.py",
     "workflows/mdan/rmsd_apo_holo/plot_analysis2_rmsd.py",
     "workflows/mdan/network/validate_network_manuscript_outputs.py",
+    "workflows/mdan/network/run_network_replay_palmetto.py",
+    "workflows/mdan/network/README.md",
+    "scripts/check_private_inputs.py",
     "workflows/mdan/dynamics_nlobe_y171/scripts/submit_efgh_ijkl_palmetto.py",
 ]
 

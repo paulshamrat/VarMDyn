@@ -273,7 +273,27 @@ python workflows/mdan/dynamics_nlobe_y171/scripts/submit_efgh_ijkl_palmetto.py f
 ### 4.7 Dynamic Network Analysis
 
 Network analysis is an HPC/private-data workflow. The public repository keeps
-the validation and comparison scripts, but not DyNetAn output tables.
+the replay wrapper, validation scripts, and comparison helpers, but not DyNetAn
+output tables or rendered network panels. Full module instructions are in
+`workflows/mdan/network/README.md`.
+
+Set private paths for the current machine/session:
+
+```bash
+export VARMDYN_PALMETTO_HOST=user@slogin.example.edu
+export VARMDYN_PALMETTO_USER=user
+export VARMDYN_PALMETTO_PROJECT=/path/to/private/palmetto_project
+export VARMDYN_DYNETAN_WORK=/path/to/private/dynetan_work
+export VARMDYN_CONDA_ENV=varmdyn_env
+export VARMDYN_DYNETAN_STAGE_TAG=concat750_w1_s750_apo_validation
+```
+
+Check local and optional remote readiness:
+
+```bash
+python scripts/check_private_inputs.py --module network
+python scripts/check_private_inputs.py --module network --remote
+```
 
 Validate generated frequency and overlap tables:
 
@@ -284,6 +304,32 @@ python workflows/mdan/network/validate_network_manuscript_outputs.py \
   --outdir runs/mdan/network_validation
 ```
 
+After fetching apo replay outputs, compare them against the supplied
+manuscript-facing network tables:
+
+```bash
+python workflows/mdan/network/validate_network_manuscript_outputs.py \
+  --frequency data_private/network/network_residue_transition_frequency.csv \
+  --overlap data_private/network/network_overlap_apo_vs_atpmg.csv \
+  --apo-results data_private/network/concat750_w1_s750_apo_validation/TutorialResults_CDKL5 \
+  --apo-comparisons data_private/network/concat750_w1_s750_apo_validation/_comparisons_concatenated \
+  --stage-tag concat750_w1_s750_apo_validation \
+  --outdir runs/mdan/network_validation/replay
+```
+
+Run the Palmetto replay route:
+
+```bash
+python workflows/mdan/network/run_network_replay_palmetto.py stage
+python workflows/mdan/network/run_network_replay_palmetto.py submit
+python workflows/mdan/network/run_network_replay_palmetto.py status
+python workflows/mdan/network/run_network_replay_palmetto.py compare
+python workflows/mdan/network/run_network_replay_palmetto.py fetch --outdir data_private/network
+```
+
+Generated network outputs remain under ignored private/runtime directories such
+as `data_private/network/` and `runs/mdan/network_validation/`.
+
 Compare two DyNetAn replay CSVs by residue-selection label:
 
 ```bash
@@ -292,15 +338,6 @@ python workflows/mdan/network/compare_dynetan_replay_validation.py \
   --validation data_private/network/validation_bottleneck_nodes.csv \
   --key Selection \
   --outdir runs/mdan/network_validation
-```
-
-Palmetto array replay template:
-
-```bash
-export VARMDYN_PALMETTO_PROJECT=/path/to/private/palmetto_project
-export VARMDYN_DYNETAN_WORK=/path/to/private/dynetan_work
-export VARMDYN_CONDA_ENV=varmdyn_env
-sbatch workflows/mdan/network/dynetan_replay_validation_apo.sh
 ```
 
 ### 4.8 Structural Annotation And Rendering
@@ -351,10 +388,12 @@ bash scripts/run_clustering_repro.sh
 bash scripts/run_varmodel_repro.sh --dry-run
 python workflows/mdan/network/validate_network_manuscript_outputs.py --help
 python workflows/mdan/network/compare_dynetan_replay_validation.py --help
+python workflows/mdan/network/run_network_replay_palmetto.py --help
+python scripts/check_private_inputs.py --module network
 ```
 
-The network validator was also smoke-tested with synthetic CSVs in `/tmp`, not
-with manuscript data.
+The network validator can also be smoke-tested with small synthetic CSVs before
+running it on private/generated network outputs.
 
 ## 7. Notes
 
@@ -378,11 +417,11 @@ Not tracked:
 Keep private or generated files under `runs/`, `data_private/`, `private_data/`,
 or an external scratch/project path. These are ignored by git.
 
-### 7.2 Security And Public-Repo Hygiene
+### 7.2 Local Files And Configuration
 
-Do not commit personal directory paths, HPC usernames, socket paths, license
-keys, manuscript source tables, or generated figures. Public instructions use
-template paths such as `/path/to/private/legacy_md_root`.
+Keep machine-specific settings in your shell environment or in ignored local
+notes. Use template paths in shared commands, then substitute paths for your
+own workstation or HPC account when running the workflow.
 
 ## 8. License
 

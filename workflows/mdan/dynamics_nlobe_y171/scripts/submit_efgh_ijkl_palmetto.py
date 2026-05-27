@@ -23,7 +23,7 @@ FIGURE_DIR = SCRIPT_DIR.parent
 REMOTE_HOST = os.environ.get("VARMDYN_PALMETTO_HOST")
 if not REMOTE_HOST:
     raise SystemExit("Set VARMDYN_PALMETTO_HOST, for example user@slogin.example.edu")
-PALMETTO_SOCKET = Path.home() / ".ssh" / "palmetto.sock"
+SSH_CONTROL_PATH = os.environ.get("VARMDYN_SSH_CONTROL_PATH")
 remote_root_env = os.environ.get("VARMDYN_PALMETTO_PROJECT")
 if not remote_root_env:
     raise SystemExit("Set VARMDYN_PALMETTO_PROJECT to your private Palmetto project path before staging/submitting.")
@@ -60,20 +60,20 @@ def remote(path: Path) -> str:
 
 
 def ssh_cmd(remote_command: str) -> list[str]:
-    if PALMETTO_SOCKET.exists():
-        return ["ssh", "-S", str(PALMETTO_SOCKET), REMOTE_HOST, remote_command]
+    if SSH_CONTROL_PATH and Path(SSH_CONTROL_PATH).exists():
+        return ["ssh", "-S", SSH_CONTROL_PATH, REMOTE_HOST, remote_command]
     return ["ssh", REMOTE_HOST, remote_command]
 
 
 def scp_cmd(src: str, dst: str) -> list[str]:
-    if PALMETTO_SOCKET.exists():
-        return ["scp", "-o", f"ControlPath={PALMETTO_SOCKET}", src, dst]
+    if SSH_CONTROL_PATH and Path(SSH_CONTROL_PATH).exists():
+        return ["scp", "-o", f"ControlPath={SSH_CONTROL_PATH}", src, dst]
     return ["scp", src, dst]
 
 
 def scp_recursive_cmd(src: str, dst: str) -> list[str]:
-    if PALMETTO_SOCKET.exists():
-        return ["scp", "-r", "-o", f"ControlPath={PALMETTO_SOCKET}", src, dst]
+    if SSH_CONTROL_PATH and Path(SSH_CONTROL_PATH).exists():
+        return ["scp", "-r", "-o", f"ControlPath={SSH_CONTROL_PATH}", src, dst]
     return ["scp", "-r", src, dst]
 
 
