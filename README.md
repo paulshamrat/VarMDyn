@@ -1,43 +1,20 @@
 # varmdyn
 
-**varmdyn** is a scripts-first reproducibility repository for CDKL5 variant
-clustering, variant modeling, and molecular-dynamics analysis workflows.
+**varmdyn** contains reproducible workflows for CDKL5 variant clustering,
+variant modeling, and molecular-dynamics analysis.
 
-The repository stores code, conda environments, documentation, and the public
-clustering seed inputs. It does not build the manuscript PDF and does not store
-unpublished manuscript figures, manuscript tables, trajectories, or generated
-analysis outputs.
+The repository is code-focused: generated outputs and private analysis inputs
+are supplied at run time and kept outside the public git history.
 
 ## Documentation
 
-The full protocol is organized as a ReadTheDocs-style MkDocs site.
-
-Public site:
-
-```text
-https://paulshamrat.github.io/varmdyn/
-```
+Full protocol: **https://paulshamrat.github.io/varmdyn/**
 
 Local preview:
 
 ```bash
 python -m pip install -r docs/requirements.txt
 mkdocs serve
-```
-
-Open the local URL printed by `mkdocs serve`, then start with:
-
-- **Getting Started**
-- **Setup / Installation**
-- **Workflows / Clustering**
-- **Workflows / Variant Modeling**
-- **Workflows / Dynamic Network Analysis**
-- **Reference / Commands**
-
-To build the static site:
-
-```bash
-mkdocs build --strict
 ```
 
 ## Quick Start
@@ -53,14 +30,14 @@ export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 python scripts/check_repo_ready.py
 ```
 
-Run the public smoke workflows:
+Optional public smoke workflows:
 
 ```bash
 bash scripts/run_clustering_repro.sh
 bash scripts/run_varmodel_repro.sh --dry-run
 ```
 
-## Repository Map
+## Repository Layout
 
 ```text
 varmdyn/
@@ -75,19 +52,14 @@ varmdyn/
   data_private/     # optional private inputs, ignored by git
 ```
 
-## Outputs And Private Inputs
+## Outputs
 
 Workflow outputs are written under `runs/` by default. User-supplied private
-inputs can be placed under `data_private/`. Both folders are ignored by git so
-the public repository stays lightweight.
-
-See the documentation site for the full output policy.
+inputs can be placed under `data_private/`. Both folders are ignored by git.
 
 ## License
 
 This code is released under the MIT License. See `LICENSE`.
 
 Citation instructions will be updated when the associated manuscript is
-published. Until then, acknowledge the scientific software used in the workflow
-you run, including MDAnalysis, PyMOL, MODELLER, VMD, AmberTools/cpptraj,
-Matplotlib, NumPy, pandas, SciPy, and scikit-learn as applicable.
+published.
