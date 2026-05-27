@@ -12,6 +12,14 @@ analysis outputs.
 
 The full protocol is organized as a ReadTheDocs-style MkDocs site.
 
+Public site:
+
+```text
+https://paulshamrat.github.io/varmdyn/
+```
+
+Local preview:
+
 ```bash
 python -m pip install -r docs/requirements.txt
 mkdocs serve
