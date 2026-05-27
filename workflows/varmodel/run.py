@@ -16,6 +16,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from qc import write_qc_report
+
 
 def _load_yaml(path: Path) -> dict:
     try:
@@ -275,10 +277,20 @@ def main(argv: list[str] | None = None) -> int:
             )
 
     ok = sum(1 for mut in muts if by_mut.get(mut, {}).get("status") == "OK")
+    qc = write_qc_report(summary_csv=summary_csv, expected_mutations=muts, run_dir=run_dir)
     print(f"[OK] Completed variant modeling run: {run_dir}")
     print(f"[OK] mutate_summary: {summary_csv}")
     print(f"[OK] manifest: {manifest_csv}")
+    print(f"[OK] varmodel QC: {qc.qc_csv}")
     print(f"[INFO] Successful mutations: {ok}/{len(muts)}")
+    print(f"[INFO] QC structure checks: {qc.ok_count}/{len(qc.rows)}")
+    if qc.warnings:
+        print(f"[WARN] QC warnings: {len(qc.warnings)}; see {qc.qc_summary}")
+        for item in qc.warnings[:5]:
+            print(f"[WARN] {item}")
+    if qc.errors:
+        print(f"[ERROR] QC errors: {len(qc.errors)}; see {qc.qc_summary}")
+        return 2
     return 0
 
 

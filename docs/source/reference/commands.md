@@ -4,6 +4,7 @@
 
 ```bash
 python scripts/check_repo_ready.py
+python scripts/check_manuscript_workflows.py
 ```
 
 ## 2. Public Smoke Tests
@@ -33,6 +34,7 @@ python -m distcluster.cli run all --config config.yaml --outdir ../../runs/clust
 bash scripts/run_varmodel_repro.sh --dry-run
 bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_env
 bash scripts/run_varmodel_repro.sh
+python scripts/check_manuscript_workflows.py --varmodel-run-name reviewer_smoke
 ```
 
 ## 5. Network

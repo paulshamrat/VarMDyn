@@ -39,11 +39,19 @@ bash scripts/run_varmodel_repro.sh
 runs/varmodel/
 ```
 
-The wrapper records a manifest, mutation list, MODELLER log, and generated
-mutant PDBs.
+The wrapper records a manifest, mutation list, MODELLER log, generated mutant
+PDBs, and two QC files:
 
-## 5. Current QC Note
+```text
+runs/varmodel/<run-name>/varmodel_qc.csv
+runs/varmodel/<run-name>/varmodel_qc_summary.txt
+```
 
-MODELLER completion means the mutant structure was produced. A later QC layer
-should parse optimized energies, restraint violations, and serious nonbonded
-contacts to flag structures that need extra inspection.
+## 5. QC Interpretation
+
+The QC report checks that every expected mutant structure was produced, that the
+observed WT residue matches the requested mutation, and that MODELLER energies
+can be parsed from `mutate_summary.csv`. Very high initial or optimized energies
+are reported as warnings so the structure can be inspected before downstream use.
+The public smoke panel is expected to produce five structures; energy warnings do
+not by themselves mean that the command failed.

@@ -28,6 +28,7 @@ where you can place input files that are not stored in the repository.
 python scripts/check_repo_ready.py
 bash scripts/run_clustering_repro.sh
 bash scripts/run_varmodel_repro.sh --dry-run
+python scripts/check_manuscript_workflows.py
 ```
 
 These commands confirm that the repository is ready, regenerate the clustering
