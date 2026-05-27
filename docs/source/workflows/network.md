@@ -1,24 +1,29 @@
 # Dynamic Network Analysis
 
-The network workflow validates and replays DyNetAn-derived network analysis
-without storing network outputs in the public repository.
+The network workflow validates and replays DyNetAn-based residue communication
+analysis.
 
-## 1. Workflow Stages
+## 1. What This Workflow Does
 
-1. Check private input configuration.
-2. Validate existing network frequency/overlap tables.
-3. Run or reuse a Palmetto DyNetAn replay.
-4. Build comparison tables.
-5. Fetch lightweight outputs locally.
-6. Validate replay-derived apo values against supplied tables.
+1. Checks that required input paths are configured.
+2. Validates network frequency and overlap tables.
+3. Stages and runs a DyNetAn replay on Palmetto or another compatible HPC system.
+4. Builds comparison tables.
+5. Fetches compact CSV outputs locally.
+6. Validates replay-derived apo values against the supplied summary tables.
+
+The manuscript protocol uses concatenated three-replica trajectories, 750 sampled
+frames, a 4.5 A contact cutoff, 75% contact persistence, same/consecutive residue
+exclusion, top-25 bottleneck residues, and WT-referenced lost/gained residue
+frequencies across the five variants.
 
 ## 2. Configure Runtime Variables
 
 ```bash
 export VARMDYN_PALMETTO_HOST=user@slogin.example.edu
 export VARMDYN_PALMETTO_USER=user
-export VARMDYN_PALMETTO_PROJECT=/path/to/private/palmetto_project
-export VARMDYN_DYNETAN_WORK=/path/to/private/dynetan_work
+export VARMDYN_PALMETTO_PROJECT=/path/to/hpc_project_root
+export VARMDYN_DYNETAN_WORK=/path/to/dynetan_work
 export VARMDYN_CONDA_ENV=varmdyn_env
 export VARMDYN_DYNETAN_STAGE_TAG=concat750_w1_s750_apo_validation
 ```
@@ -26,7 +31,7 @@ export VARMDYN_DYNETAN_STAGE_TAG=concat750_w1_s750_apo_validation
 Optional SSH control socket:
 
 ```bash
-export VARMDYN_SSH_CONTROL_PATH=/path/to/private/ssh_control_socket
+export VARMDYN_SSH_CONTROL_PATH=/path/to/ssh_control_socket
 ```
 
 ## 3. Preflight Checks
@@ -54,19 +59,19 @@ python workflows/mdan/network/validate_network_manuscript_outputs.py \
 
 ## 5. Palmetto Replay Commands
 
-Stage:
+Stage scripts:
 
 ```bash
 python workflows/mdan/network/run_network_replay_palmetto.py stage
 ```
 
-Submit:
+Submit the replay:
 
 ```bash
 python workflows/mdan/network/run_network_replay_palmetto.py submit
 ```
 
-Status:
+Check status:
 
 ```bash
 python workflows/mdan/network/run_network_replay_palmetto.py status
@@ -78,7 +83,7 @@ Compare after completion:
 python workflows/mdan/network/run_network_replay_palmetto.py compare
 ```
 
-Fetch lightweight CSV outputs:
+Fetch compact CSV outputs:
 
 ```bash
 python workflows/mdan/network/run_network_replay_palmetto.py fetch --outdir data_private/network
@@ -111,5 +116,3 @@ OK apo overlap replay: ... fields compared
 data_private/network/$VARMDYN_DYNETAN_STAGE_TAG/
 runs/mdan/network_validation/$VARMDYN_DYNETAN_STAGE_TAG/
 ```
-
-These folders are ignored by git.

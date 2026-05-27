@@ -1,56 +1,49 @@
 # Project Map
 
-## 1. Top-Level Layout
+This page shows the main folders in a local VarMDyn checkout.
 
 ```text
 varmdyn/
+  README.md
+  envs/
+  scripts/
   workflows/
     clustering/
     varmodel/
     mdan/
-  scripts/
-  envs/
   docs/
   runs/
   data_private/
 ```
 
-## 2. Tracked Source Files
+## 1. Source Folders
 
-Tracked files are the reproducibility source:
+| Folder | Contents |
+|---|---|
+| `envs/` | Conda environment definitions. |
+| `scripts/` | Setup, checks, and top-level workflow helpers. |
+| `workflows/clustering/` | rSASA, exposure, C-alpha/COM clustering, reports, and plots. |
+| `workflows/varmodel/` | MODELLER mutation workflow and run wrapper. |
+| `workflows/mdan/` | RMSD, RMSF, displacement, network, and rendering workflows. |
+| `docs/source/` | MkDocs documentation source. |
 
-- workflow scripts;
-- top-level helper scripts;
-- conda environment definitions;
-- documentation;
-- public clustering seed inputs.
+## 2. Run Folders
 
-The only tracked data inputs are:
+| Folder | Use |
+|---|---|
+| `runs/` | Generated workflow outputs. |
+| `data_private/` | Local input files supplied at run time. |
+| `private_data/` | Alternative local input folder. |
+| `inputs_private/` | Alternative local input folder. |
 
-```text
-workflows/clustering/data/raw/ddG_Fmax.xlsx
-workflows/clustering/data/raw/target.B99990001_with_cryst.pdb
-```
+For HPC runs, `VARMDYN_RUN_ROOT` can point to scratch or another external run
+folder.
 
-## 3. Generated Or Private Files
+## 3. Module Entry Points
 
-Use ignored folders for runtime data:
-
-```text
-runs/
-data_private/
-private_data/
-inputs_private/
-```
-
-For HPC runs, `VARMDYN_RUN_ROOT` can point to scratch or another external
-runtime directory.
-
-## 4. Module Responsibilities
-
-| Module | Main command | Output |
+| Module | Start here | Typical output |
 |---|---|---|
 | `clustering` | `bash scripts/run_clustering_repro.sh` | `runs/clustering/` |
 | `varmodel` | `bash scripts/run_varmodel_repro.sh --dry-run` | `runs/varmodel/` |
-| `mdan/network` | `python workflows/mdan/network/run_network_replay_palmetto.py --help` | `data_private/network/`, `runs/mdan/network_validation/` |
-| `mdan/dynamics_nlobe_y171` | `bash scripts/run_dynamics_nlobe_y171_local.sh` | `runs/mdan/dynamics_nlobe_y171/` |
+| `mdan/rmsd_apo_holo` | `python workflows/mdan/rmsd_apo_holo/summarize_analysis2_rmsd.py --help` | `runs/mdan/rmsd/` |
+| `mdan/network` | `python workflows/mdan/network/run_network_replay_palmetto.py --help` | `runs/mdan/network_validation/` |

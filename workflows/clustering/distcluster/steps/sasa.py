@@ -79,6 +79,45 @@ def extract_sasa_lines(pymol_stdout: str) -> list[str]:
     return lines
 
 
+
+def _run_sasa_via_pymol_python(pdb: Path, selection: str, python_executable: str) -> tuple[int, str, str]:
+    """Return residue-level SASA lines using the PyMOL Python API."""
+    script = """
+from pymol import cmd
+
+pdb = {pdb_path!r}
+selection = {selection!r}
+cmd.reinitialize()
+cmd.load(pdb, "target")
+cmd.remove("solvent")
+cmd.select("target_sel", selection)
+values = cmd.get_sasa_relative("target_sel", var="b", quiet=1)
+resn_by_key = {{}}
+for atom in cmd.get_model("target_sel and name CA").atom:
+    resn_by_key[(atom.chain, atom.resi)] = atom.resn
+for atom in cmd.get_model("target_sel").atom:
+    resn_by_key.setdefault((atom.chain, atom.resi), atom.resn)
+
+def sort_key(item):
+    (_model, _segi, chain, resi), _value = item
+    try:
+        num = int(str(resi).strip())
+    except ValueError:
+        num = 10**9
+    return (chain, num, str(resi))
+
+for (_model, _segi, chain, resi), value in sorted(values.items(), key=sort_key):
+    resn = resn_by_key.get((chain, resi), "UNK")
+    pct = round(float(value) * 100.0)
+    print(f"/target//{{chain}}/{{resn}}`{{resi:<5}} {{pct:3.0f}}% |")
+""".format(pdb_path=str(pdb.resolve()), selection=selection)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        script_path = Path(tmpdir) / "sasa_api.py"
+        script_path.write_text(script, encoding="utf-8")
+        proc = subprocess.run([python_executable, str(script_path)], capture_output=True, text=True, check=False)
+    return proc.returncode, proc.stdout or "", proc.stderr or ""
+
+
 def run_sasa(
     pdb: Path,
     out_txt: Path,
@@ -90,15 +129,24 @@ def run_sasa(
     dry_run: bool = False,
     log: Callable[[str], None] = print,
 ) -> Path:
-    """Run headless PyMOL and write a filtered SASA text file."""
+    """Run PyMOL and write a residue-level relative SASA text file."""
     pdb = Path(pdb)
     out_txt = Path(out_txt)
     out_txt.parent.mkdir(parents=True, exist_ok=True)
     pml_text = build_pml(pdb_path=pdb, chain=chain, selection=selection, legacy_mode=legacy_mode)
 
+    if selection:
+        sel = selection
+    elif legacy_mode:
+        sel = "polymer"
+    elif chain:
+        sel = f"(polymer.protein) and chain {chain}"
+    else:
+        sel = "polymer.protein"
+
     if dry_run:
-        pymol_path = pymol_executable or (shutil.which("pymol") or "pymol")
-        log(f"[DRY-RUN] Would run: {pymol_path} -cq <temp_pml>")
+        pymol_path = pymol_executable or sys.executable
+        log(f"[DRY-RUN] Would run PyMOL SASA through: {pymol_path}")
         log(f"[DRY-RUN] Would read PDB: {pdb}")
         log(f"[DRY-RUN] Would write SASA file: {out_txt}")
         return out_txt
@@ -106,27 +154,40 @@ def run_sasa(
     if not pdb.exists():
         raise FileNotFoundError(f"Missing input PDB: {pdb}")
 
-    pymol = _which_or_fail(pymol_executable)
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        pml_path = Path(tmpdir) / "run_sasa.pml"
-        pml_path.write_text(pml_text, encoding="utf-8")
-
-        cmd = [pymol, "-cq", str(pml_path)]
-        log(f"[INFO] Running headless PyMOL: {' '.join(cmd)}")
-
-        proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
-        if proc.returncode != 0:
+    if pymol_executable is None:
+        log(f"[INFO] Running PyMOL Python API with: {sys.executable}")
+        returncode, stdout, stderr = _run_sasa_via_pymol_python(
+            pdb=pdb,
+            selection=sel,
+            python_executable=sys.executable,
+        )
+        if returncode != 0:
             raise RuntimeError(
-                "PyMOL failed while computing SASA.\n"
-                f"Return code: {proc.returncode}\n"
-                f"STDOUT (first 500 chars):\n{(proc.stdout or '')[:500]}\n"
-                f"STDERR (first 500 chars):\n{(proc.stderr or '')[:500]}"
+                "PyMOL Python API failed while computing SASA.\n"
+                f"Return code: {returncode}\n"
+                f"STDOUT (first 500 chars):\n{stdout[:500]}\n"
+                f"STDERR (first 500 chars):\n{stderr[:500]}"
             )
+        sasa_lines = extract_sasa_lines(stdout)
+    else:
+        pymol = _which_or_fail(pymol_executable)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            pml_path = Path(tmpdir) / "run_sasa.pml"
+            pml_path.write_text(pml_text, encoding="utf-8")
+            cmd = [pymol, "-cq", str(pml_path)]
+            log(f"[INFO] Running headless PyMOL: {' '.join(cmd)}")
+            proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+            if proc.returncode != 0:
+                raise RuntimeError(
+                    "PyMOL failed while computing SASA.\n"
+                    f"Return code: {proc.returncode}\n"
+                    f"STDOUT (first 500 chars):\n{(proc.stdout or '')[:500]}\n"
+                    f"STDERR (first 500 chars):\n{(proc.stderr or '')[:500]}"
+                )
+        sasa_lines = extract_sasa_lines(proc.stdout or "")
 
-    sasa_lines = extract_sasa_lines(proc.stdout or "")
     out_txt.write_text(
-        "# PyMOL get_sasa_relative output (headless)\n" + "\n".join(sasa_lines) + "\n",
+        "# PyMOL get_sasa_relative output\n" + "\n".join(sasa_lines) + "\n",
         encoding="utf-8",
     )
 
@@ -143,7 +204,6 @@ def run_sasa(
         log(f"  {line}")
 
     return out_txt
-
 
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(

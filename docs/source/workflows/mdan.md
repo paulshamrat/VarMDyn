@@ -1,16 +1,15 @@
 # MD Analysis
 
 `workflows/mdan/` contains RMSD, RMSF, displacement, network, and structural
-rendering scripts. Trajectories and trajectory-derived source files are supplied
-at run time.
+rendering scripts used for the MD-analysis parts of the study.
 
 ## 1. Runtime Paths
 
 ```bash
 export VARMDYN_RUN_ROOT=$PWD/runs
 export VARMDYN_PRIVATE_DATA=$PWD/data_private
-export VARMDYN_MD_LEGACY_ROOT=/path/to/private/legacy_md_root
-export VARMDYN_PALMETTO_PROJECT=/path/to/private/palmetto_project
+export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
+export VARMDYN_PALMETTO_PROJECT=/path/to/hpc_project_root
 export VARMDYN_PALMETTO_HOST=user@slogin.example.edu
 ```
 
@@ -31,7 +30,7 @@ runs/mdan/rmsd/
 
 ## 3. RMSF Figures
 
-RMSF figure scripts need private `.agr` files or generated RMSF summaries:
+RMSF figure scripts use `.agr` files or generated RMSF summaries:
 
 ```bash
 python workflows/mdan/figures/rmsf_overlay_review_v2/build_rmsf_overlay_review_v2.py --help
@@ -47,14 +46,14 @@ export VARMDYN_RMSF_SOURCE_MANIFEST=$VARMDYN_PRIVATE_DATA/rmsf_source_input_mani
 
 ## 4. N-Lobe/Y171 RMSF And Displacement
 
-Local plotting from private kept TSVs:
+Local plotting from kept displacement/RMSF tables:
 
 ```bash
 export DYNAMICS_NLOBE_Y171_INPUT_ROOT=$VARMDYN_PRIVATE_DATA/dynamics_nlobe_y171
 bash scripts/run_dynamics_nlobe_y171_local.sh
 ```
 
-Expected private layout:
+Expected input layout:
 
 ```text
 $DYNAMICS_NLOBE_Y171_INPUT_ROOT/

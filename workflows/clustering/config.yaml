@@ -15,7 +15,7 @@ sasa:
   selection: null
   legacy_mode: true
   pymol_executable: null
-  min_lines: 200
+  min_lines: 300
   merge_sheet: null
   mutation_col: mutation
 

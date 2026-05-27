@@ -3,16 +3,17 @@
 This section contains the step-by-step protocols for the main **VarMDyn**
 modules.
 
-## 1. Public Workflows
+## 1. Core Workflows
 
-These can run from a fresh public checkout:
+These are the first workflows to test from a fresh checkout:
 
 - [Clustering](clustering.md)
 - [Variant Modeling](varmodel.md) dry run
 
-## 2. Private Or HPC-Backed Workflows
+## 2. Analysis Workflows
 
-These require user-supplied private inputs:
+These workflows use MD-analysis inputs such as trajectories, RMSD/RMSF summaries,
+displacement tables, or DyNetAn outputs:
 
 - [MD Analysis](mdan.md)
 - [Dynamic Network Analysis](network.md)
@@ -22,9 +23,9 @@ These require user-supplied private inputs:
 
 For each workflow:
 
-1. configure the environment;
+1. activate `varmdyn_env`;
 2. set runtime paths;
 3. run a preflight or dry run when available;
 4. run the workflow;
-5. validate outputs;
-6. keep generated/private outputs in ignored runtime folders.
+5. validate the outputs;
+6. keep generated files under the configured run folder.
