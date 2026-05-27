@@ -1,6 +1,6 @@
 # Palmetto Bridge Workflow
 
-`varmdyn` is organized so scripts live in GitHub and heavy data stay in private
+**VarMDyn** is organized so scripts live in GitHub and heavy data stay in private
 HPC or local storage.
 
 ## 1. Runtime Variables

@@ -1,6 +1,6 @@
-# varmdyn
+# VarMDyn
 
-**varmdyn** provides reproducible workflows for CDKL5 variant clustering,
+**VarMDyn** provides reproducible workflows for CDKL5 variant clustering,
 variant modeling, and molecular-dynamics analysis, with the public repository
 focused on code, environments, and documentation while generated outputs and
 private analysis inputs are supplied at run time.

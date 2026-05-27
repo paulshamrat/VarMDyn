@@ -1,6 +1,6 @@
-# varmdyn Documentation
+# VarMDyn Documentation
 
-`varmdyn` is a scripts-first repository for reproducing CDKL5 variant
+**VarMDyn** is a scripts-first repository for reproducing CDKL5 variant
 clustering, variant modeling, and molecular-dynamics analysis workflows.
 
 The repository is intentionally lightweight. It stores code, environment files,

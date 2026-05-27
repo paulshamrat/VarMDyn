@@ -1,6 +1,6 @@
 # Workflow Overview
 
-This section contains the step-by-step protocols for the main `varmdyn`
+This section contains the step-by-step protocols for the main **VarMDyn**
 modules.
 
 ## 1. Public Workflows

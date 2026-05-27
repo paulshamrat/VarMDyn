@@ -1,6 +1,6 @@
 # Output Policy
 
-`varmdyn` is meant to stay small and scripts-focused.
+**VarMDyn** is meant to stay small and scripts-focused.
 
 ## 1. Tracked
 

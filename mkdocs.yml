@@ -1,4 +1,4 @@
-site_name: varmdyn Documentation
+site_name: VarMDyn Documentation
 site_description: Reproducible protocols for CDKL5 variant clustering, variant modeling, and MD-analysis scripts.
 docs_dir: docs/source
 theme:
