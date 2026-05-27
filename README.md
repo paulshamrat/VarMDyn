@@ -1,10 +1,9 @@
 # varmdyn
 
-**varmdyn** contains reproducible workflows for CDKL5 variant clustering,
-variant modeling, and molecular-dynamics analysis.
-
-The repository is code-focused: generated outputs and private analysis inputs
-are supplied at run time and kept outside the public git history.
+**varmdyn** provides reproducible workflows for CDKL5 variant clustering,
+variant modeling, and molecular-dynamics analysis, with the public repository
+focused on code, environments, and documentation while generated outputs and
+private analysis inputs are supplied at run time.
 
 ## Documentation
 
