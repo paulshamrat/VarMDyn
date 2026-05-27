@@ -8,6 +8,7 @@ runs/
 outputs/
 run_*/
 reference_outputs/
+site/
 *.log
 
 # Private or user-supplied data. Keep GitHub scripts-only.

@@ -1,4 +1,4 @@
-.PHONY: check clustering-smoke varmodel-dry-run dynamics-local env-check checksums
+.PHONY: check clustering-smoke varmodel-dry-run dynamics-local env-check checksums docs-build docs-serve
 
 check:
 	python scripts/check_repo_ready.py
@@ -17,3 +17,9 @@ env-check:
 
 checksums:
 	bash scripts/checksums.sh
+
+docs-build:
+	mkdocs build --strict
+
+docs-serve:
+	mkdocs serve

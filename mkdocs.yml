@@ -1,0 +1,24 @@
+site_name: varmdyn Documentation
+site_description: Reproducible protocols for CDKL5 variant clustering, variant modeling, and MD-analysis scripts.
+docs_dir: docs/source
+theme:
+  name: readthedocs
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Project Map: project-map.md
+  - Setup:
+      - Installation: setup/installation.md
+      - Environments: setup/environments.md
+      - Runtime Paths: setup/runtime-paths.md
+  - Workflows:
+      - Overview: workflows/index.md
+      - Clustering: workflows/clustering.md
+      - Variant Modeling: workflows/varmodel.md
+      - MD Analysis: workflows/mdan.md
+      - Dynamic Network Analysis: workflows/network.md
+      - Palmetto Bridge: workflows/palmetto.md
+  - Reference:
+      - Commands: reference/commands.md
+      - Output Policy: reference/output-policy.md
+      - Citation Notes: reference/citation.md

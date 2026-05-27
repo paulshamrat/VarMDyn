@@ -24,8 +24,8 @@ export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 5. Keep all fetched outputs gitignored unless a future public fixture is
    intentionally created.
 
-## 3. Security Rule
+## 3. Local Configuration
 
-Do not commit personal usernames, home directories, project directory layouts,
-socket paths, license keys, or unpublished data products. Public docs should
-show placeholders only.
+Keep machine-specific values in your shell environment or ignored local notes.
+Public examples should use placeholders that each user replaces for their own
+workstation or HPC account.
