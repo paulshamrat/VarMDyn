@@ -75,26 +75,13 @@ varmdyn/
   data_private/     # optional private inputs, ignored by git
 ```
 
-## Data Policy
+## Outputs And Private Inputs
 
-Tracked:
+Workflow outputs are written under `runs/` by default. User-supplied private
+inputs can be placed under `data_private/`. Both folders are ignored by git so
+the public repository stays lightweight.
 
-- workflow scripts;
-- conda environment files;
-- documentation;
-- public clustering seed Excel/PDB.
-
-Not tracked:
-
-- manuscript figures and tables;
-- MD trajectories and trajectory-derived products;
-- RMSD/RMSF source files;
-- DyNetAn network outputs;
-- VMD displacement TSVs;
-- generated local runs.
-
-Use `runs/` for generated outputs and `data_private/` for private inputs. Both
-are ignored by git.
+See the documentation site for the full output policy.
 
 ## License
 
