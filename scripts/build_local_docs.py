@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -21,6 +22,43 @@ LOCAL_ROOT = ROOT / ".local_docs"
 LOCAL_SOURCE = LOCAL_ROOT / "source"
 LOCAL_SITE = LOCAL_ROOT / "site"
 LOCAL_CONFIG = LOCAL_ROOT / "mkdocs.local.yml"
+DEFAULT_ENV_FILES = [
+    ROOT / "data/varmdyn_data.env",
+    LOCAL_ROOT / "paths.env",
+]
+
+
+def load_env_file(path: Path) -> None:
+    if not path.is_file():
+        return
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line.removeprefix("export ").strip()
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if not key or key in os.environ:
+            continue
+        try:
+            parsed = shlex.split(value)
+        except ValueError:
+            parsed = [value.strip("\"'")]
+        if not parsed:
+            continue
+        expanded = os.path.expandvars(parsed[0])
+        os.environ[key] = expanded
+
+
+def load_env_files(extra_files: list[str]) -> None:
+    for path in DEFAULT_ENV_FILES:
+        load_env_file(path)
+    for path in extra_files:
+        load_env_file(Path(path).expanduser())
 
 
 def env_path(name: str, default: Path | str | None = None) -> str | None:
@@ -141,8 +179,15 @@ def main() -> int:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", default="8001")
     parser.add_argument("--strict", action="store_true", help="use mkdocs build --strict")
+    parser.add_argument(
+        "--env-file",
+        action="append",
+        default=[],
+        help="extra KEY=VALUE or export KEY=VALUE file to read before substitution",
+    )
     args = parser.parse_args()
 
+    load_env_files(args.env_file)
     prepare_local_source()
     return run_mkdocs(args)
 

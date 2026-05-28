@@ -45,7 +45,8 @@ The manuscript-facing replay uses:
 
 ## 3. Put Data In The VarMDyn Layout
 
-For table validation and rendering, place or link files here:
+For table validation and rendering, place or link files here. This is a folder
+map, not a shell command block:
 
 ```text
 data/network/tables/network_residue_transition_frequency.csv
@@ -54,7 +55,7 @@ data/structures/apo/01_WT.apo.pdb
 data/structures/holo_atpmg/01_WT.keepATPmg.pdb
 ```
 
-Fetched DyNetAn replay outputs use this layout:
+Fetched DyNetAn replay outputs use this layout. This is also a folder map:
 
 ```text
 data/network/replay/apo/$VARMDYN_DYNETAN_STAGE_TAG/
@@ -89,6 +90,12 @@ Check the local data layout:
 python scripts/check_data_inputs.py --module network --profile tables
 python scripts/check_data_inputs.py --module network --profile render
 python scripts/check_data_inputs.py --module network --profile apo-replay
+```
+
+Run the holo replay check only after you have copied or fetched a matching holo
+DyNetAn replay directory:
+
+```bash
 python scripts/check_data_inputs.py --module network --profile holo-replay
 ```
 

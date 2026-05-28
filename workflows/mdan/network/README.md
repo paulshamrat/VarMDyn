@@ -3,7 +3,8 @@
 This folder contains the code for DyNetAn network replay, table validation, and
 comparison checks. It should stay code-only.
 
-Use the repository-level data layout:
+Use the repository-level data layout. This is a folder map, not a shell command
+block:
 
 ```text
 data/
@@ -31,8 +32,10 @@ Check data for network table validation, rendering, and replay:
 python scripts/check_data_inputs.py --module network --profile tables
 python scripts/check_data_inputs.py --module network --profile render
 python scripts/check_data_inputs.py --module network --profile apo-replay
-python scripts/check_data_inputs.py --module network --profile holo-replay
 ```
+
+Use `--profile holo-replay` only after a matching holo DyNetAn replay directory
+has been copied or fetched into `data/network/replay/holo/`.
 
 The current HPC replay wrapper is the apo DyNetAn replay. Holo/ATP-Mg
 network rendering is supported by `VARMDYN_NETWORK_HOLO_PDB`, while a full holo

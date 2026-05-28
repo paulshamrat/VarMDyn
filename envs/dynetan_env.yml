@@ -12,5 +12,6 @@ dependencies:
   - h5py=3.10.*
   - matplotlib=3.8.*
   - tqdm=4.66.*
+  - cython
   - pip:
       - dynetan==1.0.1
