@@ -76,14 +76,16 @@ assemble/build_state_paired_review_svg.py
 
 ## Rebuild
 
-Run from the **repo root**:
+Run from the **repo root** after setting private apo and ATP-Mg/holo PDB paths:
 
 ```bash
-bash manuscript/modules/03_md/figs/network_residue/network_remodel_integrated_review/scripts/build_final_figure.sh
+export VARMDYN_NETWORK_APO_PDB=/path/to/private/apo/cdl.com.gas.leap.pdb
+export VARMDYN_NETWORK_HOLO_PDB=/path/to/private/atp_mg/cdl.com.gas.leap.pdb
+bash workflows/mdan/figures/network_remodel_integrated_review/scripts/build_final_figure.sh
 ```
 
 This single command:
-1. Activates the `varmdyn_env` conda environment when available
+1. Uses the active `varmdyn_env` conda environment when available
 2. Runs PyMOL to render the exact residue-coloring panels
 3. Crops the PyMOL panels
 4. Runs ChimeraX (offscreen, no GUI) to render the surface panels

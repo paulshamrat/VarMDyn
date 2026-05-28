@@ -40,6 +40,7 @@ python scripts/check_manuscript_workflows.py --varmodel-run-name reviewer_smoke
 ## 5. Network
 
 ```bash
+python scripts/check_palmetto_bridge.py --timeout-seconds 10
 python scripts/check_private_inputs.py --module network
 python scripts/check_private_inputs.py --module network --remote --timeout-seconds 10
 python workflows/mdan/network/run_network_replay_palmetto.py stage

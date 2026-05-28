@@ -43,3 +43,5 @@ CHECKPOINT.md
 
 # Runtime job state.
 .last_palmetto_job_id
+.last_network_palmetto_job_id
+*.runtime.cxc

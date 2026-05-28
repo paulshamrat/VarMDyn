@@ -10,17 +10,17 @@ Outputs:
   - holo_residue_coloring_gained.png
 """
 
+import os
 from math import sqrt
 from pathlib import Path
 
 from pymol import cmd, cgo
 
 
-# PyMOL scripts eval with __file__ as the pymol module dir, so we use Path.cwd()
-WORKSPACE_ROOT = Path.cwd() / "manuscript" / "modules" / "03_md" / "figs" / "network_residue" / "network_remodel_integrated_review"
+WORKSPACE_ROOT = Path(os.environ.get("VARMDYN_NETWORK_FIGURE_WORKSPACE", Path.cwd())).resolve()
 OUT_DIR = WORKSPACE_ROOT / "pymol"
-APO_PDB = "03_md/analysis_repro/results/replay/network/holo_legacy_support/pymol/cdl.com.gas.leap.pdb"
-HOLO_PDB = "251008_simulation/04_cdkl5atp/01_WT/02.leap/com/cdl.com.gas.leap.pdb"
+APO_PDB = Path(os.environ.get("VARMDYN_NETWORK_APO_PDB", "")).expanduser()
+HOLO_PDB = Path(os.environ.get("VARMDYN_NETWORK_HOLO_PDB", "")).expanduser()
 NON_PROTEIN_RESN = "ATP+ADP+AMP+MG+MG2+MGM+WAT+HOH+NA+K+CL"
 
 # Fixed kinase orientation used in prior network figure workflows.
@@ -273,8 +273,18 @@ def main() -> None:
     print(f"MAIN FUNCTION EXECUTING. WORKSPACE_ROOT={WORKSPACE_ROOT}")
     print(f"OUT_DIR={OUT_DIR}")
     print(f"APO_PDB gets loaded from: {APO_PDB}")
+    print(f"HOLO_PDB gets loaded from: {HOLO_PDB}")
+    if not APO_PDB.is_file():
+        raise FileNotFoundError(
+            "Set VARMDYN_NETWORK_APO_PDB to a readable apo PDB before rendering."
+        )
+    if not HOLO_PDB.is_file():
+        raise FileNotFoundError(
+            "Set VARMDYN_NETWORK_HOLO_PDB to a readable ATP-Mg/holo PDB before rendering."
+        )
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
     cmd.reinitialize()
-    cmd.load(APO_PDB, "apo")
+    cmd.load(str(APO_PDB), "apo")
     print("Apo loaded successfully.")
     render_state(
         "apo",
@@ -286,7 +296,7 @@ def main() -> None:
     )
 
     cmd.delete("all")
-    cmd.load(HOLO_PDB, "holo")
+    cmd.load(str(HOLO_PDB), "holo")
     render_state(
         "holo",
         HOLO_WT_LOST,

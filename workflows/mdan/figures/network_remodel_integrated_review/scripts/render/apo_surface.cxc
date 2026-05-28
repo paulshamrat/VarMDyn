@@ -1,5 +1,5 @@
 # Replace this template path with a private apo PDB path before running.
-open /path/to/private/apo/cdl.com.gas.leap.pdb
+open @VARMDYN_NETWORK_APO_PDB@
 
 hide atoms
 surface #1 & protein
@@ -19,5 +19,5 @@ lighting full
 graphics silhouettes true
 view matrix camera -0.31169,0.79727,0.51692,212.61,-0.87489,-0.028557,-0.48348,-118.97,-0.37071,-0.60294,0.70642,283.72 models #1,1,0,0,0,0,1,0,0,0,0,1,0
 zoom 1.92
-save apo_surface.png width 1400 height 1600 supersample 3
+save @VARMDYN_CHIMERAX_APO_OUT@ width 1400 height 1600 supersample 3
 exit
