@@ -61,3 +61,11 @@ python -m pip install -r docs/requirements.txt
 mkdocs build --strict
 mkdocs serve
 ```
+
+Build or serve an ignored local copy with paths filled from your shell
+environment:
+
+```bash
+python scripts/build_local_docs.py --strict
+python scripts/build_local_docs.py --serve
+```

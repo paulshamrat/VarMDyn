@@ -40,3 +40,15 @@ export VARMDYN_SSH_CONTROL_PATH=/path/to/ssh_control_socket
 | local input files | `data/` |
 | fetched HPC outputs | `data/` |
 | large HPC runs | scratch or project storage |
+
+## 4. Local Documentation Preview
+
+The public documentation uses template paths. To preview the same pages locally
+with values from your shell environment, run:
+
+```bash
+python scripts/build_local_docs.py --serve
+```
+
+This writes an ignored local copy under `.local_docs/`. The committed
+documentation remains generic.

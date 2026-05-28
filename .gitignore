@@ -37,6 +37,8 @@ desktop.ini
 # Local maintainer/agent notes, not public docs.
 CHECKPOINT.md
 .local_notes/
+.local_docs/
+mkdocs.local.yml
 
 # Runtime job state.
 .last_hpc_job_id

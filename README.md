@@ -15,6 +15,12 @@ python -m pip install -r docs/requirements.txt
 mkdocs serve
 ```
 
+Local preview with your machine paths filled in:
+
+```bash
+python scripts/build_local_docs.py --serve
+```
+
 ## Quick Start
 
 ```bash
