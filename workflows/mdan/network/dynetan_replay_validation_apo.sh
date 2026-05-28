@@ -15,8 +15,8 @@ set -euo pipefail
 VARIANTS=("01_WT" "02_L119R" "03_D193H" "04_G202E" "05_Q219K" "06_C291Y")
 V_ID="${VARIANTS[$SLURM_ARRAY_TASK_ID]}"
 
-REPO="${VARMDYN_PALMETTO_PROJECT:?Set VARMDYN_PALMETTO_PROJECT to your private project path}"
-WORK="${VARMDYN_DYNETAN_WORK:?Set VARMDYN_DYNETAN_WORK to the private DyNetAn work directory}"
+REPO="${VARMDYN_HPC_PROJECT:?Set VARMDYN_HPC_PROJECT to your HPC project path}"
+WORK="${VARMDYN_DYNETAN_WORK:?Set VARMDYN_DYNETAN_WORK to the DyNetAn work directory}"
 STAGE_TAG="${VARMDYN_DYNETAN_STAGE_TAG:-validation}"
 DCD="TutorialData_CDKL5/${V_ID}/concatenated/${V_ID}.concatenated_750frames.striped_v2.dcd"
 
@@ -34,7 +34,7 @@ export PYTHONNOUSERSITE=1
 
 cd "${WORK}" || { echo "Work dir not found: ${WORK}"; exit 1; }
 
-conda run -n "${VARMDYN_CONDA_ENV:-varmdyn_env}" python 06_step1_CDKL5_with_lab_outputs.py \
+conda run -n "${VARMDYN_CONDA_ENV:-varmdyn_dynetan}" python 06_step1_CDKL5_with_lab_outputs.py \
   --variant "${V_ID}" \
   --mode concatenated \
   --stage-tag "${STAGE_TAG}" \

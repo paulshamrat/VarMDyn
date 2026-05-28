@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Smoke-check manuscript-facing workflow scripts without private data.
+"""Smoke-check manuscript-facing workflow scripts without local data files.
 
 This check verifies that public workflow code is present and syntactically valid,
 and it records whether public smoke-run outputs already exist under the ignored
@@ -32,7 +32,7 @@ def tracked_files() -> list[Path]:
     proc = subprocess.run(
         ["git", "ls-files"], cwd=ROOT, text=True, capture_output=True, check=True
     )
-    return [ROOT / line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    return [path for line in proc.stdout.splitlines() if line.strip() for path in [ROOT / line.strip()] if path.exists()]
 
 
 def check_python_compile(paths: list[Path]) -> list[Check]:
@@ -70,7 +70,9 @@ def check_required_inventory() -> list[Check]:
     required = [
         "scripts/run_clustering_repro.sh",
         "scripts/run_varmodel_repro.sh",
-        "scripts/check_private_inputs.py",
+        "scripts/init_data_layout.py",
+        "scripts/check_data_inputs.py",
+        "scripts/check_data_inputs.py",
         "scripts/compare_clustering_outputs.py",
         "workflows/clustering/distcluster/cli.py",
         "workflows/varmodel/run.py",
@@ -80,7 +82,7 @@ def check_required_inventory() -> list[Check]:
         "workflows/mdan/dynamics_nlobe_y171/scripts/build_panels_efgh_rmsf.py",
         "workflows/mdan/dynamics_nlobe_y171/scripts/build_panels_ijkl_displacement.py",
         "workflows/mdan/dynamics_nlobe_y171/scripts/make_kept_displacement_tsvs.py",
-        "workflows/mdan/network/run_network_replay_palmetto.py",
+        "workflows/mdan/network/run_network_replay_hpc.py",
         "workflows/mdan/network/validate_network_manuscript_outputs.py",
         "workflows/mdan/figures/network_remodel_integrated_review/scripts/build_final_figure.sh",
         "workflows/mdan/figures/cdkl5_structure_annotation/generate_msa_figure.py",

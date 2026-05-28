@@ -7,9 +7,7 @@ outputs are written during a run.
 
 ```text
 runs/
-data_private/
-private_data/
-inputs_private/
+data/
 ```
 
 The default local run folder is `runs/`:
@@ -26,7 +24,7 @@ folder outside the repository.
 - Clustering outputs are written under `runs/clustering/`.
 - Variant-modeling outputs are written under `runs/varmodel/`.
 - MD-analysis outputs are written under `runs/mdan/` unless a workflow page says otherwise.
-- Input files that are supplied locally can be placed under `data_private/`.
+- Input files that are supplied locally can be placed under `data/`.
 
 These folders are ignored by git, so rerunning workflows does not clutter the
 repository history.

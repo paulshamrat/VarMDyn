@@ -1,9 +1,8 @@
 # VarMDyn
 
-**VarMDyn** provides reproducible workflows for CDKL5 variant clustering,
-variant modeling, and molecular-dynamics analysis, with the public repository
-focused on code, environments, and documentation while generated outputs and
-private analysis inputs are supplied at run time.
+**VarMDyn** contains reproducible workflows for CDKL5 variant clustering, variant modeling, and molecular-dynamics analysis.
+
+The repository is code-focused: generated outputs and analysis inputs are supplied at run time and kept outside the public git history.
 
 ## Documentation
 
@@ -24,7 +23,7 @@ cd varmdyn
 bash scripts/create_varmdyn_env.sh
 conda activate varmdyn_env
 export VARMDYN_RUN_ROOT=$PWD/runs
-export VARMDYN_PRIVATE_DATA=$PWD/data_private
+export VARMDYN_DATA_ROOT=$PWD/data
 export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 python scripts/check_repo_ready.py
 ```
@@ -49,13 +48,13 @@ varmdyn/
   envs/             # conda environment definitions
   docs/             # MkDocs source and focused notes
   runs/             # generated outputs, ignored by git
-  data_private/     # optional private inputs, ignored by git
+  data/             # user-supplied data and fetched lightweight outputs, ignored by git
 ```
 
 ## Outputs
 
-Workflow outputs are written under `runs/` by default. User-supplied private
-inputs can be placed under `data_private/`. Both folders are ignored by git.
+Workflow outputs are written under `runs/` by default. User-supplied data can be
+placed under `data/`. Both folders are ignored by git.
 
 ## License
 

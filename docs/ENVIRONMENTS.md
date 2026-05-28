@@ -43,4 +43,4 @@ KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' \
 
 VMD, AmberTools/cpptraj, and ChimeraX are external tools used by specific MD
 workflows. Configure them through your HPC module system or local install and
-record private module details outside the public repository.
+record data module details outside the public repository.

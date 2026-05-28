@@ -40,8 +40,9 @@ import os
 
 ROOT = Path(__file__).resolve().parents[4]
 RUN_ROOT = Path(os.environ.get("VARMDYN_RUN_ROOT", ROOT / "runs"))
-SOURCE_MANIFEST = Path(os.environ.get("VARMDYN_RMSF_SOURCE_MANIFEST", ROOT / "data_private/rmsf_source_input_manifest.tsv"))
-SOURCE_INPUT_ROOT = Path(os.environ.get("VARMDYN_RMSF_SOURCE_INPUT_ROOT", ROOT / "data_private/rmsf_source_inputs"))
+DATA_ROOT = Path(os.environ.get("VARMDYN_DATA_ROOT", ROOT / "data"))
+SOURCE_MANIFEST = Path(os.environ.get("VARMDYN_RMSF_SOURCE_MANIFEST", DATA_ROOT / "rmsf_source_input_manifest.tsv"))
+SOURCE_INPUT_ROOT = Path(os.environ.get("VARMDYN_RMSF_SOURCE_INPUT_ROOT", DATA_ROOT / "rmsf_source_inputs"))
 OUT = Path(os.environ.get("OUT", RUN_ROOT / "supplementary_figures" / "supp_s4_rmsf_grid_apo_holo.png"))
 
 VARIANTS = ["01_WT", "02_L119R", "03_D193H", "04_G202E", "05_Q219K", "06_C291Y"]

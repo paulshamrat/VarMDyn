@@ -10,12 +10,12 @@
 
 set -Eeuo pipefail
 
-: "${VARMDYN_PALMETTO_PROJECT:?Set VARMDYN_PALMETTO_PROJECT to the private Palmetto project path}"
-: "${VARMDYN_MD_LEGACY_ROOT:?Set VARMDYN_MD_LEGACY_ROOT to the private legacy MD root}"
+: "${VARMDYN_HPC_PROJECT:?Set VARMDYN_HPC_PROJECT to the HPC project path}"
+: "${VARMDYN_MD_LEGACY_ROOT:?Set VARMDYN_MD_LEGACY_ROOT to the MD input root}"
 
-REPO="$VARMDYN_PALMETTO_PROJECT"
+REPO="$VARMDYN_HPC_PROJECT"
 LEGACY="$VARMDYN_MD_LEGACY_ROOT"
-STAGE="${VARMDYN_PALMETTO_STAGE:-${REPO}/varmdyn-runs/dynamics_nlobe_y171}"
+STAGE="${VARMDYN_HPC_STAGE:-${REPO}/varmdyn-runs/dynamics_nlobe_y171}"
 SCRIPTS="${STAGE}/scripts"
 JOB_ID="${SLURM_JOB_ID:-manual}"
 OUT="${STAGE}/outputs/job_${JOB_ID}"
@@ -43,7 +43,7 @@ echo "[info] host=$(hostname)"
 date
 
 # The full replay body is intentionally kept in the Python helpers. This sbatch
-# defines private paths and then runs the panel builders against those paths.
+# defines HPC-specific paths and then runs the panel builders against those paths.
 DYNAMICS_NLOBE_Y171_OUT_DIR="${FINAL_ROOT}/panels_efgh" \
 MPLCONFIGDIR="$MPL_ROOT" \
 VARMDYN_MD_LEGACY_ROOT="$LEGACY" \

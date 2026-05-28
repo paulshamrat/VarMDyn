@@ -7,10 +7,10 @@ rendering scripts used for the MD-analysis parts of the study.
 
 ```bash
 export VARMDYN_RUN_ROOT=$PWD/runs
-export VARMDYN_PRIVATE_DATA=$PWD/data_private
+export VARMDYN_DATA_ROOT=$PWD/data
 export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
-export VARMDYN_PALMETTO_PROJECT=/path/to/hpc_project_root
-export VARMDYN_PALMETTO_HOST=user@slogin.example.edu
+export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
+export VARMDYN_HPC_HOST=user@login.example.edu
 ```
 
 ## 2. RMSD Apo/Holo
@@ -40,8 +40,8 @@ python workflows/mdan/figures/supplementary_composites/build_supp_s4_rmsf_premiu
 Common variables:
 
 ```bash
-export VARMDYN_RMSF_SOURCE_INPUT_ROOT=$VARMDYN_PRIVATE_DATA/rmsf_source_inputs
-export VARMDYN_RMSF_SOURCE_MANIFEST=$VARMDYN_PRIVATE_DATA/rmsf_source_input_manifest.tsv
+export VARMDYN_RMSF_SOURCE_INPUT_ROOT=$VARMDYN_DATA_ROOT/rmsf_source_inputs
+export VARMDYN_RMSF_SOURCE_MANIFEST=$VARMDYN_DATA_ROOT/rmsf_source_input_manifest.tsv
 ```
 
 ## 4. N-Lobe/Y171 RMSF And Displacement
@@ -49,7 +49,7 @@ export VARMDYN_RMSF_SOURCE_MANIFEST=$VARMDYN_PRIVATE_DATA/rmsf_source_input_mani
 Local plotting from kept displacement/RMSF tables:
 
 ```bash
-export DYNAMICS_NLOBE_Y171_INPUT_ROOT=$VARMDYN_PRIVATE_DATA/dynamics_nlobe_y171
+export DYNAMICS_NLOBE_Y171_INPUT_ROOT=$VARMDYN_DATA_ROOT/dynamics_nlobe_y171
 bash scripts/run_dynamics_nlobe_y171_local.sh
 ```
 

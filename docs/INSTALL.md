@@ -19,15 +19,16 @@ make clustering-smoke
 make varmodel-dry-run
 ```
 
-## 2. Palmetto Or Another HPC Folder
+## 2. HPC Folder
 
-Set real private paths only in your shell session:
+Set real paths only in your shell session:
 
 ```bash
 export VARMDYN_RUN_ROOT=/scratch/$USER/varmdyn-runs
-export VARMDYN_MD_LEGACY_ROOT=/path/to/private/legacy_md_root
-export VARMDYN_PALMETTO_PROJECT=/path/to/private/palmetto_project
-export VARMDYN_PALMETTO_HOST=user@slogin.example.edu
+export VARMDYN_DATA_ROOT=$PWD/data
+export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
+export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
+export VARMDYN_HPC_HOST=user@login.example.edu
 export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 ```
 

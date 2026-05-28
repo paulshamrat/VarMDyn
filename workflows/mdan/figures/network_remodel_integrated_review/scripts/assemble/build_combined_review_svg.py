@@ -3,12 +3,13 @@
 
 from __future__ import annotations
 
+import os
 import base64
 import struct
 from pathlib import Path
 
 
-WORKSPACE_ROOT = Path(__file__).resolve().parent.parent.parent
+WORKSPACE_ROOT = Path(os.environ.get("VARMDYN_NETWORK_FIGURE_WORKSPACE", Path(__file__).resolve().parent.parent.parent)).resolve()
 COMBINED_DIR = WORKSPACE_ROOT / "combined"
 SVG_PATH = COMBINED_DIR / "network_remodel_combined_review.svg"
 

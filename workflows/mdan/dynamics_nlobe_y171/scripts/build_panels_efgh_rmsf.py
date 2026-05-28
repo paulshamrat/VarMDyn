@@ -43,7 +43,7 @@ OUT_DIR = Path(os.environ.get(
 
 legacy_env = os.environ.get("VARMDYN_MD_LEGACY_ROOT") or os.environ.get("LEGACY_BASE")
 if not legacy_env:
-    raise SystemExit("Set VARMDYN_MD_LEGACY_ROOT to the private legacy MD root before building RMSF panels.")
+    raise SystemExit("Set VARMDYN_MD_LEGACY_ROOT to the MD input root before building RMSF panels.")
 LEGACY_BASE = Path(legacy_env)
 
 VARIANTS = ["01_WT", "02_L119R", "03_D193H", "04_G202E", "05_Q219K", "06_C291Y"]

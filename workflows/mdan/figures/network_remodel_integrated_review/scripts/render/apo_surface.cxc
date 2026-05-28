@@ -1,4 +1,4 @@
-# Replace this template path with a private apo PDB path before running.
+# The build script replaces this token with the configured apo PDB path.
 open @VARMDYN_NETWORK_APO_PDB@
 
 hide atoms

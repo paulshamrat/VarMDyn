@@ -2,19 +2,22 @@
 """Validate user-supplied dynamic-network result tables and replay outputs.
 
 This public repository does not track manuscript network tables or DyNetAn
-outputs. Provide private/generated CSVs at run time. The helper always checks
-table structure and, when replay outputs are supplied, compares apo network
-frequency and overlap values against the supplied tables.
+outputs. Provide CSVs at run time. The helper always checks table structure and,
+when replay outputs are supplied, compares apo network frequency and overlap
+values against the supplied tables.
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
+import os
 import re
 from collections import Counter
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_STAGE_TAG = "concat750_w1_s750_apo_validation_20260526"
 REQUIRED_FREQUENCY = {"state", "transition_class", "residue", "count", "total_variants"}
 REQUIRED_OVERLAP = {
     "variant",
@@ -55,6 +58,44 @@ AA3_TO_1 = {
 }
 
 
+def data_root() -> Path:
+    value = os.environ.get("VARMDYN_DATA_ROOT")
+    return Path(value or ROOT / "data").expanduser()
+
+
+def env_or_default(name: str, default: Path) -> Path:
+    value = os.environ.get(name)
+    return Path(value).expanduser() if value else default
+
+
+def default_frequency_table() -> Path:
+    return env_or_default(
+        "VARMDYN_NETWORK_FREQUENCY_TABLE",
+        data_root() / "network/tables/network_residue_transition_frequency.csv",
+    )
+
+
+def default_overlap_table() -> Path:
+    return env_or_default(
+        "VARMDYN_NETWORK_OVERLAP_TABLE",
+        data_root() / "network/tables/network_overlap_apo_vs_atpmg.csv",
+    )
+
+
+def default_apo_results(stage_tag: str) -> Path:
+    return env_or_default(
+        "VARMDYN_NETWORK_APO_RESULTS",
+        data_root() / f"network/replay/apo/{stage_tag}/TutorialResults_CDKL5",
+    )
+
+
+def default_apo_comparisons(stage_tag: str) -> Path:
+    return env_or_default(
+        "VARMDYN_NETWORK_APO_COMPARISONS",
+        data_root() / f"network/replay/apo/{stage_tag}/_comparisons_concatenated",
+    )
+
+
 def read_csv(path: Path) -> tuple[list[str], list[dict[str, str]]]:
     with path.open(newline="", encoding="utf-8-sig") as handle:
         reader = csv.DictReader(handle)
@@ -63,6 +104,8 @@ def read_csv(path: Path) -> tuple[list[str], list[dict[str, str]]]:
 
 
 def check_table(label: str, path: Path, required: set[str]) -> list[str]:
+    if not path.is_file():
+        return [f"FAIL {label}: missing file {path}"]
     fields, rows = read_csv(path)
     messages: list[str] = []
     missing = sorted(required - set(fields))
@@ -217,37 +260,41 @@ def compare_apo_overlap(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--frequency", required=True, help="private/generated network residue frequency CSV")
-    parser.add_argument("--overlap", required=True, help="private/generated apo vs ATP-Mg network overlap CSV")
-    parser.add_argument("--apo-results", help="private DyNetAn TutorialResults_CDKL5 directory")
+    parser.add_argument("--frequency", help="network residue frequency CSV")
+    parser.add_argument("--overlap", help="apo vs ATP-Mg network overlap CSV")
+    parser.add_argument("--apo-results", help="DyNetAn TutorialResults_CDKL5 directory")
     parser.add_argument(
         "--apo-comparisons",
-        help="private DyNetAn _comparisons_concatenated directory; defaults to --apo-results/_comparisons_concatenated",
+        help="DyNetAn _comparisons_concatenated directory; defaults to --apo-results/_comparisons_concatenated",
     )
-    parser.add_argument("--stage-tag", default="concat750_w1_s750_apo", help="DyNetAn stage tag to compare")
+    parser.add_argument("--stage-tag", default=DEFAULT_STAGE_TAG, help="DyNetAn stage tag to compare")
     parser.add_argument("--outdir", default=None, help="report output directory")
     args = parser.parse_args()
 
+    frequency = Path(args.frequency).expanduser() if args.frequency else default_frequency_table()
+    overlap = Path(args.overlap).expanduser() if args.overlap else default_overlap_table()
     outdir = Path(args.outdir or Path.cwd() / "runs" / "mdan" / "network_validation")
     outdir.mkdir(parents=True, exist_ok=True)
 
     messages: list[str] = []
-    messages += check_table("frequency", Path(args.frequency), REQUIRED_FREQUENCY)
-    messages += check_table("overlap", Path(args.overlap), REQUIRED_OVERLAP)
+    messages += check_table("frequency", frequency, REQUIRED_FREQUENCY)
+    messages += check_table("overlap", overlap, REQUIRED_OVERLAP)
     checks_ok = not any(msg.startswith("FAIL") for msg in messages)
 
-    if args.apo_results:
-        extra, ok = compare_apo_frequency(
-            Path(args.frequency), Path(args.apo_results), args.stage_tag, outdir
-        )
+    apo_results = Path(args.apo_results).expanduser() if args.apo_results else default_apo_results(args.stage_tag)
+    if apo_results.exists():
+        extra, ok = compare_apo_frequency(frequency, apo_results, args.stage_tag, outdir)
         messages += extra
         checks_ok = checks_ok and ok
 
-    apo_comparisons = args.apo_comparisons
-    if not apo_comparisons and args.apo_results:
-        apo_comparisons = str(Path(args.apo_results) / "_comparisons_concatenated")
-    if apo_comparisons:
-        extra, ok = compare_apo_overlap(Path(args.overlap), Path(apo_comparisons), outdir)
+    if args.apo_comparisons:
+        apo_comparisons = Path(args.apo_comparisons).expanduser()
+    elif args.apo_results:
+        apo_comparisons = apo_results / "_comparisons_concatenated"
+    else:
+        apo_comparisons = default_apo_comparisons(args.stage_tag)
+    if apo_comparisons.exists():
+        extra, ok = compare_apo_overlap(overlap, apo_comparisons, outdir)
         messages += extra
         checks_ok = checks_ok and ok
 

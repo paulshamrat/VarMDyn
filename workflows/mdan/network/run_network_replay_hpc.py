@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage, submit, monitor, compare, and fetch DyNetAn replay outputs on Palmetto."""
+"""Stage, submit, monitor, compare, and fetch DyNetAn replay outputs on HPC."""
 
 from __future__ import annotations
 
@@ -14,22 +14,27 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPT_DIR = Path(__file__).resolve().parent
 SBATCH = SCRIPT_DIR / "dynetan_replay_validation_apo.sh"
-LAST_JOB_FILE = ROOT / ".last_network_palmetto_job_id"
+LAST_JOB_FILE = ROOT / ".last_network_hpc_job_id"
 
-REMOTE_HOST = os.environ.get("VARMDYN_PALMETTO_HOST")
-REMOTE_PROJECT = os.environ.get("VARMDYN_PALMETTO_PROJECT")
+REMOTE_HOST = os.environ.get("VARMDYN_HPC_HOST")
+REMOTE_PROJECT = os.environ.get("VARMDYN_HPC_PROJECT")
 REMOTE_WORK = os.environ.get("VARMDYN_DYNETAN_WORK")
-CONDA_ENV = os.environ.get("VARMDYN_CONDA_ENV", "varmdyn_env")
-STAGE_TAG = os.environ.get("VARMDYN_DYNETAN_STAGE_TAG", "concat750_w1_s750_apo_validation")
+CONDA_ENV = os.environ.get("VARMDYN_CONDA_ENV", "varmdyn_dynetan")
+STAGE_TAG = os.environ.get("VARMDYN_DYNETAN_STAGE_TAG", "concat750_w1_s750_apo_validation_20260526")
 SSH_CONTROL_PATH = os.environ.get("VARMDYN_SSH_CONTROL_PATH")
+
+
+def data_root() -> Path:
+    value = os.environ.get("VARMDYN_DATA_ROOT")
+    return Path(value or ROOT / "data").expanduser()
 
 
 def require_env() -> None:
     missing = [
         name
         for name, value in {
-            "VARMDYN_PALMETTO_HOST": REMOTE_HOST,
-            "VARMDYN_PALMETTO_PROJECT": REMOTE_PROJECT,
+            "VARMDYN_HPC_HOST": REMOTE_HOST,
+            "VARMDYN_HPC_PROJECT": REMOTE_PROJECT,
             "VARMDYN_DYNETAN_WORK": REMOTE_WORK,
         }.items()
         if not value
@@ -84,7 +89,7 @@ def stage() -> None:
 def submit() -> str:
     require_env()
     env = (
-        f"VARMDYN_PALMETTO_PROJECT={REMOTE_PROJECT} "
+        f"VARMDYN_HPC_PROJECT={REMOTE_PROJECT} "
         f"VARMDYN_DYNETAN_WORK={REMOTE_WORK} "
         f"VARMDYN_CONDA_ENV={CONDA_ENV} "
         f"VARMDYN_DYNETAN_STAGE_TAG={STAGE_TAG}"
@@ -120,7 +125,7 @@ def status(job_id: str | None = None) -> None:
         queue_cmd = f"squeue -j {job_id} -o '%.18i %.9P %.28j %.8u %.2t %.10M %.10l %.6D %R'"
         acct_cmd = f"sacct -j {job_id} --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS -P"
     else:
-        hpc_user = os.environ.get("VARMDYN_PALMETTO_USER", os.environ.get("USER", ""))
+        hpc_user = os.environ.get("VARMDYN_HPC_USER", os.environ.get("USER", ""))
         queue_cmd = f"squeue -u {hpc_user} -o '%.18i %.9P %.28j %.8u %.2t %.10M %.10l %.6D %R'"
         acct_cmd = (
             f"sacct -u {hpc_user} --starttime now-2days "
@@ -200,7 +205,7 @@ def main() -> int:
     parser.add_argument("--poll-seconds", type=int, default=120)
     parser.add_argument(
         "--outdir",
-        default=str(ROOT / "data_private/network"),
+        default=str(data_root() / "network/replay/apo"),
         help="local ignored directory for fetched lightweight network outputs",
     )
     args = parser.parse_args()

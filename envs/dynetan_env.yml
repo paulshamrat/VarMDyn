@@ -1,0 +1,16 @@
+name: varmdyn_dynetan
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - numpy=1.26.*
+  - scipy=1.11.*
+  - pandas=2.2.*
+  - networkx=3.2.*
+  - mdanalysis=2.6.*
+  - h5py=3.10.*
+  - matplotlib=3.8.*
+  - tqdm=4.66.*
+  - pip:
+      - dynetan==1.0.1

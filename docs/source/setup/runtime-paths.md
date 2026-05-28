@@ -6,12 +6,13 @@ Runtime paths tell VarMDyn where to find inputs and where to write outputs.
 
 ```bash
 export VARMDYN_RUN_ROOT=$PWD/runs
-export VARMDYN_PRIVATE_DATA=$PWD/data_private
+export VARMDYN_DATA_ROOT=$PWD/data
 export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 ```
 
-`VARMDYN_RUN_ROOT` is the main output folder. `VARMDYN_PRIVATE_DATA` is a local
-input folder for files that are provided at run time.
+`VARMDYN_RUN_ROOT` is the main output folder. `VARMDYN_DATA_ROOT` is the local
+data folder for files supplied at run time and lightweight files fetched back
+from HPC jobs.
 
 ## 2. MD And HPC Paths
 
@@ -20,9 +21,9 @@ displacement tables, DyNetAn outputs, or an HPC run folder:
 
 ```bash
 export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
-export VARMDYN_PALMETTO_PROJECT=/path/to/hpc_project_root
-export VARMDYN_PALMETTO_HOST=user@slogin.example.edu
-export VARMDYN_PALMETTO_USER=user
+export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
+export VARMDYN_HPC_HOST=user@login.example.edu
+export VARMDYN_HPC_USER=user
 ```
 
 Optional SSH control socket:
@@ -36,6 +37,6 @@ export VARMDYN_SSH_CONTROL_PATH=/path/to/ssh_control_socket
 | Purpose | Typical path |
 |---|---|
 | local outputs | `runs/` |
-| local input files | `data_private/` |
-| fetched HPC outputs | `data_private/` or `runs/` |
+| local input files | `data/` |
+| fetched HPC outputs | `data/` |
 | large HPC runs | scratch or project storage |

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Submit/fetch Palmetto panels E-H and I-L.
+"""Submit/fetch HPC panels E-H and I-L.
 
-This script owns panels E-H and I-L only. It stages the Palmetto sbatch and
+This script owns panels E-H and I-L only. It stages the HPC sbatch and
 helper plotting scripts, submits the job, optionally waits for completion, and
 copies lightweight outputs back into this figure folder.
 """
@@ -19,22 +19,24 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[6]
 SCRIPT_DIR = Path(__file__).resolve().parent
 FIGURE_DIR = SCRIPT_DIR.parent
+RUN_ROOT = Path(os.environ.get("VARMDYN_RUN_ROOT", ROOT / "runs"))
+LOCAL_FETCH_ROOT = Path(os.environ.get("DYNAMICS_NLOBE_Y171_FETCH_ROOT", RUN_ROOT / "mdan/dynamics_nlobe_y171/hpc_fetch"))
 
-REMOTE_HOST = os.environ.get("VARMDYN_PALMETTO_HOST")
+REMOTE_HOST = os.environ.get("VARMDYN_HPC_HOST")
 if not REMOTE_HOST:
-    raise SystemExit("Set VARMDYN_PALMETTO_HOST, for example user@slogin.example.edu")
+    raise SystemExit("Set VARMDYN_HPC_HOST, for example user@login.example.edu")
 SSH_CONTROL_PATH = os.environ.get("VARMDYN_SSH_CONTROL_PATH")
-remote_root_env = os.environ.get("VARMDYN_PALMETTO_PROJECT")
+remote_root_env = os.environ.get("VARMDYN_HPC_PROJECT")
 if not remote_root_env:
-    raise SystemExit("Set VARMDYN_PALMETTO_PROJECT to your private Palmetto project path before staging/submitting.")
+    raise SystemExit("Set VARMDYN_HPC_PROJECT to your HPC project path before staging/submitting.")
 REMOTE_ROOT = Path(remote_root_env)
 REMOTE_STAGE = REMOTE_ROOT / "03_md/analysis_repro/results/replay/dynamics_nlobe_y171"
 REMOTE_SCRIPTS = REMOTE_STAGE / "scripts"
-REMOTE_SBATCH = REMOTE_SCRIPTS / "panels_efgh_ijkl_palmetto.sbatch"
-LAST_JOB_FILE = FIGURE_DIR / ".last_palmetto_job_id"
+REMOTE_SBATCH = REMOTE_SCRIPTS / "panels_efgh_ijkl_hpc.sbatch"
+LAST_JOB_FILE = ROOT / ".last_hpc_job_id"
 
 LOCAL_FILES_TO_STAGE = [
-    (SCRIPT_DIR / "panels_efgh_ijkl_palmetto.sbatch", REMOTE_SBATCH),
+    (SCRIPT_DIR / "panels_efgh_ijkl_hpc.sbatch", REMOTE_SBATCH),
     (SCRIPT_DIR / "build_panels_efgh_rmsf.py", REMOTE_SCRIPTS / "build_panels_efgh_rmsf.py"),
     (SCRIPT_DIR / "build_panels_ijkl_displacement.py", REMOTE_SCRIPTS / "build_panels_ijkl_displacement.py"),
     (SCRIPT_DIR / "make_kept_displacement_tsvs.py", REMOTE_SCRIPTS / "make_kept_displacement_tsvs.py"),
@@ -80,7 +82,7 @@ def scp_recursive_cmd(src: str, dst: str) -> list[str]:
 def ensure_local_inputs() -> None:
     missing = [str(src) for src, _dst in LOCAL_FILES_TO_STAGE if not src.exists()]
     if missing:
-        raise SystemExit("missing local file(s) required for Palmetto staging:\n" + "\n".join(missing))
+        raise SystemExit("missing local file(s) required for HPC staging:\n" + "\n".join(missing))
 
 
 def stage() -> None:
@@ -124,9 +126,9 @@ def status(job_id: str | None = None) -> None:
         queue_cmd = f"squeue -j {job_id} -o '%.18i %.9P %.24j %.8u %.2t %.10M %.10l %.6D %R'"
         acct_cmd = f"sacct -j {job_id} --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS -P"
     else:
-        hpc_user = os.environ.get("VARMDYN_PALMETTO_USER", os.environ.get("USER", ""))
+        hpc_user = os.environ.get("VARMDYN_HPC_USER", os.environ.get("USER", ""))
         if not hpc_user:
-            raise SystemExit("Set VARMDYN_PALMETTO_USER or USER before checking queue status")
+            raise SystemExit("Set VARMDYN_HPC_USER or USER before checking queue status")
         queue_cmd = f"squeue -u {hpc_user} -o '%.18i %.9P %.24j %.8u %.2t %.10M %.10l %.6D %R'"
         acct_cmd = f"sacct -u {hpc_user} --starttime now-2days --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS -P | grep dyn171 | tail -20"
 
@@ -146,7 +148,7 @@ def recent_outputs() -> None:
 
 
 def wait_for_job(job_id: str, poll_seconds: int) -> None:
-    log(f"[info] waiting for Palmetto job {job_id}")
+    log(f"[info] waiting for HPC job {job_id}")
     while True:
         proc = run(ssh_cmd(f"squeue -j {job_id} -h"), capture=True, check=False)
         if proc.stdout.strip():
@@ -164,21 +166,23 @@ def wait_for_job(job_id: str, poll_seconds: int) -> None:
 def fetch(job_id: str) -> None:
     remote_out = REMOTE_STAGE / "outputs" / f"job_{job_id}"
 
-    panels_efgh = FIGURE_DIR / "panels_efgh"
-    panels_ijkl = FIGURE_DIR / "panels_ijkl"
-    checksums = FIGURE_DIR / "checksums"
-    kept_root = panels_ijkl / "kept_tsvs" / f"job_{job_id}"
-    source_rmsf_root = panels_efgh / "source_rmsf" / f"job_{job_id}"
+    local_job_root = LOCAL_FETCH_ROOT / f"job_{job_id}"
+    panels_efgh = local_job_root / "panels_efgh"
+    panels_ijkl = local_job_root / "panels_ijkl"
+    checksums = local_job_root / "checksums"
+    kept_root = panels_ijkl / "kept_tsvs"
+    source_rmsf_root = panels_efgh / "source_rmsf"
     for path in (panels_efgh, panels_ijkl, checksums, kept_root, source_rmsf_root):
         path.mkdir(parents=True, exist_ok=True)
 
     log(f"[fetch] remote output: {remote_out}")
+    log(f"[fetch] local output : {local_job_root}")
     for name in ("panels_efgh_rmsf.png", "panels_efgh_rmsf.pdf"):
         run(scp_cmd(remote(remote_out / "final_panels" / "panels_efgh" / name), str(panels_efgh / name)))
     for name in ("panels_ijkl_displacement.png", "panels_ijkl_displacement.pdf"):
         run(scp_cmd(remote(remote_out / "final_panels" / "panels_ijkl" / name), str(panels_ijkl / name)))
 
-    run(scp_cmd(remote(remote_out / "checksums.sha256"), str(checksums / f"palmetto_checksums_{job_id}.sha256")))
+    run(scp_cmd(remote(remote_out / "checksums.sha256"), str(checksums / f"hpc_checksums_{job_id}.sha256")))
 
     for local_name in ("nlobe_apo", "nlobe_holo", "y171_apo", "y171_holo"):
         local_dir = kept_root / local_name
@@ -200,7 +204,7 @@ def main() -> None:
         choices=["stage", "submit", "status", "recent", "wait", "fetch", "run"],
         help="stage, submit, inspect status, list recent outputs, wait, fetch, or run all",
     )
-    parser.add_argument("--job-id", help="existing Palmetto job id for fetch")
+    parser.add_argument("--job-id", help="existing HPC job id for fetch")
     parser.add_argument("--no-wait", action="store_true", help="for run/submit, return after submission")
     parser.add_argument("--poll-seconds", type=int, default=120, help="seconds between queue polls")
     args = parser.parse_args()

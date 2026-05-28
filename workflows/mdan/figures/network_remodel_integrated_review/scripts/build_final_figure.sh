@@ -2,7 +2,11 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WORKSPACE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../../../../.." && pwd)"
+CODE_WORKFLOW_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+DATA_ROOT="${VARMDYN_DATA_ROOT:-${REPO_ROOT}/data}"
+RUN_ROOT="${VARMDYN_RUN_ROOT:-${REPO_ROOT}/runs}"
+WORKSPACE_DIR="${VARMDYN_NETWORK_FIGURE_WORKSPACE:-${RUN_ROOT}/mdan/figures/network_remodel_integrated_review}"
 RENDER_DIR="${SCRIPT_DIR}/render"
 POSTPROCESS_DIR="${SCRIPT_DIR}/postprocess"
 ASSEMBLE_DIR="${SCRIPT_DIR}/assemble"
@@ -11,17 +15,23 @@ mkdir -p "${WORKSPACE_DIR}/pymol"
 mkdir -p "${WORKSPACE_DIR}/chimerax"
 mkdir -p "${WORKSPACE_DIR}/state_paired"
 
-: "${VARMDYN_NETWORK_APO_PDB:?Set VARMDYN_NETWORK_APO_PDB to the apo PDB for network rendering}"
-: "${VARMDYN_NETWORK_HOLO_PDB:?Set VARMDYN_NETWORK_HOLO_PDB to the ATP-Mg/holo PDB for network rendering}"
+VARMDYN_NETWORK_APO_PDB="${VARMDYN_NETWORK_APO_PDB:-${DATA_ROOT}/structures/apo/01_WT.apo.pdb}"
+VARMDYN_NETWORK_HOLO_PDB="${VARMDYN_NETWORK_HOLO_PDB:-${DATA_ROOT}/structures/holo_atpmg/01_WT.keepATPmg.pdb}"
 if [[ ! -f "${VARMDYN_NETWORK_APO_PDB}" ]]; then
   echo "[ERROR] VARMDYN_NETWORK_APO_PDB is not readable: ${VARMDYN_NETWORK_APO_PDB}" >&2
+  echo "[FIX] Put the apo PDB at ${DATA_ROOT}/structures/apo/01_WT.apo.pdb or set VARMDYN_NETWORK_APO_PDB." >&2
+  echo "[FIX] To create the data folders, run: python scripts/init_data_layout.py" >&2
   exit 2
 fi
 if [[ ! -f "${VARMDYN_NETWORK_HOLO_PDB}" ]]; then
   echo "[ERROR] VARMDYN_NETWORK_HOLO_PDB is not readable: ${VARMDYN_NETWORK_HOLO_PDB}" >&2
+  echo "[FIX] Put the holo/ATP-Mg PDB at ${DATA_ROOT}/structures/holo_atpmg/01_WT.keepATPmg.pdb or set VARMDYN_NETWORK_HOLO_PDB." >&2
+  echo "[FIX] To create the data folders, run: python scripts/init_data_layout.py" >&2
   exit 2
 fi
 export VARMDYN_NETWORK_FIGURE_WORKSPACE="${WORKSPACE_DIR}"
+export VARMDYN_NETWORK_APO_PDB
+export VARMDYN_NETWORK_HOLO_PDB
 
 cd "${WORKSPACE_DIR}"
 

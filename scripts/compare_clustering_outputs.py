@@ -29,8 +29,8 @@ def _check_file(run_dir: Path, rel: str) -> bool:
     return False
 
 
-def _check_exposure(workflow_dir: Path) -> bool:
-    path = workflow_dir / "data/derived/ddG_Fmax_exposure.xlsx"
+def _check_exposure(run_dir: Path) -> bool:
+    path = run_dir / "ddG_Fmax_exposure.xlsx"
     if not path.exists():
         print(f"[MISSING] {path}")
         return False
@@ -60,13 +60,10 @@ def main() -> int:
     args = parser.parse_args()
 
     run_dir = Path(args.run_dir)
-    repo_root = Path(__file__).resolve().parents[1]
-    workflow_dir = repo_root / "workflows/clustering"
-
     ok = True
     for rel in EXPECTED_FILES:
         ok = _check_file(run_dir, rel) and ok
-    ok = _check_exposure(workflow_dir) and ok
+    ok = _check_exposure(run_dir) and ok
     return 0 if ok else 1
 
 

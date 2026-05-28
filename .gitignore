@@ -11,11 +11,8 @@ reference_outputs/
 site/
 *.log
 
-# Private or user-supplied data. Keep GitHub scripts-only.
-data_private/
-private_data/
-inputs_private/
-private_inputs/
+# User-supplied data. Keep GitHub scripts-only.
+/data/
 
 # Generated workflow data and heavy simulation products.
 /workflows/**/outputs/
@@ -42,6 +39,6 @@ CHECKPOINT.md
 .local_notes/
 
 # Runtime job state.
-.last_palmetto_job_id
-.last_network_palmetto_job_id
+.last_hpc_job_id
+.last_network_hpc_job_id
 *.runtime.cxc

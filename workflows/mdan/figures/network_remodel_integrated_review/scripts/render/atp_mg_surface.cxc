@@ -1,4 +1,4 @@
-# Replace this template path with a private ATP-Mg-bound PDB path before running.
+# The build script replaces this token with the configured ATP-Mg-bound PDB path.
 open @VARMDYN_NETWORK_HOLO_PDB@
 
 hide atoms

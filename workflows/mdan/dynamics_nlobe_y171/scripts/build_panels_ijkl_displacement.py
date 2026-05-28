@@ -188,23 +188,24 @@ def add_row_residue_label(fig, axes: list[plt.Axes]) -> None:
 def main():
     WORKFLOW_DIR = Path(__file__).resolve().parents[1]
     ROOT = Path(os.environ.get("VARMDYN_ROOT", WORKFLOW_DIR.parents[2]))
-    private_default = Path(os.environ.get("DYNAMICS_NLOBE_Y171_INPUT_ROOT", Path(os.environ.get("VARMDYN_PRIVATE_DATA", ROOT / "data_private")) / "dynamics_nlobe_y171")) / "kept_tsvs"
+    data_root = Path(os.environ.get("VARMDYN_DATA_ROOT", ROOT / "data"))
+    data_default = Path(os.environ.get("DYNAMICS_NLOBE_Y171_INPUT_ROOT", data_root / "dynamics_nlobe_y171")) / "kept_tsvs"
     input_dirs = {
         "nlobe_apo": Path(os.environ.get(
             "DYNAMICS_NLOBE_Y171_GRID_NLOBE_APO",
-            private_default / "nlobe_apo",
+            data_default / "nlobe_apo",
         )),
         "nlobe_holo": Path(os.environ.get(
             "DYNAMICS_NLOBE_Y171_GRID_NLOBE_HOLO",
-            private_default / "nlobe_holo",
+            data_default / "nlobe_holo",
         )),
         "y171_apo": Path(os.environ.get(
             "DYNAMICS_NLOBE_Y171_GRID_Y171_APO",
-            private_default / "y171_apo",
+            data_default / "y171_apo",
         )),
         "y171_holo": Path(os.environ.get(
             "DYNAMICS_NLOBE_Y171_GRID_Y171_HOLO",
-            private_default / "y171_holo",
+            data_default / "y171_holo",
         )),
     }
     for label, path in input_dirs.items():

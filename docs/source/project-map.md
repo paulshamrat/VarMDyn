@@ -13,7 +13,7 @@ varmdyn/
     mdan/
   docs/
   runs/
-  data_private/
+  data/
 ```
 
 ## 1. Source Folders
@@ -32,9 +32,7 @@ varmdyn/
 | Folder | Use |
 |---|---|
 | `runs/` | Generated workflow outputs. |
-| `data_private/` | Local input files supplied at run time. |
-| `private_data/` | Alternative local input folder. |
-| `inputs_private/` | Alternative local input folder. |
+| `data/` | Local data files supplied at run time and fetched lightweight outputs. |
 
 For HPC runs, `VARMDYN_RUN_ROOT` can point to scratch or another external run
 folder.
@@ -46,4 +44,4 @@ folder.
 | `clustering` | `bash scripts/run_clustering_repro.sh` | `runs/clustering/` |
 | `varmodel` | `bash scripts/run_varmodel_repro.sh --dry-run` | `runs/varmodel/` |
 | `mdan/rmsd_apo_holo` | `python workflows/mdan/rmsd_apo_holo/summarize_analysis2_rmsd.py --help` | `runs/mdan/rmsd/` |
-| `mdan/network` | `python workflows/mdan/network/run_network_replay_palmetto.py --help` | `runs/mdan/network_validation/` |
+| `mdan/network` | `python workflows/mdan/network/run_network_replay_hpc.py --help` | `runs/mdan/network_validation/` |

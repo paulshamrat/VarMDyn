@@ -13,6 +13,7 @@ REQUIRED_FILES = [
     "envs/varmdyn_env.yml",
     "envs/pymol-viz.yml",
     "envs/modeller_env.yml",
+    "envs/dynetan_env.yml",
     "scripts/run_clustering_repro.sh",
     "scripts/run_varmodel_repro.sh",
     "workflows/clustering/config.yaml",
@@ -25,10 +26,11 @@ REQUIRED_FILES = [
     "workflows/mdan/rmsd_apo_holo/summarize_analysis2_rmsd.py",
     "workflows/mdan/rmsd_apo_holo/plot_analysis2_rmsd.py",
     "workflows/mdan/network/validate_network_manuscript_outputs.py",
-    "workflows/mdan/network/run_network_replay_palmetto.py",
+    "workflows/mdan/network/run_network_replay_hpc.py",
     "workflows/mdan/network/README.md",
-    "scripts/check_private_inputs.py",
-    "workflows/mdan/dynamics_nlobe_y171/scripts/submit_efgh_ijkl_palmetto.py",
+    "scripts/init_data_layout.py",
+    "scripts/check_data_inputs.py",
+    "workflows/mdan/dynamics_nlobe_y171/scripts/submit_efgh_ijkl_hpc.py",
 ]
 
 FORBIDDEN_TRACKED_ROOTS = [

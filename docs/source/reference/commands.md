@@ -40,14 +40,18 @@ python scripts/check_manuscript_workflows.py --varmodel-run-name reviewer_smoke
 ## 5. Network
 
 ```bash
-python scripts/check_palmetto_bridge.py --timeout-seconds 10
-python scripts/check_private_inputs.py --module network
-python scripts/check_private_inputs.py --module network --remote --timeout-seconds 10
-python workflows/mdan/network/run_network_replay_palmetto.py stage
-python workflows/mdan/network/run_network_replay_palmetto.py submit
-python workflows/mdan/network/run_network_replay_palmetto.py status
-python workflows/mdan/network/run_network_replay_palmetto.py compare
-python workflows/mdan/network/run_network_replay_palmetto.py fetch --outdir data_private/network
+python scripts/init_data_layout.py
+source data/varmdyn_data.env
+python scripts/check_data_inputs.py --module network --profile tables
+python scripts/check_data_inputs.py --module network --profile render
+python scripts/check_hpc_bridge.py --timeout-seconds 60
+python scripts/check_data_inputs.py --module network --profile remote --remote --timeout-seconds 60
+python workflows/mdan/network/run_network_replay_hpc.py stage
+python workflows/mdan/network/run_network_replay_hpc.py submit
+python workflows/mdan/network/run_network_replay_hpc.py status
+python workflows/mdan/network/run_network_replay_hpc.py compare
+python workflows/mdan/network/run_network_replay_hpc.py fetch
+bash workflows/mdan/figures/network_remodel_integrated_review/scripts/build_final_figure.sh
 ```
 
 ## 6. Documentation

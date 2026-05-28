@@ -2,16 +2,16 @@
 
 This module contains scripts for RMSD, RMSF, displacement, network, and
 structure-rendering analyses. It does not track trajectories, manuscript
-figures, source tables, Palmetto job products, or private replay outputs.
+figures, source tables, HPC job products, or replay outputs.
 
 ## 1. Runtime Paths
 
 ```bash
 export VARMDYN_RUN_ROOT=$PWD/runs
-export VARMDYN_PRIVATE_DATA=$PWD/data_private
-export VARMDYN_MD_LEGACY_ROOT=/path/to/private/legacy_md_root
-export VARMDYN_PALMETTO_PROJECT=/path/to/private/palmetto_project
-export VARMDYN_PALMETTO_HOST=user@slogin.example.edu
+export VARMDYN_DATA_ROOT=$PWD/data
+export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
+export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
+export VARMDYN_HPC_HOST=user@login.example.edu
 ```
 
 ## 2. RMSD
@@ -28,8 +28,7 @@ python workflows/mdan/figures/rmsf_overlay_review_v2/build_rmsf_overlay_review_v
 python workflows/mdan/figures/supplementary_composites/build_supp_s4_rmsf_premium.py --help
 ```
 
-Provide RMSF `.agr` or summary inputs from `data_private/` or a private HPC
-folder.
+Provide RMSF `.agr` or summary inputs from `data/` or an HPC folder.
 
 ## 4. N-Lobe/Y171 Displacement
 
@@ -37,9 +36,9 @@ folder.
 bash scripts/run_dynamics_nlobe_y171_local.sh
 ```
 
-The local wrapper expects private kept-TSV files under
+The local wrapper expects kept-TSV files under
 `$DYNAMICS_NLOBE_Y171_INPUT_ROOT/kept_tsvs/` or
-`$VARMDYN_RUN_ROOT/mdan/dynamics_nlobe_y171/private_inputs/kept_tsvs/`.
+`$VARMDYN_DATA_ROOT/dynamics_nlobe_y171/kept_tsvs/`.
 
 ## 5. Dynamic Network
 
@@ -48,5 +47,5 @@ python workflows/mdan/network/validate_network_manuscript_outputs.py --help
 python workflows/mdan/network/compare_dynetan_replay_validation.py --help
 ```
 
-Provide private/generated network CSVs at run time and write reports to
-`runs/mdan/network_validation/`.
+Use `python scripts/init_data_layout.py` to create the standard `data/` layout.
+Validation reports are written to `runs/mdan/network_validation/`.

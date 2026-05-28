@@ -1,16 +1,17 @@
 # Dynamics N-Lobe/Y171
 
 Scripts for building the N-lobe/Y171 RMSF and displacement panel groups.
-Private trajectory, RMSF, and displacement TSV inputs are not tracked.
+Trajectory, RMSF, and displacement TSV inputs are supplied at run time.
 
-## 1. Local Displacement Plot From Private Kept TSVs
+## 1. Local Displacement Plot From Kept TSVs
 
 ```bash
-export DYNAMICS_NLOBE_Y171_INPUT_ROOT=$PWD/data_private/dynamics_nlobe_y171
+export VARMDYN_DATA_ROOT=$PWD/data
+export DYNAMICS_NLOBE_Y171_INPUT_ROOT=$VARMDYN_DATA_ROOT/dynamics_nlobe_y171
 bash scripts/run_dynamics_nlobe_y171_local.sh
 ```
 
-Expected private layout:
+Expected layout:
 
 ```text
 $DYNAMICS_NLOBE_Y171_INPUT_ROOT/
@@ -21,21 +22,21 @@ $DYNAMICS_NLOBE_Y171_INPUT_ROOT/
     y171_holo/
 ```
 
-## 2. Palmetto/HPC Replay
+## 2. HPC Replay
 
-Set template variables to your real private paths in the shell:
+Set template variables to your real paths in the shell:
 
 ```bash
-export VARMDYN_PALMETTO_HOST=user@slogin.example.edu
-export VARMDYN_PALMETTO_PROJECT=/path/to/private/palmetto_project
-export VARMDYN_MD_LEGACY_ROOT=/path/to/private/legacy_md_root
+export VARMDYN_HPC_HOST=user@login.example.edu
+export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
+export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
 ```
 
 Then use:
 
 ```bash
-python workflows/mdan/dynamics_nlobe_y171/scripts/submit_efgh_ijkl_palmetto.py stage
-python workflows/mdan/dynamics_nlobe_y171/scripts/submit_efgh_ijkl_palmetto.py submit
-python workflows/mdan/dynamics_nlobe_y171/scripts/submit_efgh_ijkl_palmetto.py status
-python workflows/mdan/dynamics_nlobe_y171/scripts/submit_efgh_ijkl_palmetto.py fetch --job-id JOBID
+python workflows/mdan/dynamics_nlobe_y171/scripts/submit_efgh_ijkl_hpc.py stage
+python workflows/mdan/dynamics_nlobe_y171/scripts/submit_efgh_ijkl_hpc.py submit
+python workflows/mdan/dynamics_nlobe_y171/scripts/submit_efgh_ijkl_hpc.py status
+python workflows/mdan/dynamics_nlobe_y171/scripts/submit_efgh_ijkl_hpc.py fetch --job-id JOBID
 ```

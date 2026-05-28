@@ -8,7 +8,7 @@ cd "$ROOT"
 # via LEGACY_BASE and regenerates a run-stamped apo RMSF analysis directory.
 LEGACY_BASE=${LEGACY_BASE:-${VARMDYN_MD_LEGACY_ROOT:-}}
 if [[ -z "${LEGACY_BASE}" ]]; then
-  echo "Set VARMDYN_MD_LEGACY_ROOT or LEGACY_BASE to the private legacy simulation root." >&2
+  echo "Set VARMDYN_MD_LEGACY_ROOT or LEGACY_BASE to the MD input root." >&2
   exit 2
 fi
 

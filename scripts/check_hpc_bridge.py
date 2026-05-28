@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check whether the Palmetto SSH bridge is usable for VarMDyn workflows."""
+"""Check whether the HPC SSH bridge is usable for VarMDyn workflows."""
 
 from __future__ import annotations
 
@@ -22,21 +22,21 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--host",
-        default=os.environ.get("VARMDYN_PALMETTO_HOST"),
-        help="Palmetto SSH host, default from VARMDYN_PALMETTO_HOST",
+        default=os.environ.get("VARMDYN_HPC_HOST"),
+        help="HPC SSH host, default from VARMDYN_HPC_HOST",
     )
     parser.add_argument(
         "--socket",
-        default=os.environ.get("VARMDYN_SSH_CONTROL_PATH", str(Path.home() / ".ssh/palmetto.sock")),
+        default=os.environ.get("VARMDYN_SSH_CONTROL_PATH", str(Path.home() / ".ssh/hpc.sock")),
         help="SSH ControlMaster socket path",
     )
     parser.add_argument("--timeout-seconds", type=int, default=10)
     args = parser.parse_args()
 
     if not args.host:
-        print("[MISSING] VARMDYN_PALMETTO_HOST is not set")
-        print("[FIX] export VARMDYN_PALMETTO_HOST=user@slogin.example.edu")
-        print("[FIX] or pass --host user@slogin.example.edu")
+        print("[MISSING] VARMDYN_HPC_HOST is not set")
+        print("[FIX] export VARMDYN_HPC_HOST=user@login.example.edu")
+        print("[FIX] or pass --host user@login.example.edu")
         return 2
 
     socket = Path(args.socket).expanduser()
@@ -45,7 +45,7 @@ def main() -> int:
 
     if not socket.exists():
         print("[MISSING] socket file does not exist")
-        print("[FIX] palmettobridge")
+        print("[FIX] recreate your SSH ControlMaster socket using your institution-specific login helper or ssh -M")
         return 2
 
     check_cmd = ["ssh", "-S", str(socket), "-O", "check", args.host]
@@ -53,7 +53,7 @@ def main() -> int:
     if code != 0:
         print(f"[MISSING] ControlMaster check failed: {text}")
         print(f"[FIX] rm -f {socket}")
-        print("[FIX] palmettobridge")
+        print("[FIX] recreate your SSH ControlMaster socket using your institution-specific login helper or ssh -M")
         return 2
     print(f"[OK] ControlMaster: {text}")
 
@@ -73,18 +73,13 @@ def main() -> int:
         print(f"[MISSING] remote command failed: {text}")
         print("[NOTE] An active socket can still be stale or waiting on Duo.")
         print(f"[FIX] rm -f {socket}")
-        print("[FIX] palmettobridge")
+        print("[FIX] recreate your SSH ControlMaster socket using your institution-specific login helper or ssh -M")
         print("[FIX] approve Duo/password prompt, then rerun this check")
         return 2
 
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     print("[OK] remote command: " + " / ".join(lines))
-    if lines and not lines[0].startswith("vm-slurm-p-login"):
-        print("[WARN] bridge is active but not on a scheduler login node")
-        print(f"[FIX] rm -f {socket}")
-        print("[FIX] palmettobridge")
-        return 1
-    print("[OK] bridge is ready for scheduler/network commands")
+    print("[OK] bridge is ready for remote scheduler/network commands")
     return 0
 
 

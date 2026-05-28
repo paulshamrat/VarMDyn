@@ -38,9 +38,14 @@ THREE_TO_ONE = {
 WORKFLOW_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = WORKFLOW_ROOT.parents[1]
 
-DEFAULT_FASTA = Path(os.environ.get("VARMDYN_CDKL_FASTA", REPO_ROOT / "data_private/cdkl_kinase_family.fasta"))
+DEFAULT_FASTA = Path(os.environ.get("VARMDYN_CDKL_FASTA", REPO_ROOT / "data/cdkl_kinase_family.fasta"))
 DEFAULT_PDB = WORKFLOW_ROOT / "data/raw/target.B99990001_with_cryst.pdb"
-DEFAULT_SASA = WORKFLOW_ROOT / "data/derived/target.B99990001_with_cryst_sasarelativepymol.txt"
+DEFAULT_SASA = Path(
+    os.environ.get(
+        "VARMDYN_CLUSTERING_SASA_TXT",
+        REPO_ROOT / "runs/clustering/target.B99990001_with_cryst_sasarelativepymol.txt",
+    )
+)
 DEFAULT_VARIANTS = WORKFLOW_ROOT / "data/raw/ddG_Fmax.xlsx"
 
 

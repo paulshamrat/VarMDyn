@@ -29,9 +29,13 @@ python -m distcluster.cli run all --config config.yaml --outdir ../../runs/clust
 
 ```text
 runs/clustering/
+  ddG_Fmax_with_rel_sasa_from_pymol.xlsx
+  ddG_Fmax_exposure.xlsx
+  ddG_Fmax_buried.xlsx
+  target.B99990001_with_cryst_sasarelativepymol.txt
   calpha/
   com/
-workflows/clustering/data/derived/
 ```
 
-`workflows/clustering/data/derived/` is ignored by git.
+The `workflows/clustering/` folder should stay code plus the tracked public seed
+inputs in `data/raw/`.

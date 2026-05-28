@@ -44,12 +44,16 @@ The wrapper checks these gates at the end of the run.
 
 ```text
 runs/clustering/
+  target.B99990001_with_cryst_sasarelativepymol.txt
+  ddG_Fmax_with_rel_sasa_from_pymol.xlsx
+  ddG_Fmax_exposure.xlsx
+  ddG_Fmax_buried.xlsx
   calpha/
   com/
-workflows/clustering/data/derived/
 ```
 
-`workflows/clustering/data/derived/` is generated and ignored by git.
+The workflow folder stays code plus the small tracked seed inputs in
+`workflows/clustering/data/raw/`.
 
 ## 6. Direct Module Command
 

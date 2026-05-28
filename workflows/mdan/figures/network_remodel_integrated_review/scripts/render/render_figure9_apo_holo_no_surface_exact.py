@@ -22,6 +22,8 @@ OUT_DIR = WORKSPACE_ROOT / "pymol"
 APO_PDB = Path(os.environ.get("VARMDYN_NETWORK_APO_PDB", "")).expanduser()
 HOLO_PDB = Path(os.environ.get("VARMDYN_NETWORK_HOLO_PDB", "")).expanduser()
 NON_PROTEIN_RESN = "ATP+ADP+AMP+MG+MG2+MGM+WAT+HOH+NA+K+CL"
+RAY_WIDTH = int(os.environ.get("VARMDYN_NETWORK_RAY_WIDTH", "1400"))
+RAY_HEIGHT = int(os.environ.get("VARMDYN_NETWORK_RAY_HEIGHT", "1600"))
 
 # Fixed kinase orientation used in prior network figure workflows.
 KINASE_VIEW = (
@@ -196,6 +198,7 @@ def setup_scene(obj_name: str) -> None:
     cmd.set("sphere_scale", 0.55)
     cmd.set("stick_radius", 0.18)
     cmd.set("label_font_id", 9)
+    cmd.set("max_threads", int(os.environ.get("VARMDYN_PYMOL_THREADS", "4")))
 
     cmd.select("prot", f"{obj_name} and not resn {NON_PROTEIN_RESN}")
     cmd.show("cartoon", "prot")
@@ -240,7 +243,8 @@ def render_state(
     _label_selection("wt_lost")
     _label_selection("gained")
     _label_selection("y171", label_color="magenta")
-    cmd.ray(2100, 2400)
+    print(f"[render] {out_both}", flush=True)
+    cmd.ray(RAY_WIDTH, RAY_HEIGHT)
     cmd.png(out_both, dpi=300)
 
     cmd.hide("spheres", "all")
@@ -265,15 +269,16 @@ def render_state(
         cmd.hide("spheres", "all")
         cmd.show("spheres", "gained")
     _label_selection("gained")
-    cmd.ray(2100, 2400)
+    print(f"[render] {out_gain_only}", flush=True)
+    cmd.ray(RAY_WIDTH, RAY_HEIGHT)
     cmd.png(out_gain_only, dpi=300)
 
 
 def main() -> None:
-    print(f"MAIN FUNCTION EXECUTING. WORKSPACE_ROOT={WORKSPACE_ROOT}")
-    print(f"OUT_DIR={OUT_DIR}")
-    print(f"APO_PDB gets loaded from: {APO_PDB}")
-    print(f"HOLO_PDB gets loaded from: {HOLO_PDB}")
+    print(f"MAIN FUNCTION EXECUTING. WORKSPACE_ROOT={WORKSPACE_ROOT}", flush=True)
+    print(f"OUT_DIR={OUT_DIR}", flush=True)
+    print(f"APO_PDB gets loaded from: {APO_PDB}", flush=True)
+    print(f"HOLO_PDB gets loaded from: {HOLO_PDB}", flush=True)
     if not APO_PDB.is_file():
         raise FileNotFoundError(
             "Set VARMDYN_NETWORK_APO_PDB to a readable apo PDB before rendering."
@@ -285,7 +290,7 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     cmd.reinitialize()
     cmd.load(str(APO_PDB), "apo")
-    print("Apo loaded successfully.")
+    print("Apo loaded successfully.", flush=True)
     render_state(
         "apo",
         APO_WT_LOST,

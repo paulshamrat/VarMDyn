@@ -59,13 +59,33 @@ def _resolve(root: Path, value: str | None) -> Path | None:
     return (root / path).resolve()
 
 
+def _runtime_outdir(config: dict[str, Any], root: Path) -> Path | None:
+    runtime = config.get("runtime", {})
+    return _resolve(root, runtime.get("outdir"))
+
+
+def _runtime_file(config: dict[str, Any], root: Path, filename: str) -> Path | None:
+    outdir = _runtime_outdir(config, root)
+    return (outdir / filename) if outdir else None
+
+
+def _path_or_runtime(
+    config: dict[str, Any], root: Path, key: str, filename: str, *, prefer_runtime: bool = True
+) -> Path | None:
+    runtime_path = _runtime_file(config, root, filename)
+    configured = _resolve(root, config.get("paths", {}).get(key))
+    if prefer_runtime and runtime_path is not None:
+        return runtime_path
+    return configured or runtime_path
+
+
 def _run_step_sasa(config: dict[str, Any], root: Path, dry_run: bool) -> None:
     sasa_cfg = config.get("sasa", {})
     paths = config.get("paths", {})
     pdb = _resolve(root, paths.get("pdb"))
-    sasa_out = _resolve(root, paths.get("sasa_txt"))
+    sasa_out = _path_or_runtime(config, root, "sasa_txt", "target.B99990001_with_cryst_sasarelativepymol.txt")
     ddg_excel = _resolve(root, paths.get("ddg_excel"))
-    with_sasa_excel = _resolve(root, paths.get("with_sasa_excel"))
+    with_sasa_excel = _path_or_runtime(config, root, "with_sasa_excel", "ddG_Fmax_with_rel_sasa_from_pymol.xlsx")
 
     run_headless = bool(sasa_cfg.get("run_headless", True))
     run_merge = bool(sasa_cfg.get("run_merge", True))
@@ -129,8 +149,8 @@ def _run_step_sasa(config: dict[str, Any], root: Path, dry_run: bool) -> None:
 def _run_step_exposure(config: dict[str, Any], root: Path, dry_run: bool) -> None:
     exposure_cfg = config.get("exposure", {})
     paths = config.get("paths", {})
-    in_excel = _resolve(root, paths.get("with_sasa_excel"))
-    out_excel = _resolve(root, paths.get("exposure_excel"))
+    in_excel = _path_or_runtime(config, root, "with_sasa_excel", "ddG_Fmax_with_rel_sasa_from_pymol.xlsx")
+    out_excel = _path_or_runtime(config, root, "exposure_excel", "ddG_Fmax_exposure.xlsx")
 
     if in_excel is None or out_excel is None:
         raise KeyError("Config needs paths.with_sasa_excel and paths.exposure_excel for step 'exposure'.")
@@ -158,8 +178,8 @@ def _run_step_exposure(config: dict[str, Any], root: Path, dry_run: bool) -> Non
 def _run_step_buried(config: dict[str, Any], root: Path, dry_run: bool) -> None:
     buried_cfg = config.get("buried", {})
     paths = config.get("paths", {})
-    in_excel = _resolve(root, paths.get("exposure_excel"))
-    out_excel = _resolve(root, paths.get("buried_excel"))
+    in_excel = _path_or_runtime(config, root, "exposure_excel", "ddG_Fmax_exposure.xlsx")
+    out_excel = _path_or_runtime(config, root, "buried_excel", "ddG_Fmax_buried.xlsx")
 
     if in_excel is None or out_excel is None:
         raise KeyError("Config needs paths.exposure_excel and paths.buried_excel for step 'buried'.")
@@ -185,7 +205,7 @@ def _run_step_calpha(config: dict[str, Any], root: Path, dry_run: bool) -> None:
     paths = config.get("paths", {})
     runtime = config.get("runtime", {})
 
-    buried_excel = _resolve(root, paths.get("buried_excel"))
+    buried_excel = _path_or_runtime(config, root, "buried_excel", "ddG_Fmax_buried.xlsx")
     pdb = _resolve(root, paths.get("pdb"))
     configured_outdir = _resolve(root, paths.get("calpha_outdir"))
     runtime_outdir = _resolve(root, runtime.get("outdir"))
@@ -224,7 +244,7 @@ def _run_step_com(config: dict[str, Any], root: Path, dry_run: bool) -> None:
     paths = config.get("paths", {})
     runtime = config.get("runtime", {})
 
-    buried_excel = _resolve(root, paths.get("buried_excel"))
+    buried_excel = _path_or_runtime(config, root, "buried_excel", "ddG_Fmax_buried.xlsx")
     pdb = _resolve(root, paths.get("pdb"))
     configured_outdir = _resolve(root, paths.get("com_outdir"))
     runtime_outdir = _resolve(root, runtime.get("outdir"))
@@ -349,7 +369,7 @@ def _run_step_visual(config: dict[str, Any], root: Path, dry_run: bool) -> None:
     if not planned:
         raise RuntimeError("No clustering output directory found for visual report generation.")
 
-    excel = _resolve(root, vcfg.get("excel")) or _resolve(root, paths.get("buried_excel"))
+    excel = _resolve(root, vcfg.get("excel")) or _path_or_runtime(config, root, "buried_excel", "ddG_Fmax_buried.xlsx")
     mutation_sources = [
         _resolve(root, p)
         for p in (vcfg.get("excel_mutation_sources") or [paths.get("ddg_excel")])
@@ -425,7 +445,7 @@ def _run_step_exposureplot(config: dict[str, Any], root: Path, dry_run: bool) ->
     if not planned:
         raise RuntimeError("No output directory found for exposureplot.")
 
-    excel = _resolve(root, ecfg.get("excel")) or _resolve(root, paths.get("with_sasa_excel"))
+    excel = _resolve(root, ecfg.get("excel")) or _path_or_runtime(config, root, "with_sasa_excel", "ddG_Fmax_with_rel_sasa_from_pymol.xlsx")
     if excel is None:
         raise KeyError("Config must provide exposureplot.excel or paths.with_sasa_excel")
 

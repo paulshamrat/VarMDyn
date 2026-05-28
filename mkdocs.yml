@@ -17,7 +17,7 @@ nav:
       - Variant Modeling: workflows/varmodel.md
       - MD Analysis: workflows/mdan.md
       - Dynamic Network Analysis: workflows/network.md
-      - Palmetto Bridge: workflows/palmetto.md
+      - HPC Bridge: workflows/hpc.md
   - Reference:
       - Commands: reference/commands.md
       - Outputs: reference/output-policy.md

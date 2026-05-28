@@ -1,10 +1,10 @@
 paths:
   pdb: data/raw/target.B99990001_with_cryst.pdb
   ddg_excel: data/raw/ddG_Fmax.xlsx
-  sasa_txt: data/derived/target.B99990001_with_cryst_sasarelativepymol.txt
-  with_sasa_excel: data/derived/ddG_Fmax_with_rel_sasa_from_pymol.xlsx
-  exposure_excel: data/derived/ddG_Fmax_exposure.xlsx
-  buried_excel: data/derived/ddG_Fmax_buried.xlsx
+  sasa_txt: null
+  with_sasa_excel: null
+  exposure_excel: null
+  buried_excel: null
   calpha_outdir: null
   com_outdir: null
 
@@ -111,7 +111,7 @@ visual:
 
 exposureplot:
   target: auto
-  excel: data/derived/ddG_Fmax_with_rel_sasa_from_pymol.xlsx
+  excel: null
   sheet: null
   pos_col: null
   rel_col: null

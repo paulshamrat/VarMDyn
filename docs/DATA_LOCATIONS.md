@@ -1,21 +1,22 @@
 # Data Locations
 
-Private data are supplied at run time.
+Data are supplied at run time.
 
 ```bash
 export VARMDYN_RUN_ROOT=$PWD/runs
-export VARMDYN_PRIVATE_DATA=$PWD/data_private
-export VARMDYN_MD_LEGACY_ROOT=/path/to/private/legacy_md_root
-export VARMDYN_PALMETTO_PROJECT=/path/to/private/palmetto_project
-export VARMDYN_PALMETTO_HOST=user@slogin.example.edu
+export VARMDYN_DATA_ROOT=$PWD/data
+export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
+export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
+export VARMDYN_HPC_HOST=user@login.example.edu
 ```
 
 `VARMDYN_RUN_ROOT` is where generated outputs go. For local work, use the
 repo-local gitignored `runs/` directory. On HPC systems, point it to scratch.
 
-`VARMDYN_PRIVATE_DATA` is a gitignored local folder for user-supplied inputs.
+`VARMDYN_DATA_ROOT` is a gitignored local folder for input files and fetched
+lightweight outputs.
 
-`VARMDYN_MD_LEGACY_ROOT` points to the external simulation tree containing:
+`VARMDYN_MD_LEGACY_ROOT` points to an external simulation tree containing:
 
 ```text
 03_mdsim/

@@ -7,7 +7,7 @@ varmodel:
   python_exe: ""
 
   # WT input PDB. The public clone reuses the clustering seed structure; users may
-  # point this to a private or updated PDB under data_private/ if needed.
+  # point this to an updated PDB under data/ if needed.
   wt_pdb: clustering/data/raw/target.B99990001_with_cryst.pdb
 
   # One mutation per line, e.g. L119R.

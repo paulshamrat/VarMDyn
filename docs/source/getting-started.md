@@ -15,12 +15,12 @@ cd varmdyn
 bash scripts/create_varmdyn_env.sh
 conda activate varmdyn_env
 export VARMDYN_RUN_ROOT=$PWD/runs
-export VARMDYN_PRIVATE_DATA=$PWD/data_private
+export VARMDYN_DATA_ROOT=$PWD/data
 export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 ```
 
-`VARMDYN_RUN_ROOT` is where run outputs are written. `VARMDYN_PRIVATE_DATA` is
-where you can place input files that are not stored in the repository.
+`VARMDYN_RUN_ROOT` is where run outputs are written. `VARMDYN_DATA_ROOT` is
+where you can place input files and fetched lightweight analysis outputs.
 
 ## 3. Run The First Checks
 
@@ -43,9 +43,9 @@ run.
 | Generate or dry-run mutant structures | [Variant Modeling](workflows/varmodel.md) |
 | Work with RMSD/RMSF/displacement scripts | [MD Analysis](workflows/mdan.md) |
 | Validate or replay DyNetAn network results | [Dynamic Network Analysis](workflows/network.md) |
-| Stage heavy work on Palmetto or another HPC system | [Palmetto Bridge](workflows/palmetto.md) |
+| Stage heavy work on an HPC system | [HPC Bridge](workflows/hpc.md) |
 
 ## 5. Keep Runs Organized
 
-Use `runs/` for generated outputs and `data_private/` for local input files.
-Both folders are already ignored by git.
+Use `runs/` for generated outputs and `data/` for local data files. Both
+folders are already ignored by git.

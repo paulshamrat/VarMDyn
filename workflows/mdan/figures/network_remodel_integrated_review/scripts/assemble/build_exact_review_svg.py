@@ -3,12 +3,13 @@
 
 from __future__ import annotations
 
+import os
 import base64
 import struct
 from pathlib import Path
 
 
-WORKSPACE_ROOT = Path(__file__).resolve().parent.parent.parent
+WORKSPACE_ROOT = Path(os.environ.get("VARMDYN_NETWORK_FIGURE_WORKSPACE", Path(__file__).resolve().parent.parent.parent)).resolve()
 PYMOL_DIR = WORKSPACE_ROOT / "pymol"
 SVG_PATH = PYMOL_DIR / "network_remodel_pymol_exact_review.svg"
 

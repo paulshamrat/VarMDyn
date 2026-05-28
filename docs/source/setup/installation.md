@@ -8,8 +8,9 @@ cd varmdyn
 bash scripts/create_varmdyn_env.sh
 conda activate varmdyn_env
 export VARMDYN_RUN_ROOT=$PWD/runs
-export VARMDYN_PRIVATE_DATA=$PWD/data_private
+export VARMDYN_DATA_ROOT=$PWD/data
 export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
+python scripts/init_data_layout.py
 ```
 
 ## 2. Google Colab Or ColabMDA Terminal

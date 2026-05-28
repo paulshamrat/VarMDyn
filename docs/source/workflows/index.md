@@ -18,7 +18,7 @@ displacement tables, or DyNetAn outputs:
 
 - [MD Analysis](mdan.md)
 - [Dynamic Network Analysis](network.md)
-- [Palmetto Bridge](palmetto.md)
+- [HPC Bridge](hpc.md)
 
 ## 3. Reproducibility Pattern
 
