@@ -82,13 +82,28 @@ Advanced trajectory path changes can be passed directly to
 python workflows/mdan/network/network.py prepare --help
 ```
 
-## 3. Local Setup
+## 3. Download The Workflow
 
-Clone VarMDyn locally:
+Download the full VarMDyn repository, not only this `shared/` folder. The
+wrapper scripts in this folder call the shared implementation in
+`workflows/mdan/network/network.py` and the Slurm template in
+`workflows/mdan/network/run_network_array.slurm`.
+
+Recommended download:
 
 ```bash
 git clone https://github.com/paulshamrat/varmdyn.git
 cd varmdyn
+```
+
+If `git` is not available, download the repository ZIP from GitHub, unzip it,
+and enter the extracted `varmdyn` directory.
+
+## 4. Local Setup
+
+From the local VarMDyn checkout:
+
+```bash
 bash scripts/create_varmdyn_env.sh
 conda activate varmdyn_env
 python scripts/init_data_layout.py
@@ -99,7 +114,7 @@ Optional rendering tools are installed separately. Use PyMOL for cartoon
 rendering and ChimeraX for surface rendering if you want to rebuild the network
 figure locally.
 
-## 4. HPC Setup
+## 5. HPC Setup
 
 On the HPC system, clone or sync the same VarMDyn repo into a working directory:
 
@@ -124,7 +139,7 @@ export VARMDYN_HOLO_ROOT=/path/to/holo/simulation/root
 
 Edit the exported paths for your HPC account before running jobs.
 
-## 5. Sync Code From Local To HPC
+## 6. Sync Code From Local To HPC
 
 From the local VarMDyn checkout, set:
 
@@ -141,7 +156,7 @@ bash workflows/mdan/network/shared/sync_code_to_hpc.sh
 
 This excludes `data/`, `runs/`, `.local_docs/`, and other generated files.
 
-## 6. Submit Array Jobs On HPC
+## 7. Submit Array Jobs On HPC
 
 From the HPC VarMDyn checkout:
 
@@ -172,7 +187,7 @@ compare job. Logs go under:
 runs/mdan/network_full/logs/
 ```
 
-## 7. Fetch Lightweight Results To Local
+## 8. Fetch Lightweight Results To Local
 
 From the local VarMDyn checkout:
 
@@ -194,7 +209,7 @@ data/network/full/prepared/**/*.pdb
 It does not fetch trajectories, DCD files, NetCDF files, PSF files, or topology
 files.
 
-## 8. Local Compare And Rendering
+## 9. Local Compare And Rendering
 
 After fetching lightweight results:
 
@@ -221,7 +236,7 @@ python scripts/check_data_inputs.py --module network --profile render
 bash workflows/mdan/network/remodel.sh
 ```
 
-## 9. Cleanup Rule
+## 10. Cleanup Rule
 
 Keep code under `workflows/` and generated files under `data/` or `runs/`.
 Those generated folders are ignored by git.
