@@ -99,7 +99,7 @@ def replacement_map() -> dict[str, str]:
         "$PWD/data": data_root,
         "$PWD/runs": run_root,
         "/path/to/data": data_root,
-        "/path/to/output_workspace": str(Path(run_root) / "mdan/figures/network_remodel_integrated_review"),
+        "/path/to/output_workspace": str(Path(run_root) / "mdan/network"),
         "$HOME/.ssh/hpc.sock": ssh_socket,
         "/path/to/ssh_control_socket": ssh_socket,
         "/path/to/source/tree": source_root,
@@ -121,7 +121,7 @@ def replacement_map() -> dict[str, str]:
         ),
     }
     if hpc_stage:
-        replacements["${REPO}/varmdyn-runs/dynamics_nlobe_y171"] = hpc_stage
+        replacements["${REPO}/varmdyn-runs/dynamics"] = hpc_stage
     return {key: value for key, value in replacements.items() if value}
 
 

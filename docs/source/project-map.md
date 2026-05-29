@@ -43,5 +43,11 @@ folder.
 |---|---|---|
 | `clustering` | `bash scripts/run_clustering_repro.sh` | `runs/clustering/` |
 | `varmodel` | `bash scripts/run_varmodel_repro.sh --dry-run` | `runs/varmodel/` |
-| `mdan/rmsd_apo_holo` | `python workflows/mdan/rmsd_apo_holo/summarize_analysis2_rmsd.py --help` | `runs/mdan/rmsd/` |
-| `mdan/network` | `python workflows/mdan/network/run_network_replay_hpc.py --help` | `runs/mdan/network_validation/` |
+| `mdan/rmsd` | `python workflows/mdan/rmsd/summarize.py --help` | `runs/mdan/rmsd/` |
+| `mdan/rmsf` | `python workflows/mdan/rmsf/overlay.py --help` | `runs/mdan/rmsf/` |
+| `mdan/dynamics` | `bash scripts/run_dynamics_local.sh` | `runs/mdan/dynamics/` |
+| `mdan/network` | `python workflows/mdan/network/network.py --help` | `runs/mdan/network/` |
+| `mdan/function/full` | `python workflows/mdan/function/full/schematic.py` | `runs/mdan/function/full/` |
+| `mdan/function/kinase` | `python workflows/mdan/function/kinase/annotation.py` | `runs/mdan/function/kinase/` |
+| `mdan/function/msa` | `python workflows/mdan/function/msa/msa.py` | `runs/mdan/function/msa/` |
+| `mdan/function/mechanism` | `python workflows/mdan/function/mechanism/mechanism_split.py --help` | `runs/mdan/function/mechanism/` |

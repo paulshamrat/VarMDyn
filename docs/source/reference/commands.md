@@ -44,14 +44,13 @@ python scripts/init_data_layout.py
 source data/varmdyn_data.env
 python scripts/check_data_inputs.py --module network --profile tables
 python scripts/check_data_inputs.py --module network --profile render
-python scripts/check_hpc_bridge.py --timeout-seconds 60
 python scripts/check_data_inputs.py --module network --profile remote --remote --timeout-seconds 60
-python workflows/mdan/network/run_network_replay_hpc.py stage
-python workflows/mdan/network/run_network_replay_hpc.py submit
-python workflows/mdan/network/run_network_replay_hpc.py status
-python workflows/mdan/network/run_network_replay_hpc.py compare
-python workflows/mdan/network/run_network_replay_hpc.py fetch
-bash workflows/mdan/figures/network_remodel_integrated_review/scripts/build_final_figure.sh
+python workflows/mdan/network/network.py hpc-stage
+python workflows/mdan/network/network.py hpc-submit
+python workflows/mdan/network/network.py hpc-status
+python workflows/mdan/network/network.py hpc-compare
+python workflows/mdan/network/network.py hpc-fetch
+bash workflows/mdan/network/remodel.sh
 ```
 
 ## 6. Documentation

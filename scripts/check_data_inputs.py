@@ -113,21 +113,21 @@ def ssh_base(timeout_seconds: int) -> list[str]:
     return ssh
 
 
-def remote_bridge_check(host: str | None, *, timeout_seconds: int) -> Check:
+def remote_ssh_check(host: str | None, *, timeout_seconds: int) -> Check:
     if not host:
-        return Check("remote bridge host", False, "VARMDYN_HPC_HOST not set")
+        return Check("remote SSH host", False, "VARMDYN_HPC_HOST not set")
     cmd = ssh_base(timeout_seconds) + [host, "hostname && whoami"]
     try:
         proc = subprocess.run(
             cmd, text=True, capture_output=True, check=False, timeout=timeout_seconds + 5
         )
     except subprocess.TimeoutExpired:
-        return Check("remote bridge host", False, f"SSH command timed out after {timeout_seconds}s")
+        return Check("remote SSH host", False, f"SSH command timed out after {timeout_seconds}s")
     if proc.returncode == 0:
         detail = " / ".join(line.strip() for line in proc.stdout.splitlines() if line.strip())
-        return Check("remote bridge host", True, detail or "connected")
+        return Check("remote SSH host", True, detail or "connected")
     detail = (proc.stderr or proc.stdout or "remote command failed").strip().splitlines()
-    return Check("remote bridge host", False, detail[-1] if detail else "remote command failed")
+    return Check("remote SSH host", False, detail[-1] if detail else "remote command failed")
 
 
 def remote_command_check(host: str | None, label: str, command: str, *, timeout_seconds: int = 15) -> Check:
@@ -217,8 +217,8 @@ def network_checks(*, remote: bool, timeout_seconds: int, profile: str) -> list[
             kind="file",
         ),
         path_check(
-            "local network HPC wrapper",
-            ROOT / "workflows/mdan/network/run_network_replay_hpc.py",
+            "local network workflow CLI",
+            ROOT / "workflows/mdan/network/network.py",
             kind="file",
         ),
     ]
@@ -236,9 +236,9 @@ def network_checks(*, remote: bool, timeout_seconds: int, profile: str) -> list[
     if not remote:
         return checks
 
-    bridge = remote_bridge_check(host, timeout_seconds=timeout_seconds)
-    checks.append(bridge)
-    if not bridge.ok:
+    ssh = remote_ssh_check(host, timeout_seconds=timeout_seconds)
+    checks.append(ssh)
+    if not ssh.ok:
         return checks
 
     if project:

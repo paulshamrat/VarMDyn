@@ -26,12 +26,6 @@ export VARMDYN_HPC_HOST=user@login.example.edu
 export VARMDYN_HPC_USER=user
 ```
 
-Optional SSH control socket:
-
-```bash
-export VARMDYN_SSH_CONTROL_PATH=/path/to/ssh_control_socket
-```
-
 ## 3. Common Layout
 
 | Purpose | Typical path |

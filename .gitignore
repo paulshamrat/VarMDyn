@@ -11,6 +11,9 @@ reference_outputs/
 site/
 *.log
 
+# Local smoke-test packets and copied HPC sandboxes.
+tests/
+
 # User-supplied data. Keep GitHub scripts-only.
 /data/
 

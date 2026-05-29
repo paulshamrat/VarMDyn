@@ -1,0 +1,24 @@
+# The build script replaces this token with the configured apo PDB path.
+open @VARMDYN_NETWORK_APO_PDB@
+
+hide atoms
+surface #1 & protein
+color #1 & protein wheat target s
+transparency #1 & protein 18 target s
+
+# Figure 9 apo recurrent residues
+# WT-lost: 39,42,63,123,136,159
+# gained: 13,64,158,188,193,223
+
+color #1:39,42,63,123,136,159 blue target s
+color #1:13,64,158,188,193,223 orangered target s
+color #1:171 magenta target s
+
+set bgColor white
+lighting full
+graphics silhouettes true
+view matrix camera -0.31169,0.79727,0.51692,212.61,-0.87489,-0.028557,-0.48348,-118.97,-0.37071,-0.60294,0.70642,283.72 models #1,1,0,0,0,0,1,0,0,0,0,1,0
+clip off
+zoom 1.35
+save @VARMDYN_CHIMERAX_APO_OUT@ width 1400 height 1600 supersample 3
+exit

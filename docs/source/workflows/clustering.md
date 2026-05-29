@@ -31,7 +31,7 @@ bash scripts/run_clustering_repro.sh
 
 ## 4. Expected Reproducibility Gates
 
-A successful manuscript-facing run reports:
+A successful run reports:
 
 - `303` residue-level rSASA lines from PyMOL;
 - `86 / 86` matched variant positions;

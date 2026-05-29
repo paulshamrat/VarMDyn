@@ -13,13 +13,13 @@ export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
 export VARMDYN_HPC_HOST=user@login.example.edu
 ```
 
-## 2. RMSD Apo/Holo
+## 2. RMSD
 
 Inspect available options:
 
 ```bash
-python workflows/mdan/rmsd_apo_holo/summarize_analysis2_rmsd.py --help
-python workflows/mdan/rmsd_apo_holo/plot_analysis2_rmsd.py --help
+python workflows/mdan/rmsd/summarize.py --help
+python workflows/mdan/rmsd/plot.py --help
 ```
 
 Write outputs under:
@@ -33,8 +33,8 @@ runs/mdan/rmsd/
 RMSF figure scripts use `.agr` files or generated RMSF summaries:
 
 ```bash
-python workflows/mdan/figures/rmsf_overlay_review_v2/build_rmsf_overlay_review_v2.py --help
-python workflows/mdan/figures/supplementary_composites/build_supp_s4_rmsf_premium.py --help
+python workflows/mdan/rmsf/overlay.py --help
+python workflows/mdan/rmsf/supplementary.py --help
 ```
 
 Common variables:
@@ -49,8 +49,8 @@ export VARMDYN_RMSF_SOURCE_MANIFEST=$VARMDYN_DATA_ROOT/rmsf_source_input_manifes
 Local plotting from kept displacement/RMSF tables:
 
 ```bash
-export DYNAMICS_NLOBE_Y171_INPUT_ROOT=$VARMDYN_DATA_ROOT/dynamics_nlobe_y171
-bash scripts/run_dynamics_nlobe_y171_local.sh
+export DYNAMICS_NLOBE_Y171_INPUT_ROOT=$VARMDYN_DATA_ROOT/dynamics
+bash scripts/run_dynamics_local.sh
 ```
 
 Expected input layout:
@@ -69,3 +69,17 @@ $DYNAMICS_NLOBE_Y171_INPUT_ROOT/
 Use the dedicated page:
 
 - [Dynamic Network Analysis](network.md)
+
+## 6. CDKL5 Function And Structural Context
+
+Function-oriented figure scripts are grouped by purpose:
+
+```text
+workflows/mdan/function/full/       full-length CDKL5 schematic
+workflows/mdan/function/kinase/     kinase-domain annotation
+workflows/mdan/function/msa/        sequence retrieval, MSA, and domain tables
+workflows/mdan/function/mechanism/  mechanism/context composites
+```
+
+They read user-supplied source panels and sequence inputs from `data/` and write
+generated outputs under `runs/mdan/function/`.
