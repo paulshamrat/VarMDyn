@@ -105,9 +105,7 @@ def resolve_variants(args: argparse.Namespace) -> list[str]:
         return split_variants(args.variants)
     root = Path(args.root).expanduser()
     variants = discover_variants(root, args.wt)
-    topology_suffix = getattr(args, "topology_suffix", "")
-    if topology_suffix:
-        variants = [variant for variant in variants if (root / variant / topology_suffix).exists()]
+    variants = [variant for variant in variants if variant_has_required_input(args, root, variant)]
     if not variants:
         raise SystemExit(f"no variant folders found in {args.root}")
     return variants
@@ -116,6 +114,48 @@ def resolve_variants(args: argparse.Namespace) -> list[str]:
 def write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
+
+
+def prepared_paths(args: argparse.Namespace, src: Path) -> tuple[Path, Path, Path | None]:
+    topo = src / args.prepared_topology_suffix
+    traj = src / args.prepared_traj_suffix
+    ref = src / args.prepared_ref_traj_suffix if args.prepared_ref_traj_suffix else None
+    return topo, traj, ref
+
+
+def raw_topology_path(args: argparse.Namespace, src: Path) -> Path:
+    return src / args.topology_suffix
+
+
+def variant_has_required_input(args: argparse.Namespace, root: Path, variant: str) -> bool:
+    src = root / variant
+    input_mode = getattr(args, "input_mode", "auto")
+    if input_mode in {"auto", "prepared"}:
+        topo, traj, _ref = prepared_paths(args, src)
+        if topo.exists() and traj.exists():
+            return True
+    if input_mode in {"auto", "raw"}:
+        return raw_topology_path(args, src).exists()
+    return False
+
+
+def resolve_input_mode(args: argparse.Namespace, src: Path, variant: str) -> str:
+    input_mode = args.input_mode
+    if input_mode in {"auto", "prepared"}:
+        topo, traj, _ref = prepared_paths(args, src)
+        if topo.exists() and traj.exists():
+            return "prepared"
+        if input_mode == "prepared":
+            raise SystemExit(
+                f"missing prepared inputs for {variant}: topology={topo}, trajectory={traj}"
+            )
+    if input_mode in {"auto", "raw"}:
+        topo = raw_topology_path(args, src)
+        if topo.exists():
+            return "raw"
+        if input_mode == "raw":
+            raise SystemExit(f"missing raw topology for {variant}: {topo}")
+    raise SystemExit(f"could not resolve input mode for {variant} under {src}")
 
 
 def prepare_variant(args: argparse.Namespace, variant: str) -> None:
@@ -130,9 +170,7 @@ def prepare_variant(args: argparse.Namespace, variant: str) -> None:
         ) from exc
 
     src = Path(args.root).expanduser() / variant
-    topo = src / args.topology_suffix
-    if not topo.exists():
-        raise SystemExit(f"missing topology for {variant}: {topo}")
+    input_mode = resolve_input_mode(args, src, variant)
 
     out = DATA_ROOT / "prepared" / args.state / variant
     work = RUN_ROOT / "cpptraj" / args.state / variant
@@ -140,58 +178,96 @@ def prepare_variant(args: argparse.Namespace, variant: str) -> None:
     work.mkdir(parents=True, exist_ok=True)
 
     keep = args.state == "holo"
-    tag = "keepATPmg" if keep else "striped"
+    tag = "striped_v2" if input_mode == "prepared" else ("keepATPmg" if keep else "striped")
     topo_out = out / f"{variant}.{tag}.prmtop"
     nc_out = out / f"{variant}.concatenated_750frames.{tag}.nc"
     pdb_out = out / f"{variant}.pdb"
     psf_out = out / f"{variant}.psf"
     dcd_out = out / f"{variant}.dcd"
-    strip_mask = args.holo_strip_mask if keep else args.apo_strip_mask
-
-    if not topo_out.exists() or args.force:
-        inp = work / "strip_topology.in"
-        write_text(
-            inp,
-            f"parm {topo}\nparmstrip '{strip_mask}'\nparmwrite out {topo_out}\ngo\nquit\n",
-        )
-        run_command(["cpptraj", "-i", str(inp)], work / "strip_topology.log")
-
-    trajin_lines: list[str] = []
-    for rep in split_variants(args.replicas):
-        for chunk in split_variants(args.chunks):
-            nc = src / args.traj_template.format(replica=rep, chunk=chunk)
-            if nc.exists():
-                trajin_lines.append(f"trajin {nc} 1 last {args.stride}")
-            elif args.strict:
-                raise SystemExit(f"missing trajectory chunk for {variant}: {nc}")
-            else:
-                print(f"[WARN] missing trajectory chunk for {variant}: {nc}")
-    if not trajin_lines:
-        raise SystemExit(f"no trajectory chunks found for {variant}")
-
-    # Generate an extra PDB for PyMOL rendering that keeps the ATP and Mg!
     ligands_pdb_out = out / f"{variant}_with_ligands.pdb"
-    if keep and (not ligands_pdb_out.exists() or args.force):
-        first_chunk_path = trajin_lines[0].split()[1]
-        inp = work / "extract_ligands_pdb.in"
-        write_text(
-            inp,
-            f"parm {topo}\ntrajin {first_chunk_path} 1 1\nautoimage\nstrip ':WAT,Na+,Cl-'\ntrajout {ligands_pdb_out} pdb\ngo\nquit\n",
-        )
-        run_command(["cpptraj", "-i", str(inp)], work / "extract_ligands_pdb.log")
+    manifest_out = out / "prepare_manifest.txt"
+    manifest_lines = [f"state={args.state}", f"variant={variant}", f"input_mode={input_mode}"]
 
-    if not nc_out.exists() or args.force:
-        inp = work / "concat_sample.in"
-        write_text(
-            inp,
-            "parm {topo}\n{trajin}\nautoimage\nstrip '{strip}'\ntrajout {out} netcdf\ngo\nquit\n".format(
-                topo=topo,
-                trajin="\n".join(trajin_lines),
-                strip=strip_mask,
-                out=nc_out,
-            ),
-        )
-        run_command(["cpptraj", "-i", str(inp)], work / "concat_sample.log")
+    if input_mode == "prepared":
+        topo, prepared_nc, ref_nc = prepared_paths(args, src)
+        manifest_lines += [
+            f"topology={topo}",
+            f"trajectory={prepared_nc}",
+            f"reference_trajectory={ref_nc or ''}",
+        ]
+        if not topo_out.exists() or args.force:
+            run_command(["cp", str(topo), str(topo_out)])
+        if not nc_out.exists() or args.force:
+            run_command(["cp", str(prepared_nc), str(nc_out)])
+        if keep and ref_nc and ref_nc.exists() and (not ligands_pdb_out.exists() or args.force):
+            inp = work / "extract_ligands_pdb.in"
+            write_text(
+                inp,
+                f"parm {topo}\ntrajin {ref_nc} 1 1\nautoimage\nstrip ':WAT,Na+,Cl-'\ntrajout {ligands_pdb_out} pdb\ngo\nquit\n",
+            )
+            run_command(["cpptraj", "-i", str(inp)], work / "extract_ligands_pdb.log")
+    else:
+        topo = raw_topology_path(args, src)
+        strip_mask = args.holo_strip_mask if keep else args.apo_strip_mask
+        manifest_lines += [
+            f"topology={topo}",
+            f"trajectory_template={args.traj_template}",
+            f"replicas={args.replicas}",
+            f"chunks={args.chunks}",
+            f"stride={args.stride}",
+            f"strip_mask={strip_mask}",
+        ]
+        if not topo_out.exists() or args.force:
+            inp = work / "strip_topology.in"
+            write_text(
+                inp,
+                f"parm {topo}\nparmstrip '{strip_mask}'\nparmwrite out {topo_out}\ngo\nquit\n",
+            )
+            run_command(["cpptraj", "-i", str(inp)], work / "strip_topology.log")
+
+        trajin_lines: list[str] = []
+        for rep in split_variants(args.replicas):
+            for chunk in split_variants(args.chunks):
+                nc = src / args.traj_template.format(replica=rep, chunk=chunk)
+                if nc.exists():
+                    trajin_lines.append(f"trajin {nc} 1 last {args.stride}")
+                elif args.strict:
+                    raise SystemExit(f"missing trajectory chunk for {variant}: {nc}")
+                else:
+                    print(f"[WARN] missing trajectory chunk for {variant}: {nc}")
+        if not trajin_lines:
+            raise SystemExit(f"no trajectory chunks found for {variant}")
+
+        # Generate an extra PDB for PyMOL rendering that keeps ATP and Mg.
+        if keep and (not ligands_pdb_out.exists() or args.force):
+            first_chunk_path = trajin_lines[0].split()[1]
+            inp = work / "extract_ligands_pdb.in"
+            write_text(
+                inp,
+                f"parm {topo}\ntrajin {first_chunk_path} 1 1\nautoimage\nstrip ':WAT,Na+,Cl-'\ntrajout {ligands_pdb_out} pdb\ngo\nquit\n",
+            )
+            run_command(["cpptraj", "-i", str(inp)], work / "extract_ligands_pdb.log")
+
+        if not nc_out.exists() or args.force:
+            inp = work / "concat_sample.in"
+            write_text(
+                inp,
+                "parm {topo}\n{trajin}\nautoimage\nstrip '{strip}'\ntrajout {out} netcdf\ngo\nquit\n".format(
+                    topo=topo,
+                    trajin="\n".join(trajin_lines),
+                    strip=strip_mask,
+                    out=nc_out,
+                ),
+            )
+            run_command(["cpptraj", "-i", str(inp)], work / "concat_sample.log")
+
+    manifest_text = "\n".join(manifest_lines) + "\n"
+    manifest_changed = not manifest_out.exists() or manifest_out.read_text(encoding="utf-8") != manifest_text
+
+    if manifest_changed:
+        for stale in [psf_out, pdb_out, dcd_out]:
+            if stale.exists():
+                stale.unlink()
 
     if not psf_out.exists() or args.force:
         st = pmd.load_file(str(topo_out))
@@ -209,7 +285,8 @@ def prepare_variant(args: argparse.Namespace, variant: str) -> None:
                 for _ts in u.trajectory:
                     writer.write(u.atoms)
 
-    print(f"[OK] prepared {args.state}/{variant}: {out}")
+    write_text(manifest_out, manifest_text)
+    print(f"[OK] prepared {args.state}/{variant} ({input_mode} inputs): {out}")
 
 
 def selection_label(node: int, nodes_atm_sel) -> str:
@@ -715,13 +792,49 @@ def add_common(parser: argparse.ArgumentParser) -> None:
 
 
 def add_prep(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--topology-suffix", default="02.leap/com/cdl.com.wat.leap.prmtop")
-    parser.add_argument("--traj-template", default="03.pmemd/com/{replica}/{chunk}md.mdcrd.nc")
-    parser.add_argument("--replicas", default="cr1,cr2,cr3")
-    parser.add_argument("--chunks", default="25,26,27,28,29")
-    parser.add_argument("--stride", type=int, default=20)
-    parser.add_argument("--apo-strip-mask", default=":WAT,Na+,Cl-")
-    parser.add_argument("--holo-strip-mask", default=":WAT,Na+,Cl-,ATP,MG")
+    parser.add_argument(
+        "--input-mode",
+        choices=["auto", "prepared", "raw"],
+        default=os.environ.get("VARMDYN_INPUT_MODE", "auto"),
+        help="auto prefers prepared striped_v2 inputs; raw builds protein-only inputs from chunks",
+    )
+    parser.add_argument(
+        "--prepared-topology-suffix",
+        default=os.environ.get(
+            "VARMDYN_PREPARED_TOPOLOGY_SUFFIX",
+            "02.leap/com/cdl.com.striped_v2.prmtop",
+        ),
+    )
+    parser.add_argument(
+        "--prepared-traj-suffix",
+        default=os.environ.get(
+            "VARMDYN_PREPARED_TRAJ_SUFFIX",
+            "04.ptraj/com/concatenated/production-25-to-29-concatenated-750frames.striped_v2.mdcrd.nc",
+        ),
+    )
+    parser.add_argument(
+        "--prepared-ref-traj-suffix",
+        default=os.environ.get(
+            "VARMDYN_PREPARED_REF_TRAJ_SUFFIX",
+            "04.ptraj/com/cr1/traj-proc/production-25-to-29-500ns.cr1.striped_v2.mdcrd.nc",
+        ),
+    )
+    parser.add_argument(
+        "--topology-suffix",
+        default=os.environ.get("VARMDYN_TOPOLOGY_SUFFIX", "02.leap/com/cdl.com.wat.leap.prmtop"),
+    )
+    parser.add_argument(
+        "--traj-template",
+        default=os.environ.get("VARMDYN_TRAJ_TEMPLATE", "03.pmemd/com/{replica}/{chunk}md.mdcrd.nc"),
+    )
+    parser.add_argument("--replicas", default=os.environ.get("VARMDYN_REPLICAS", "cr1,cr2,cr3"))
+    parser.add_argument("--chunks", default=os.environ.get("VARMDYN_CHUNKS", "25,26,27,28,29"))
+    parser.add_argument("--stride", type=int, default=int(os.environ.get("VARMDYN_TRAJ_STRIDE", "20")))
+    parser.add_argument("--apo-strip-mask", default=os.environ.get("VARMDYN_APO_STRIP_MASK", ":WAT,Na+,Cl-"))
+    parser.add_argument(
+        "--holo-strip-mask",
+        default=os.environ.get("VARMDYN_HOLO_STRIP_MASK", ":WAT,Na+,Cl-,ATP,MG"),
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument("--force", action="store_true")
 

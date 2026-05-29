@@ -22,8 +22,9 @@ check_shared_packet.sh     local packet sanity check
 
 For each state and variant, the workflow:
 
-1. reads a simulation topology and trajectory chunks from a simulation folder;
-2. strips solvent, ions, and ligand as needed for protein-only DyNetAn nodes;
+1. reads prepared protein-only inputs when available, or raw simulation chunks
+   when explicitly requested;
+2. keeps the prepared-input route separate from the raw-input convenience route;
 3. writes prepared topology, sampled NetCDF, PDB, PSF, and DCD files under
    `data/network/full/prepared/<state>/<variant>/`;
 4. runs DyNetAn on the prepared PDB/PSF/DCD pair;
@@ -88,45 +89,81 @@ Each root should contain variant folders that start with a 2-digit number and an
 └── 06_C291Y/
 ```
 
-### What files does it look for?
+### 3.1 Preferred Input: Prepared Network Files
 
-Inside every variant folder, the workflow expects to find **two** main things:
-1. **The AMBER Topology (`.prmtop`)**: Used to read atom types, masses, and bonds.
-2. **The NetCDF Trajectories (`.nc`)**: The raw atomic coordinates in chunks.
+For reproducible network comparisons, use a pre-stripped topology and a
+pre-concatenated 750-frame trajectory. This matches the analysis convention used
+for the manuscript-style replay.
 
-By default, the script looks for these specific paths inside each variant folder:
+By default, `VARMDYN_INPUT_MODE=auto` uses this route whenever both files exist:
 
 ```text
 01_WT/
-├── 02.leap/com/cdl.com.wat.leap.prmtop       <-- Topology
+├── 02.leap/com/cdl.com.striped_v2.prmtop
+└── 04.ptraj/com/
+    ├── concatenated/
+    │   └── production-25-to-29-concatenated-750frames.striped_v2.mdcrd.nc
+    └── cr1/traj-proc/
+        └── production-25-to-29-500ns.cr1.striped_v2.mdcrd.nc
+```
+
+The `cr1` file is used only to write a rendering reference PDB when it is
+available. DyNetAn uses the concatenated 750-frame trajectory.
+
+If your prepared filenames differ, set:
+
+```bash
+export VARMDYN_INPUT_MODE=prepared
+export VARMDYN_PREPARED_TOPOLOGY_SUFFIX='relative/path/to/stripped.prmtop'
+export VARMDYN_PREPARED_TRAJ_SUFFIX='relative/path/to/concatenated_750frames.nc'
+export VARMDYN_PREPARED_REF_TRAJ_SUFFIX='relative/path/to/reference_first_frame.nc'
+```
+
+### 3.2 Optional Input: Raw Trajectory Chunks
+
+Raw mode is useful for a new project that does not already have prepared
+network files. It is not the strict replay route.
+
+Set:
+
+```bash
+export VARMDYN_INPUT_MODE=raw
+```
+
+The raw route expects these paths by default:
+
+```text
+01_WT/
+├── 02.leap/com/cdl.com.wat.leap.prmtop
 └── 03.pmemd/com/
     ├── cr1/
-    │   ├── 25md.mdcrd.nc                     <-- Trajectory chunk
+    │   ├── 25md.mdcrd.nc
     │   ├── 26md.mdcrd.nc
     │   └── ...
     ├── cr2/
     └── cr3/
 ```
 
-If your filenames or folder names differ from this, you can override the paths before submitting your jobs:
+If your filenames or folder names differ from this, override the raw paths
+before submitting your jobs:
 
 ```bash
-# Change where it looks for the topology file
 export VARMDYN_TOPOLOGY_SUFFIX='relative/path/to/system.prmtop'
-
-# Change where it looks for trajectory chunks
 export VARMDYN_TRAJ_TEMPLATE='03.pmemd/com/{replica}/{chunk}md.mdcrd.nc'
 export VARMDYN_REPLICAS='cr1,cr2,cr3'
 export VARMDYN_CHUNKS='25,26,27,28,29'
-
-# Manually specify variants instead of auto-discovering
-export VARMDYN_VARIANTS=01_WT,02_L119R
 ```
 
 Advanced trajectory path options are shown by:
 
 ```bash
 python network_shared.py prepare --help
+```
+
+Manually specify variants instead of auto-discovering:
+
+```bash
+export VARMDYN_VARIANTS=01_WT,02_L119R
 ```
 
 ## 4. Software Requirements
@@ -297,6 +334,9 @@ compare job. Logs go under:
 runs/mdan/network_full/logs/
 ```
 
+If you set a custom `VARMDYN_NETWORK_DATA_ROOT` on HPC, set the same location as
+`VARMDYN_HPC_NETWORK_DATA_ROOT` before fetching.
+
 ## 9. Fetch Lightweight Results To Local
 
 From the local `network_shared` folder:
@@ -304,6 +344,7 @@ From the local `network_shared` folder:
 ```bash
 export VARMDYN_HPC_HOST=user@login.example.edu
 export VARMDYN_HPC_REPO=/path/to/hpc/network_shared
+export VARMDYN_HPC_NETWORK_DATA_ROOT=/path/to/hpc/network_shared/data/network/full
 bash fetch_network_results.sh
 ```
 
@@ -409,5 +450,3 @@ python build_network_pathway_grid.py
 ```
 
 These scripts will automatically output the final high-resolution PNG: `data/network/full/render/mutant_network_pathway_grid.png`.
-
-

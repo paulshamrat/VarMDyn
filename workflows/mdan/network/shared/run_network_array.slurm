@@ -46,7 +46,10 @@ else
   exit 2
 fi
 
+INPUT_MODE="${VARMDYN_INPUT_MODE:-auto}"
 TOPOLOGY_SUFFIX="${VARMDYN_TOPOLOGY_SUFFIX:-02.leap/com/cdl.com.wat.leap.prmtop}"
+PREPARED_TOPOLOGY_SUFFIX="${VARMDYN_PREPARED_TOPOLOGY_SUFFIX:-02.leap/com/cdl.com.striped_v2.prmtop}"
+PREPARED_TRAJ_SUFFIX="${VARMDYN_PREPARED_TRAJ_SUFFIX:-04.ptraj/com/concatenated/production-25-to-29-concatenated-750frames.striped_v2.mdcrd.nc}"
 STAGE_ARGS=()
 if [[ -n "${VARMDYN_DYNETAN_STAGE_TAG:-}" ]]; then
   STAGE_ARGS+=(--stage-tag "${VARMDYN_DYNETAN_STAGE_TAG}")
@@ -60,7 +63,19 @@ else
       | grep -E '^[0-9]{2}_[A-Za-z0-9]+$' \
       | sort \
       | while read -r variant; do
+          prepared_ok=0
+          raw_ok=0
+          if [[ -f "${ROOT}/${variant}/${PREPARED_TOPOLOGY_SUFFIX}" && -f "${ROOT}/${variant}/${PREPARED_TRAJ_SUFFIX}" ]]; then
+            prepared_ok=1
+          fi
           if [[ -f "${ROOT}/${variant}/${TOPOLOGY_SUFFIX}" ]]; then
+            raw_ok=1
+          fi
+          if [[ "${INPUT_MODE}" == "prepared" && "${prepared_ok}" -eq 1 ]]; then
+            printf '%s\n' "${variant}"
+          elif [[ "${INPUT_MODE}" == "raw" && "${raw_ok}" -eq 1 ]]; then
+            printf '%s\n' "${variant}"
+          elif [[ "${INPUT_MODE}" == "auto" && ( "${prepared_ok}" -eq 1 || "${raw_ok}" -eq 1 ) ]]; then
             printf '%s\n' "${variant}"
           fi
         done

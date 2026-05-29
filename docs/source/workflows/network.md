@@ -246,6 +246,39 @@ environment builder, Slurm array script, and helpers for syncing code to HPC,
 submitting array jobs, and fetching only lightweight CSV/TXT/PDB outputs back to
 the local checkout.
 
+The shared packet has two input routes:
+
+- `VARMDYN_INPUT_MODE=prepared`: use a pre-stripped topology and a
+  pre-concatenated 750-frame trajectory. Use this for manuscript-style replay.
+- `VARMDYN_INPUT_MODE=raw`: build protein-only inputs from raw trajectory
+  chunks. Use this for a new project that does not already have prepared
+  network files.
+
+The default is `auto`, which prefers prepared inputs when both files are present:
+
+```text
+<simulation_root>/<variant>/02.leap/com/cdl.com.striped_v2.prmtop
+<simulation_root>/<variant>/04.ptraj/com/concatenated/production-25-to-29-concatenated-750frames.striped_v2.mdcrd.nc
+```
+
+Raw mode still supports chunked inputs such as:
+
+```text
+<simulation_root>/<variant>/02.leap/com/cdl.com.wat.leap.prmtop
+<simulation_root>/<variant>/03.pmemd/com/cr1/25md.mdcrd.nc
+```
+
+For a strict replay, point the state root to the folder that already contains
+the prepared files, then run the array wrapper from inside the shared packet:
+
+```bash
+source env.sh.example
+export VARMDYN_INPUT_MODE=prepared
+export VARMDYN_APO_ROOT=/path/to/apo/prepared/root
+export VARMDYN_VARIANTS=01_WT,02_L119R
+bash submit_network_array.sh apo 0-1
+```
+
 ## 8. Replay Apo Network Analysis From An Existing DyNetAn Work Directory
 
 Stage the sbatch script:
