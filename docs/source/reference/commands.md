@@ -51,6 +51,7 @@ python workflows/mdan/network/network.py hpc-status
 python workflows/mdan/network/network.py hpc-compare
 python workflows/mdan/network/network.py hpc-fetch
 bash workflows/mdan/network/remodel.sh
+bash workflows/mdan/network/shared/check_shared_packet.sh
 ```
 
 ## 6. Documentation

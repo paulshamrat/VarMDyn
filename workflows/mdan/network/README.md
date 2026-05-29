@@ -65,6 +65,13 @@ sbatch --dependency=afterok:${jobid} workflows/mdan/network/run_network_array.sl
 Use `VARMDYN_VARIANTS=01_WT,02_L119R` with a matching `--array=0-1` when testing
 a small subset.
 
+For a collaborator-facing packet with local sync, HPC array submission, fetch,
+and rendering notes, see:
+
+```text
+workflows/mdan/network/shared/
+```
+
 Network residue renders use the prepared structure for the same state and
 variant by default:
 
