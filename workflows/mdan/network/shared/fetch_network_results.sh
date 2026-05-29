@@ -30,7 +30,7 @@ rsync -av \
 
 rsync -av \
   -e "${VARMDYN_RSYNC_SSH}" \
-  --include='*/' --include='*.pdb' --exclude='*' \
+  --include='*/' --include='*.pdb' --include='bottleneck_nodes_top25.csv' --exclude='*' \
   "${VARMDYN_HPC_HOST}:${VARMDYN_HPC_REPO}/data/network/full/prepared/" \
   "${SCRIPT_DIR}/data/network/full/prepared/"
 

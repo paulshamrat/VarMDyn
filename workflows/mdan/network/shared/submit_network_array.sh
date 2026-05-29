@@ -23,6 +23,8 @@ if [[ "${STATE}" == "holo" && "${VARMDYN_HOLO_ROOT}" == "/path/to/holo/simulatio
   exit 2
 fi
 
+bash create_dynetan_env.sh
+
 mkdir -p runs/mdan/network_full/logs
 
 array_job="$(

@@ -69,38 +69,57 @@ python network_shared.py --help
 
 ## 3. Expected Simulation Layout
 
-Set one or both simulation roots:
+Set one or both simulation roots where your MD trajectories live:
 
 ```bash
 export VARMDYN_APO_ROOT=/path/to/apo/simulation/root
 export VARMDYN_HOLO_ROOT=/path/to/holo/simulation/root
 ```
 
-Each root should contain system folders such as:
+Each root should contain variant folders that start with a 2-digit number and an underscore (e.g., `01_WT`). The script automatically scans the root and discovers them:
+
+```text
+/path/to/apo/simulation/root/
+├── 01_WT/
+├── 02_L119R/
+├── 03_D193H/
+├── 04_G202E/
+├── 05_Q219K/
+└── 06_C291Y/
+```
+
+### What files does it look for?
+
+Inside every variant folder, the workflow expects to find **two** main things:
+1. **The AMBER Topology (`.prmtop`)**: Used to read atom types, masses, and bonds.
+2. **The NetCDF Trajectories (`.nc`)**: The raw atomic coordinates in chunks.
+
+By default, the script looks for these specific paths inside each variant folder:
 
 ```text
 01_WT/
-02_L119R/
-03_D193H/
-04_G202E/
-05_Q219K/
-06_C291Y/
+├── 02.leap/com/cdl.com.wat.leap.prmtop       <-- Topology
+└── 03.pmemd/com/
+    ├── cr1/
+    │   ├── 25md.mdcrd.nc                     <-- Trajectory chunk
+    │   ├── 26md.mdcrd.nc
+    │   └── ...
+    ├── cr2/
+    └── cr3/
 ```
 
-By default each system folder is expected to contain:
-
-```text
-02.leap/com/cdl.com.wat.leap.prmtop
-03.pmemd/com/cr1/25md.mdcrd.nc
-03.pmemd/com/cr1/26md.mdcrd.nc
-...
-03.pmemd/com/cr3/29md.mdcrd.nc
-```
-
-If your filenames differ, override these variables before submitting:
+If your filenames or folder names differ from this, you can override the paths before submitting your jobs:
 
 ```bash
+# Change where it looks for the topology file
 export VARMDYN_TOPOLOGY_SUFFIX='relative/path/to/system.prmtop'
+
+# Change where it looks for trajectory chunks
+export VARMDYN_TRAJ_TEMPLATE='03.pmemd/com/{replica}/{chunk}md.mdcrd.nc'
+export VARMDYN_REPLICAS='cr1,cr2,cr3'
+export VARMDYN_CHUNKS='25,26,27,28,29'
+
+# Manually specify variants instead of auto-discovering
 export VARMDYN_VARIANTS=01_WT,02_L119R
 ```
 
@@ -210,6 +229,20 @@ export VARMDYN_HOLO_ROOT=/path/to/holo/simulation/root
 The environment script expects `conda` on `PATH`. On many HPC systems this means
 loading a Miniforge, Mambaforge, or Anaconda module first.
 
+If the environment already exists but does not match the required stack, rebuild
+it once:
+
+```bash
+VARMDYN_DYNETAN_RECREATE=1 bash create_dynetan_env.sh
+```
+
+The script uses `conda env create` by default. If your site has a working
+`mamba` installation and you prefer it:
+
+```bash
+VARMDYN_CONDA_CREATE_TOOL=mamba bash create_dynetan_env.sh
+```
+
 ## 7. Sync Code From Local To HPC
 
 From the local `network_shared` folder:
@@ -242,6 +275,9 @@ export VARMDYN_VARIANTS=01_WT,02_L119R
 ```
 
 For a two-system apo test:
+
+> [!TIP]
+> **Copying Commands**: Make sure to copy only the command text (e.g., `bash submit_network_array.sh apo 0-1`) and NOT your terminal prompt (like `(base) [user@node]$`). Including the prompt will cause bash to throw a `syntax error near unexpected token` error.
 
 ```bash
 bash submit_network_array.sh apo 0-1
@@ -320,3 +356,58 @@ Use Slurm arrays for full production-size analyses.
 Keep generated files under `data/` or `runs/`. These folders are ignored by the
 main VarMDyn repository and are safe to remove after you have copied any results
 you need.
+
+## 13. Advanced Publication Rendering (CDKL5 Specific)
+
+The default `python network_shared.py render` command is protein-agnostic and will dynamically zoom and color any protein. However, to reproduce the exact CDKL5 publication figures (which feature hand-tuned camera angles, offset labeling, 3D arrows, and surface representations), you must use the specialized scripts bundled in the `remodel/` folder.
+
+### Software Requirements
+To run these advanced renders locally on your machine, you must have the following software installed and accessible from your terminal (`PATH`):
+- **PyMOL 2.5.0 or newer** (for `render_cartoon.py`)
+- **UCSF ChimeraX 1.6 or newer** (for the `.cxc` surface macros)
+
+#### Installing PyMOL
+The easiest way to install PyMOL is via `conda-forge`. You can create a dedicated visualization environment:
+```bash
+conda create -n pymol-viz -c conda-forge pymol-open-source
+conda activate pymol-viz
+```
+
+#### Installing ChimeraX
+ChimeraX is best installed directly from the UCSF website. Download the installer for your operating system (Windows, macOS, or Linux) from:
+[https://www.rbvi.ucsf.edu/chimerax/download.html](https://www.rbvi.ucsf.edu/chimerax/download.html)
+
+### 13a. Generating the 3D Structural Bottleneck Map
+
+After you have downloaded the analysis results into the `data/` folder, you can generate all 3D visualizations (PyMOL cartoons, ChimeraX surfaces, and final SVG/PNG composite) at once using the master layout script.
+
+Ensure your visualization conda environment (e.g., `pymol-viz`) is active:
+
+```bash
+cd remodel/
+
+# Generate the Structural Bottleneck Remodeling Map
+bash build_structural_bottleneck_map.sh
+```
+
+This script will automatically locate your downloaded PDBs, launch PyMOL and ChimeraX to render the structures with the ATP/Mg, crop the excess whitespace, and generate the final composite at: `data/network/full/render/structural_bottleneck_remodeling_map.png`
+
+### 13c. Generating 2D Network Grids
+
+In addition to the 3D structural rendering, the `remodel/` folder contains the scripts used to generate the large 6-variant grid showing network pathways for the publication.
+
+Run them from the `remodel/` directory after fetching the data:
+
+```bash
+cd remodel/
+
+# Render the individual variant pathways via PyMOL
+python render_mutant_network_pathways.py
+
+# Assemble the 6-variant comparison grid
+python build_network_pathway_grid.py
+```
+
+These scripts will automatically output the final high-resolution PNG: `data/network/full/render/mutant_network_pathway_grid.png`.
+
+

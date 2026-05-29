@@ -14,7 +14,8 @@ if [[ "${VARMDYN_HPC_REPO}" == "/path/to/hpc/network_shared" ]]; then
   exit 2
 fi
 
-"${VARMDYN_SSH_COMMAND}" "${VARMDYN_HPC_HOST}" "mkdir -p '${VARMDYN_HPC_REPO}'"
+read -r -a SSH_CMD <<< "${VARMDYN_SSH_COMMAND}"
+"${SSH_CMD[@]}" "${VARMDYN_HPC_HOST}" "mkdir -p '${VARMDYN_HPC_REPO}'"
 
 rsync -av \
   -e "${VARMDYN_RSYNC_SSH}" \

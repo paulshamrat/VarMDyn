@@ -169,6 +169,17 @@ def prepare_variant(args: argparse.Namespace, variant: str) -> None:
     if not trajin_lines:
         raise SystemExit(f"no trajectory chunks found for {variant}")
 
+    # Generate an extra PDB for PyMOL rendering that keeps the ATP and Mg!
+    ligands_pdb_out = out / f"{variant}_with_ligands.pdb"
+    if keep and (not ligands_pdb_out.exists() or args.force):
+        first_chunk_path = trajin_lines[0].split()[1]
+        inp = work / "extract_ligands_pdb.in"
+        write_text(
+            inp,
+            f"parm {topo}\ntrajin {first_chunk_path} 1 1\nautoimage\nstrip ':WAT,Na+,Cl-'\ntrajout {ligands_pdb_out} pdb\ngo\nquit\n",
+        )
+        run_command(["cpptraj", "-i", str(inp)], work / "extract_ligands_pdb.log")
+
     if not nc_out.exists() or args.force:
         inp = work / "concat_sample.in"
         write_text(
