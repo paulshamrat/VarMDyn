@@ -1,44 +1,73 @@
-# Shared Dynamic Network Packet
+# Network Shared
 
-This folder is a small guide-and-wrapper packet for running the VarMDyn dynamic
-network workflow on an HPC system and bringing lightweight results back for
-local comparison and rendering.
+This folder is a standalone dynamic-network packet. A collaborator can download
+only this folder, place it in a local or HPC working directory, point it to
+simulation topology/trajectory files, and run the network workflow without the
+rest of VarMDyn.
 
-It uses the main VarMDyn network implementation:
+The packet includes:
 
 ```text
-workflows/mdan/network/network.py
-workflows/mdan/network/run_network_array.slurm
+network_shared.py          main CLI: prepare, run, compare, render, full
+run_network_array.slurm    Slurm array runner for one state and many variants
+create_dynetan_env.sh      conda environment builder for DyNetAn
+env.sh.example             editable path template
+sync_code_to_hpc.sh        local-to-HPC code sync helper
+submit_network_array.sh    HPC submit helper
+fetch_network_results.sh   HPC-to-local lightweight result fetch helper
+check_shared_packet.sh     local packet sanity check
 ```
-
-The scripts here only help set paths, sync code, submit Slurm arrays, and fetch
-CSV/PDB outputs. They do not duplicate the DyNetAn analysis logic.
 
 ## 1. What The Workflow Does
 
 For each state and variant, the workflow:
 
-1. reads a simulation topology and trajectory chunks from the simulation folder;
+1. reads a simulation topology and trajectory chunks from a simulation folder;
 2. strips solvent, ions, and ligand as needed for protein-only DyNetAn nodes;
 3. writes prepared topology, sampled NetCDF, PDB, PSF, and DCD files under
    `data/network/full/prepared/<state>/<variant>/`;
 4. runs DyNetAn on the prepared PDB/PSF/DCD pair;
 5. writes top-node, top-edge, bottleneck, and network report files under
    `data/network/full/dynetan/<state>/<variant>/`;
-6. runs a WT-vs-variant comparison after all variant array tasks succeed;
+6. compares WT top-25 bottleneck residues with each variant;
 7. fetches only lightweight CSV/TXT/PDB files back to the local machine.
 
-The PDB used for local rendering comes from the prepared simulation-derived
-folder:
+The PDB used for local rendering is generated from the same simulation input:
 
 ```text
 data/network/full/prepared/<state>/<variant>/<variant>.pdb
 ```
 
-That means each rendered variant can use the matching state/variant structure
-created from its own simulation input.
+## 2. Download Only This Folder
 
-## 2. Expected Simulation Layout
+Recommended folder-only download:
+
+```bash
+svn export https://github.com/paulshamrat/varmdyn/trunk/workflows/mdan/network/shared network_shared
+cd network_shared
+```
+
+If `svn` is not available, use git sparse checkout:
+
+```bash
+git clone --filter=blob:none --sparse https://github.com/paulshamrat/varmdyn.git varmdyn_sparse
+cd varmdyn_sparse
+git sparse-checkout set workflows/mdan/network/shared
+cp -R workflows/mdan/network/shared ../network_shared
+cd ../network_shared
+```
+
+You can also copy this folder manually from a VarMDyn checkout and rename it
+`network_shared`.
+
+Check that the packet is complete:
+
+```bash
+bash check_shared_packet.sh
+python network_shared.py --help
+```
+
+## 3. Expected Simulation Layout
 
 Set one or both simulation roots:
 
@@ -75,94 +104,139 @@ export VARMDYN_TOPOLOGY_SUFFIX='relative/path/to/system.prmtop'
 export VARMDYN_VARIANTS=01_WT,02_L119R
 ```
 
-Advanced trajectory path changes can be passed directly to
-`workflows/mdan/network/network.py`; see:
+Advanced trajectory path options are shown by:
 
 ```bash
-python workflows/mdan/network/network.py prepare --help
+python network_shared.py prepare --help
 ```
 
-## 3. Download The Workflow
+## 4. Software Requirements
 
-Download the full VarMDyn repository, not only this `shared/` folder. The
-wrapper scripts in this folder call the shared implementation in
-`workflows/mdan/network/network.py` and the Slurm template in
-`workflows/mdan/network/run_network_array.slurm`.
+The packet uses different tools for local coordination, HPC analysis, and
+optional rendering.
 
-Recommended download:
+Required locally:
 
-```bash
-git clone https://github.com/paulshamrat/varmdyn.git
-cd varmdyn
+```text
+bash
+python 3.10 or newer
+ssh and rsync, if syncing to HPC from a local machine
 ```
 
-If `git` is not available, download the repository ZIP from GitHub, unzip it,
-and enter the extracted `varmdyn` directory.
+Required on HPC for `prepare`, `run`, and `full`:
 
-## 4. Local Setup
-
-From the local VarMDyn checkout:
-
-```bash
-bash scripts/create_varmdyn_env.sh
-conda activate varmdyn_env
-python scripts/init_data_layout.py
-source data/varmdyn_data.env
+```text
+Slurm, for array submission
+conda, mamba, Miniforge, Mambaforge, or Anaconda
+AmberTools/cpptraj on PATH
 ```
 
-Optional rendering tools are installed separately. Use PyMOL for cartoon
-rendering and ChimeraX for surface rendering if you want to rebuild the network
-figure locally.
-
-## 5. HPC Setup
-
-On the HPC system, clone or sync the same VarMDyn repo into a working directory:
+The DyNetAn conda environment is created by:
 
 ```bash
-git clone https://github.com/paulshamrat/varmdyn.git
-cd varmdyn
+bash create_dynetan_env.sh
 ```
 
-Create the DyNetAn environment on the HPC system:
+That script creates `varmdyn_dynetan` by default and installs the Python stack
+needed by `network_shared.py`:
 
-```bash
-bash workflows/mdan/network/create_dynetan_env.sh
+```text
+python 3.10
+dynetan 2.2.2
+MDAnalysis 2.9
+ParmEd
+NumPy
+SciPy
+pandas
+networkx
+matplotlib
+numba
+ipywidgets/traitlets
+python-louvain
 ```
 
-Then set runtime paths:
+Check the environment after installation:
 
 ```bash
-source workflows/mdan/network/shared/env.sh.example
+conda activate varmdyn_dynetan
+export PYTHONNOUSERSITE=1
+export NUMBA_CACHE_DIR="${PWD}/runs/numba_cache"
+mkdir -p "$NUMBA_CACHE_DIR"
+python -c "import dynetan, MDAnalysis, parmed, networkx; print('network environment OK')"
+cpptraj -h | head
+```
+
+Optional local rendering:
+
+```text
+PyMOL on PATH for `python network_shared.py render`
+ChimeraX, only if you use separate surface-rendering scripts
+```
+
+If your HPC uses environment modules, load conda and AmberTools before running
+the packet. Example module names vary by institution:
+
+```bash
+module load miniforge3
+module load amber
+```
+
+## 5. Local Setup
+
+From the local `network_shared` folder:
+
+```bash
+bash check_shared_packet.sh
+source env.sh.example
+```
+
+Edit the path exports for your machine/account. Optional local rendering needs
+PyMOL on `PATH`; ChimeraX can be used separately for publication-style surfaces
+if your lab has its own rendering scripts.
+
+## 6. HPC Setup
+
+Copy or sync the packet to your HPC working directory, then create the DyNetAn
+environment there:
+
+```bash
+cd /path/to/hpc/network_shared
+bash create_dynetan_env.sh
+source env.sh.example
 export VARMDYN_APO_ROOT=/path/to/apo/simulation/root
 export VARMDYN_HOLO_ROOT=/path/to/holo/simulation/root
 ```
 
-Edit the exported paths for your HPC account before running jobs.
+The environment script expects `conda` on `PATH`. On many HPC systems this means
+loading a Miniforge, Mambaforge, or Anaconda module first.
 
-## 6. Sync Code From Local To HPC
+## 7. Sync Code From Local To HPC
 
-From the local VarMDyn checkout, set:
+From the local `network_shared` folder:
 
 ```bash
 export VARMDYN_HPC_HOST=user@login.example.edu
-export VARMDYN_HPC_REPO=/path/to/hpc/varmdyn
+export VARMDYN_HPC_REPO=/path/to/hpc/network_shared
+bash sync_code_to_hpc.sh
 ```
 
-Then sync code only:
+The sync helper copies the packet code and excludes generated `data/` and
+`runs/` folders.
+
+If your site needs a custom SSH command, set:
 
 ```bash
-bash workflows/mdan/network/shared/sync_code_to_hpc.sh
+export VARMDYN_SSH_COMMAND='ssh'
+export VARMDYN_RSYNC_SSH="$VARMDYN_SSH_COMMAND"
 ```
 
-This excludes `data/`, `runs/`, `.local_docs/`, and other generated files.
+## 8. Submit Array Jobs On HPC
 
-## 7. Submit Array Jobs On HPC
-
-From the HPC VarMDyn checkout:
+From the HPC `network_shared` folder:
 
 ```bash
-cd /path/to/hpc/varmdyn
-source workflows/mdan/network/shared/env.sh.example
+cd /path/to/hpc/network_shared
+source env.sh.example
 export VARMDYN_APO_ROOT=/path/to/apo/simulation/root
 export VARMDYN_VARIANTS=01_WT,02_L119R
 ```
@@ -170,14 +244,14 @@ export VARMDYN_VARIANTS=01_WT,02_L119R
 For a two-system apo test:
 
 ```bash
-bash workflows/mdan/network/shared/submit_network_array.sh apo 0-1
+bash submit_network_array.sh apo 0-1
 ```
 
 For all six holo systems:
 
 ```bash
 unset VARMDYN_VARIANTS
-bash workflows/mdan/network/shared/submit_network_array.sh holo 0-5
+bash submit_network_array.sh holo 0-5
 ```
 
 The submit wrapper launches one Slurm array for variants and one dependent
@@ -187,14 +261,14 @@ compare job. Logs go under:
 runs/mdan/network_full/logs/
 ```
 
-## 8. Fetch Lightweight Results To Local
+## 9. Fetch Lightweight Results To Local
 
-From the local VarMDyn checkout:
+From the local `network_shared` folder:
 
 ```bash
 export VARMDYN_HPC_HOST=user@login.example.edu
-export VARMDYN_HPC_REPO=/path/to/hpc/varmdyn
-bash workflows/mdan/network/shared/fetch_network_results.sh
+export VARMDYN_HPC_REPO=/path/to/hpc/network_shared
+bash fetch_network_results.sh
 ```
 
 This fetches:
@@ -209,13 +283,12 @@ data/network/full/prepared/**/*.pdb
 It does not fetch trajectories, DCD files, NetCDF files, PSF files, or topology
 files.
 
-## 9. Local Compare And Rendering
+## 10. Local Compare And Rendering
 
 After fetching lightweight results:
 
 ```bash
-conda activate varmdyn_env
-python workflows/mdan/network/network.py compare \
+python network_shared.py compare \
   --state apo \
   --root data/network/full/prepared/apo \
   --variants 01_WT,02_L119R
@@ -224,29 +297,26 @@ python workflows/mdan/network/network.py compare \
 Render one variant locally with PyMOL:
 
 ```bash
-python workflows/mdan/network/network.py render \
+python network_shared.py render \
   --state apo \
   --variant 02_L119R
 ```
 
-For the state-paired network figure:
+## 11. Single-Process Run
+
+For small tests on an interactive HPC node, run one state without Slurm:
 
 ```bash
-python scripts/check_data_inputs.py --module network --profile render
-bash workflows/mdan/network/remodel.sh
+python network_shared.py full \
+  --state apo \
+  --apo-root "$VARMDYN_APO_ROOT" \
+  --variants 01_WT,02_L119R
 ```
 
-## 10. Cleanup Rule
+Use Slurm arrays for full production-size analyses.
 
-Keep code under `workflows/` and generated files under `data/` or `runs/`.
-Those generated folders are ignored by git.
+## 12. Cleanup Rule
 
-Before committing shared workflow changes, run:
-
-```bash
-git status --short
-git diff --check
-python scripts/check_repo_ready.py
-python scripts/check_manuscript_workflows.py --run-root runs
-mkdocs build --strict
-```
+Keep generated files under `data/` or `runs/`. These folders are ignored by the
+main VarMDyn repository and are safe to remove after you have copied any results
+you need.

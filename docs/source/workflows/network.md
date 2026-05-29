@@ -235,15 +235,16 @@ jobid=$(sbatch --parsable --array=0-1 workflows/mdan/network/run_network_array.s
 sbatch --dependency=afterok:${jobid} workflows/mdan/network/run_network_array.slurm apo compare
 ```
 
-A compact shared packet for collaborators is available in:
+A standalone shared packet for collaborators is available in:
 
 ```text
 workflows/mdan/network/shared/
 ```
 
-It contains a README plus wrappers for syncing code to HPC, submitting array
-jobs, and fetching only lightweight CSV/TXT/PDB outputs back to the local
-checkout.
+It can be downloaded by itself and contains its own network runner, DyNetAn
+environment builder, Slurm array script, and helpers for syncing code to HPC,
+submitting array jobs, and fetching only lightweight CSV/TXT/PDB outputs back to
+the local checkout.
 
 ## 8. Replay Apo Network Analysis From An Existing DyNetAn Work Directory
 

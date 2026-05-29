@@ -65,8 +65,9 @@ sbatch --dependency=afterok:${jobid} workflows/mdan/network/run_network_array.sl
 Use `VARMDYN_VARIANTS=01_WT,02_L119R` with a matching `--array=0-1` when testing
 a small subset.
 
-For a collaborator-facing packet with local sync, HPC array submission, fetch,
-and rendering notes, see:
+For a standalone collaborator-facing packet with its own runner, DyNetAn
+environment builder, Slurm array script, local sync, fetch, and rendering notes,
+see:
 
 ```text
 workflows/mdan/network/shared/
