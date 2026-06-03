@@ -88,3 +88,60 @@ To understand what happens behind the scenes during a variant modeling run, the 
 4.  **Manifest Generation**: Generates `manifest.csv` mapping each requested mutation to its resulting output PDB file.
 5.  **Quality Control Check**: Runs the post-run QC script to parse the MODELLER output energies, verify structural integrity, and produce the `varmodel_qc.csv` and `varmodel_qc_summary.txt` files containing warnings for any models with high steric clash energies.
 
+## 8. Adapting to Other Proteins (Generic Pipeline Architecture)
+
+The underlying modeling engine (`workflows/varmodel/modeller/modeller6.py`) is project-agnostic. It can be used to generate wild-type starting structures and mutant structures for **any** protein system, following the same architectural workflow as `ColabMDA`.
+
+### 8.1. Build Mode (Generating the WT Starting Structure)
+If you do not have a pre-refined wild-type structure, you can use the template **Build Mode** to download a structural template from the PDB, align it to a UniProt sequence, build missing coordinates, and reinsert CRYST1 data:
+
+```bash
+# Activate the environment
+conda activate varmdyn_modeller
+
+# Run Build Mode: PDB_ID UniProt_ID [options]
+python workflows/varmodel/modeller/modeller6.py 4bgq O76039 \
+  --chain A \
+  --range 1 303 \
+  --outdir data/varmodel/my_system
+```
+
+*Parameters:*
+*   `pdb_id` (e.g., `4bgq`): The structural template PDB to download.
+*   `uni_id` (e.g., `O76039`): The target protein UniProt accession ID.
+*   `--chain`: The template chain ID to use.
+*   `--range`: The specific residues matching the UniProt sequence range (1-based index).
+*   `--outdir`: Output directory where template logs, alignments, and the final relaxed starting structure (`target.B99990001_with_cryst.pdb`) will be written.
+
+### 8.2. Mutate Mode (Generating Mutants)
+If you already have a starting PDB file, you can run the **Mutate-only Mode** to model specific amino acid substitutions. The script will perform local conjugate gradient optimization and energy minimization on the mutated sidechain, maintaining coordinates of the rest of the protein intact:
+
+```bash
+# Run Mutate-only mode on an existing PDB structure:
+python workflows/varmodel/modeller/modeller6.py \
+  --pdb-in data/varmodel/my_system/target.B99990001_with_cryst.pdb \
+  --chain A \
+  --mut K76E \
+  --outdir-mut data/varmodel/my_system/mutants
+```
+
+*Parameters:*
+*   `--pdb-in`: Path to the starting wild-type PDB structure.
+*   `--chain`: The chain containing the target residue.
+*   `--mut` (or `--list`): The mutation code (e.g. `K76E` where `K` is WT residue, `76` is position matching PDB numbering, and `E` is target residue) or a file containing one mutation per line.
+*   `--outdir-mut`: Output directory to store the resulting mutant PDB structure (`target.B99990001_K76E_with_cryst.pdb`).
+
+### 8.3. Customizing the Wrapper Config
+Alternatively, you can run the top-level wrapper script for a different protein by modifying `workflows/varmodel/config.yaml` to match your new system:
+
+```yaml
+varmodel:
+  legacy_script: varmodel/modeller/modeller6.py
+  python_exe: ""
+  wt_pdb: path/to/your/new_wildtype.pdb     # Point to your custom wildtype PDB
+  mutations_list: path/to/your/mutations.txt  # Point to your mutations file
+  chain: A                                   # Target chain
+  seed: -49837                               # Modeller random seed
+  out_root: varmodel/outputs
+```
+
