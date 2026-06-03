@@ -34,15 +34,23 @@ export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 
 ## 3. Google Colab Terminal
 
+The bootstrap script automatically clones the repository to `/content/VarMDyn` and configures the environment.
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/paulshamrat/VarMDyn/main/scripts/bootstrap_colab.sh -o bootstrap_colab.sh
 bash bootstrap_colab.sh
 ```
 
-Then run:
+Change directory to the cloned repository:
 
 ```bash
-/root/miniforge3/bin/conda run -n varmdyn_env python /content/VarMDyn/scripts/check_repo_ready.py
+cd /content/VarMDyn
+```
+
+Then run pre-flight checks:
+
+```bash
+/root/miniforge3/bin/conda run -n varmdyn_env python scripts/check_repo_ready.py
 ```
 
 ## 4. MODELLER
