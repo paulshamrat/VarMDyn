@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Fresh Google Colab or ColabMDA-style terminal bootstrap.
+# Fresh Google Colab terminal bootstrap.
 # Usage:
-#   bash scripts/bootstrap_colab_varmdyn.sh
-#   REPO=paulshamrat/VarMDyn REF=main bash scripts/bootstrap_colab_varmdyn.sh
+#   bash scripts/bootstrap_colab.sh
+#   REPO=paulshamrat/VarMDyn REF=main bash scripts/bootstrap_colab.sh
 
 INSTALL_DIR="${INSTALL_DIR:-/content/VarMDyn}"
 REPO="${REPO:-paulshamrat/VarMDyn}"

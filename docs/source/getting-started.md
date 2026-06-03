@@ -19,7 +19,7 @@ export VARMDYN_DATA_ROOT=$PWD/data
 export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 ```
 
-*Note: For Google Colab or ColabMDA, mount your Google Drive and set the path roots to your Google Drive repository directory:*
+*Note: For Google Colab, mount your Google Drive and set the path roots to your Google Drive repository directory:*
 ```bash
 # mount drive in Python, then set paths:
 export VARMDYN_RUN_ROOT=/content/drive/MyDrive/VarMDyn/data

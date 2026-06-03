@@ -32,17 +32,17 @@ export VARMDYN_HPC_HOST=user@login.example.edu
 export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 ```
 
-## 3. Google Colab Or ColabMDA Terminal
+## 3. Google Colab Terminal
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/paulshamrat/VarMDyn/main/scripts/bootstrap_colab_varmdyn.sh -o bootstrap_colab_varmdyn.sh
-bash bootstrap_colab_varmdyn.sh
+curl -fsSL https://raw.githubusercontent.com/paulshamrat/VarMDyn/main/scripts/bootstrap_colab.sh -o bootstrap_colab.sh
+bash bootstrap_colab.sh
 ```
 
 Then run:
 
 ```bash
-/root/miniforge3/bin/conda run -n varmdyn_env python /content/varmdyn/scripts/check_repo_ready.py
+/root/miniforge3/bin/conda run -n varmdyn_env python /content/VarMDyn/scripts/check_repo_ready.py
 ```
 
 ## 4. MODELLER

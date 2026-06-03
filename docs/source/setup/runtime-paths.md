@@ -16,9 +16,9 @@ export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 data folder for files supplied at run time and lightweight files fetched back
 from HPC jobs.
 
-## 2. Google Colab / ColabMDA Paths
+## 2. Google Colab Paths
 
-If you are running in a Google Colab notebook or a ColabMDA environment, mount your Google Drive and set the roots to your Google Drive repository directory to ensure persistence:
+If you are running in a Google Colab notebook, mount your Google Drive and set the roots to your Google Drive repository directory to ensure persistence:
 
 ```bash
 # In your Python cell:
@@ -49,7 +49,7 @@ export VARMDYN_HPC_USER=user
 |---|---|
 | local outputs | `data/` |
 | local input files | `data/` |
-| Google Colab / ColabMDA | `/content/drive/MyDrive/VarMDyn/data` |
+| Google Colab | `/content/drive/MyDrive/VarMDyn/data` |
 | fetched HPC outputs | `data/` |
 | large HPC runs | scratch or project storage |
 

@@ -13,11 +13,11 @@ export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 python scripts/init_data_layout.py
 ```
 
-## 2. Google Colab Or ColabMDA Terminal
+## 2. Google Colab Terminal
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/paulshamrat/VarMDyn/main/scripts/bootstrap_colab_varmdyn.sh -o bootstrap_colab_varmdyn.sh
-bash bootstrap_colab_varmdyn.sh
+curl -fsSL https://raw.githubusercontent.com/paulshamrat/VarMDyn/main/scripts/bootstrap_colab.sh -o bootstrap_colab.sh
+bash bootstrap_colab.sh
 ```
 
 Then run through the installed environment:
