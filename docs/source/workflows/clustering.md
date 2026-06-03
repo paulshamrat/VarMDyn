@@ -1,7 +1,6 @@
 # Clustering
 
-The clustering workflow reproduces the structural exposure and variant
-position clustering analysis from the included seed inputs.
+The clustering workflow performs structural exposure and variant position clustering analysis from the seed inputs.
 
 ## 1. Inputs
 

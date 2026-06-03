@@ -45,7 +45,7 @@ run.
 
 | Goal | Page |
 |---|---|
-| Reproduce the clustering workflow | [Clustering](workflows/clustering.md) |
+| Run the clustering workflow | [Clustering](workflows/clustering.md) |
 | Generate or dry-run mutant structures | [Variant Modeling](workflows/varmodel.md) |
 | Run RMSD, RMSF, displacement, and network analysis | [Analysis](workflows/analysis.md) |
 | Stage heavy work on an HPC system | [HPC Bridge](setup/hpc.md) |
