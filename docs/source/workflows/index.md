@@ -9,7 +9,6 @@ These are the first workflows to test from a fresh checkout:
 
 - [Clustering](clustering.md)
 - [Variant Modeling](varmodel.md) dry run or full MODELLER smoke panel
-- `python scripts/check_manuscript_workflows.py` to check tracked workflow scripts
 
 ## 2. Analysis Workflows
 

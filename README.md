@@ -39,7 +39,6 @@ Optional public smoke workflows:
 ```bash
 bash scripts/run_clustering.sh
 bash scripts/run_varmodel.sh --dry-run
-python scripts/check_manuscript_workflows.py
 ```
 
 ## Repository Layout

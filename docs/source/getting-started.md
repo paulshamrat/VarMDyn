@@ -35,7 +35,6 @@ where you can place input files and fetched lightweight analysis outputs.
 python scripts/check_repo_ready.py
 bash scripts/run_clustering.sh
 bash scripts/run_varmodel.sh --dry-run
-python scripts/check_manuscript_workflows.py
 ```
 
 These commands confirm that the repository is ready, regenerate the clustering
