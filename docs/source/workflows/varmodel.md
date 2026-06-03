@@ -97,7 +97,7 @@ To understand what happens behind the scenes during a variant modeling run, the 
 
 ## 8. Adapting to Other Proteins (Generic Pipeline Architecture)
 
-The underlying modeling engine (`workflows/varmodel/modeller/modeller6.py`) is project-agnostic. It can be used to generate wild-type starting structures and mutant structures for **any** protein system, following the same architectural workflow as `ColabMDA`.
+The underlying modeling engine (`workflows/varmodel/modeller/modeller6.py`) is project-agnostic. It can be used to generate wild-type starting structures and mutant structures for **any** protein system.
 
 ### 8.1. Build Mode (Generating the WT Starting Structure)
 If you do not have a pre-refined wild-type structure, you can use the template **Build Mode** to download a structural template from the PDB, align it to a UniProt sequence, build missing coordinates, and reinsert CRYST1 data:
