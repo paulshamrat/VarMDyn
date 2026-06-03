@@ -34,6 +34,17 @@ export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 
 ## 3. Google Colab Terminal
 
+### 3.1. Connect Runtime and Drive
+Before starting, set up your Google Colab session:
+1. **Runtime Type**: A standard CPU runtime is sufficient for all `VarMDyn` tasks (clustering, MODELLER variant generation, and analysis).
+2. **Terminal Access**: Open the **Colab Terminal** (via the **⋮** menu in the top right -> **Terminal**), or run these commands inside notebook cells by prefixing them with an exclamation mark `!`.
+3. **Mount Google Drive** (Optional, for persistent storage):
+   ```python
+   from google.colab import drive
+   drive.mount('/content/drive')
+   ```
+
+### 3.2. Installation
 The bootstrap script automatically clones the repository to `/content/VarMDyn` and configures the environment.
 
 ```bash
