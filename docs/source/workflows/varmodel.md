@@ -36,35 +36,49 @@ Run from the repository root directory:
 bash scripts/run_varmodel.sh
 ```
 
-## 4. Outputs
+## 4. Single Mutation Run
+
+You can also run a single mutation directly without editing the mutations list. Run from the repository root directory:
+
+```bash
+bash scripts/run_varmodel.sh --mut L119R
+```
+
+This will write the outputs directly under `data/varmodel/` for the single mutation.
+
+## 5. Outputs
 
 ```text
 data/varmodel/
+  manifest.csv
+  mutate_summary.csv
+  varmodel_qc.csv
+  varmodel_qc_summary.txt
+  mutants/
+    target.B99990001_with_cryst_L119R_with_cryst.pdb
+    ...
 ```
 
-The wrapper records a manifest, mutation list, MODELLER log, generated mutant
-PDBs, and two QC files:
+The wrapper records a manifest, mutation list, MODELLER log, generated mutant PDBs, and two QC files:
 
 ```text
-data/varmodel/<run-name>/varmodel_qc.csv
-data/varmodel/<run-name>/varmodel_qc_summary.txt
+data/varmodel/varmodel_qc.csv
+data/varmodel/varmodel_qc_summary.txt
 ```
 
-## 5. QC Interpretation
+> [!NOTE]
+> If you wish to organize different runs into separate subdirectories, you can pass the `--run-name` option (e.g., `--run-name my_run`), which will output files to `data/varmodel/my_run/`.
 
-The QC report checks that every expected mutant structure was produced, that the
-observed WT residue matches the requested mutation, and that MODELLER energies
-can be parsed from `mutate_summary.csv`. Very high initial or optimized energies
-are reported as warnings so the structure can be inspected before downstream use.
-The public smoke panel is expected to produce five structures; energy warnings do
-not by themselves mean that the command failed.
+## 6. QC Interpretation
 
-## 6. Step-by-Step Execution Details
+The QC report checks that every expected mutant structure was produced, that the observed WT residue matches the requested mutation, and that MODELLER energies can be parsed from `mutate_summary.csv`. Very high initial or optimized energies are reported as warnings so the structure can be inspected before downstream use. The public smoke panel is expected to produce five structures; energy warnings do not by themselves mean that the command failed.
+
+## 7. Step-by-Step Execution Details
 
 To understand what happens behind the scenes during a variant modeling run, the workflow wrapper executes the following sequence:
 
 1.  **Environment Preparation**: Reads `varmodel/config.yaml` to identify the input wild-type PDB structure, the target mutation list, and target chain ID.
-2.  **Output Staging**: Creates a timestamped directory (or a custom named directory) under `data/varmodel/` and copies the wild-type PDB and the mutation list file into it.
+2.  **Output Staging**: Copies the wild-type PDB and the mutation list file directly to `data/varmodel/` (or a subdirectory if a run name is specified).
 3.  **MODELLER Execution**: Launches the underlying Modeller mutate script (`workflows/varmodel/modeller/modeller6.py`) which:
     *   Reads the wild-type structure.
     *   Locates the target residue to mutate.

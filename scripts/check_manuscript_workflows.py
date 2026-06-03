@@ -98,14 +98,17 @@ def check_required_inventory() -> list[Check]:
 
 def check_public_run_outputs(run_root: Path, varmodel_run_name: str) -> list[Check]:
     checks: list[Check] = []
+    varmodel_dir = run_root / "varmodel"
+    if varmodel_run_name:
+        varmodel_dir = varmodel_dir / varmodel_run_name
     outputs = {
         "clustering/calpha/cluster_assignments.csv": run_root / "clustering/calpha/cluster_assignments.csv",
         "clustering/com/cluster_assignments_com.csv": run_root / "clustering/com/cluster_assignments_com.csv",
         "clustering/calpha/buried_dendrogram_classic_calpha.png": run_root / "clustering/calpha/buried_dendrogram_classic_calpha.png",
         "clustering/com/buried_dendrogram_classic_com.png": run_root / "clustering/com/buried_dendrogram_classic_com.png",
-        "varmodel/manifest.csv": run_root / f"varmodel/{varmodel_run_name}/manifest.csv",
-        "varmodel/mutate_summary.csv": run_root / f"varmodel/{varmodel_run_name}/mutate_summary.csv",
-        "varmodel/varmodel_qc.csv": run_root / f"varmodel/{varmodel_run_name}/varmodel_qc.csv",
+        "varmodel/manifest.csv": varmodel_dir / "manifest.csv",
+        "varmodel/mutate_summary.csv": varmodel_dir / "mutate_summary.csv",
+        "varmodel/varmodel_qc.csv": varmodel_dir / "varmodel_qc.csv",
     }
     for label, path in outputs.items():
         exists = path.is_file()
@@ -134,8 +137,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--varmodel-run-name",
-        default="reviewer_smoke",
-        help="Variant-modeling run name to inspect under data/varmodel/.",
+        default="",
+        help="Variant-modeling run subdirectory under data/varmodel/ (default: empty for direct output).",
     )
     parser.add_argument(
         "--outdir",

@@ -157,6 +157,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Disable interactive key prompt when MODELLER license is invalid.",
     )
+    ap.add_argument(
+        "--mut",
+        default=None,
+        help="Single mutation to run (e.g. L119R) instead of mutations_list.",
+    )
     args = ap.parse_args(argv)
 
     invocation_root = Path.cwd().resolve()
@@ -197,8 +202,11 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     run_name_cfg = str(cfg.get("run_name", "")).strip()
-    run_name = args.run_name or run_name_cfg or f"run_{_timestamp()}"
-    run_dir = out_root / run_name
+    run_name = args.run_name if args.run_name is not None else run_name_cfg
+    if run_name:
+        run_dir = out_root / run_name
+    else:
+        run_dir = out_root
     mutants_dir = run_dir / "mutants"
     staged_wt = run_dir / wt_pdb.name
     staged_list = run_dir / mut_list.name
@@ -206,9 +214,12 @@ def main(argv: list[str] | None = None) -> int:
     log_file = run_dir / "mutate.log"
     manifest_csv = run_dir / "manifest.csv"
 
-    muts = _read_mutations(mut_list)
-    if not muts:
-        raise ValueError(f"No mutations found in list: {mut_list}")
+    if args.mut:
+        muts = [args.mut]
+    else:
+        muts = _read_mutations(mut_list)
+        if not muts:
+            raise ValueError(f"No mutations found in list: {mut_list}")
 
     print(f"[INFO] Config: {cfg_path}")
     print(f"[INFO] Project root: {project_root}")
@@ -221,7 +232,10 @@ def main(argv: list[str] | None = None) -> int:
     if not args.dry_run:
         mutants_dir.mkdir(parents=True, exist_ok=True)
         shutil.copy2(wt_pdb, staged_wt)
-        shutil.copy2(mut_list, staged_list)
+        if args.mut:
+            staged_list.write_text(args.mut + "\n", encoding="utf-8")
+        else:
+            shutil.copy2(mut_list, staged_list)
 
     cmd = [
         str(python_exe),

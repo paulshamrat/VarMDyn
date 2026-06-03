@@ -36,15 +36,20 @@ Run from the repository root:
 bash scripts/run_varmodel.sh
 ```
 
-Outputs are written to `$VARMDYN_RUN_ROOT/varmodel` or `data/varmodel`.
-Each full run writes `manifest.csv`, `mutate_summary.csv`, `varmodel_qc.csv`,
-`varmodel_qc_summary.txt`, the MODELLER log, and generated mutant PDB files.
+## 4. Single Mutation Run
 
-The QC report checks that each expected mutant was produced, the observed WT
-residue matches the mutation request, and the MODELLER energies can be parsed.
-High energies are warnings for inspection, not automatic command failures.
+Run from the repository root:
 
-## 4. Inputs
+```bash
+bash scripts/run_varmodel.sh --mut L119R
+```
+
+Outputs are written directly to `$VARMDYN_RUN_ROOT/varmodel` or `data/varmodel/` (unless `--run-name` is used to specify a subdirectory).
+Each run writes `manifest.csv`, `mutate_summary.csv`, `varmodel_qc.csv`, `varmodel_qc_summary.txt`, the MODELLER log, and generated mutant PDB files.
+
+The QC report checks that each expected mutant was produced, the observed WT residue matches the mutation request, and the MODELLER energies can be parsed. High energies are warnings for inspection, not automatic command failures.
+
+## 5. Inputs
 
 Configured in `config.yaml`:
 
