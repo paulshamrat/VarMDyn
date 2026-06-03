@@ -48,7 +48,8 @@ run.
 | Run the clustering workflow | [Clustering](workflows/clustering.md) |
 | Generate or dry-run mutant structures | [Variant Modeling](workflows/varmodel.md) |
 | Run RMSD, RMSF, displacement, and network analysis | [Analysis](workflows/analysis.md) |
-| Stage heavy work on an HPC system | [HPC Bridge](setup/hpc.md) |
+
+> 💡 **HPC Staging:** If you are working with large trajectory datasets that require high-performance computing, configure the [HPC Bridge](setup/hpc.md) setup guide to handle remote staging, execution, and data fetching.
 
 ## 5. Keep Runs Organized
 

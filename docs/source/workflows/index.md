@@ -16,7 +16,7 @@ These workflows use MD-analysis inputs such as trajectories, RMSD/RMSF summaries
 displacement tables, or DyNetAn outputs:
 
 - [Analysis](analysis.md)
-- [HPC Bridge](../setup/hpc.md)
+- [HPC Bridge](../setup/hpc.md) (Setup configuration for offloading heavy jobs)
 
 ## 3. Reproducibility Pattern
 
