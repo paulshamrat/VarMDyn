@@ -50,16 +50,3 @@ KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' \
 
 VMD, AmberTools/cpptraj, and ChimeraX are external tools used by selected
 MD-analysis workflows. Configure them through your local or HPC module system.
-
-
-## 5. Optional DyNetAn Replay Environment
-
-Full trajectory-level dynamic-network replay requires DyNetAn in the environment used by the HPC job:
-
-```bash
-conda env create -f envs/varmdyn_dynetan.yml
-conda activate varmdyn_dynetan
-python -c "import dynetan, traitlets, ipywidgets, networkx, MDAnalysis; import importlib.metadata as md; print('DyNetAn environment OK:', md.version('dynetan'))"
-```
-
-Use `VARMDYN_CONDA_ENV=varmdyn_dynetan` when submitting the network replay wrapper, unless your HPC system already provides an equivalent environment. The tested replay stack uses DyNetAn 2.2.2 with MDAnalysis 2.9.
