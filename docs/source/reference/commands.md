@@ -10,14 +10,14 @@ python scripts/check_manuscript_workflows.py
 ## 2. Public Smoke Tests
 
 ```bash
-bash scripts/run_clustering_repro.sh
-bash scripts/run_varmodel_repro.sh --dry-run
+bash scripts/run_clustering.sh
+bash scripts/run_varmodel.sh --dry-run
 ```
 
 ## 3. Clustering
 
 ```bash
-bash scripts/run_clustering_repro.sh
+bash scripts/run_clustering.sh
 ```
 
 Direct:
@@ -25,15 +25,15 @@ Direct:
 ```bash
 cd workflows/clustering
 python -m pytest -q
-python -m distcluster.cli run all --config config.yaml --outdir ../../runs/clustering
+python -m distcluster.cli run all --config config.yaml --outdir ../../data/clustering
 ```
 
 ## 4. Variant Modeling
 
 ```bash
-bash scripts/run_varmodel_repro.sh --dry-run
+bash scripts/run_varmodel.sh --dry-run
 bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_env
-bash scripts/run_varmodel_repro.sh
+bash scripts/run_varmodel.sh
 python scripts/check_manuscript_workflows.py --varmodel-run-name reviewer_smoke
 ```
 

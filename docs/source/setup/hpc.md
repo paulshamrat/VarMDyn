@@ -2,7 +2,7 @@
 
 Use this workflow when an analysis is easier to run on an HPC system. Keep the
 repository lightweight, run heavy jobs in the configured HPC folder, and copy
-only compact outputs back into `data/` or `runs/`.
+only compact outputs back into `data/`.
 
 ## 1. Runtime Variables
 
@@ -18,18 +18,18 @@ export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 
 ## 2. Pattern
 
-1. Sync or clone `varmdyn` into the HPC run folder.
+1. Sync or clone `VarMDyn` into the HPC run folder.
 2. Submit the job.
 3. Monitor completion.
-4. Fetch compact outputs into `data/` or `runs/`.
+4. Fetch compact outputs into `data/`.
 5. Inspect or validate fetched outputs locally.
 
 Common sync commands:
 
 ```bash
-rsync -av --exclude data/ --exclude runs/ ./ "$VARMDYN_HPC_HOST:$VARMDYN_HPC_PROJECT/varmdyn/"
-rsync -av "$VARMDYN_HPC_HOST:$VARMDYN_HPC_PROJECT/varmdyn/runs/" runs/
-rsync -av "$VARMDYN_HPC_HOST:$VARMDYN_HPC_PROJECT/varmdyn/data/network/" data/network/
+rsync -av --exclude data/ ./ "$VARMDYN_HPC_HOST:$VARMDYN_HPC_PROJECT/VarMDyn/"
+rsync -av "$VARMDYN_HPC_HOST:$VARMDYN_HPC_PROJECT/VarMDyn/data/" data/
+rsync -av "$VARMDYN_HPC_HOST:$VARMDYN_HPC_PROJECT/VarMDyn/data/network/" data/network/
 ```
 
 ## 3. Good Practices

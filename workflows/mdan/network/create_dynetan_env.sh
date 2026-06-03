@@ -10,16 +10,17 @@ if ! command -v conda >/dev/null 2>&1; then
   exit 1
 fi
 
-if conda env list | awk '{print $1}' | grep -qx "${ENV_NAME}"; then
-  if PYTHONNOUSERSITE=1 conda run -n "${ENV_NAME}" python -c "import dynetan, traitlets, ipywidgets, MDAnalysis, networkx, parmed; import importlib.metadata as md; raise SystemExit(0 if md.version('dynetan') == '2.2.2' else 1)" >/dev/null 2>&1; then
-    echo "[OK] conda environment already exists and matches manuscript DyNetAn stack: ${ENV_NAME}"
+if [ "${VARMDYN_DYNETAN_RECREATE:-0}" = "1" ]; then
+  echo "[WARN] Force removing conda environment: ${ENV_NAME}"
+  conda env remove -y -n "${ENV_NAME}" >/dev/null 2>&1 || true
+  rm -rf ~/.conda/envs/"${ENV_NAME}" >/dev/null 2>&1 || true
+  rm -rf ~/miniforge3/envs/"${ENV_NAME}" >/dev/null 2>&1 || true
+elif conda env list | awk '{print $1, $NF}' | grep -qE "^${ENV_NAME} |/${ENV_NAME}$"; then
+  if PYTHONNOUSERSITE=1 conda run -n "${ENV_NAME}" python -c "import dynetan, traitlets, ipywidgets, MDAnalysis, networkx, parmed; import importlib.metadata as md; print('DyNetAn:', md.version('dynetan')); print('MDA:', md.version('MDAnalysis')); print('ParmEd:', md.version('ParmEd')); ok = md.version('dynetan') == '2.2.2' and md.version('MDAnalysis').startswith('2.9.'); raise SystemExit(0 if ok else 1)"; then
+    echo "[OK] conda environment already exists and matches required DyNetAn stack: ${ENV_NAME}"
     exit 0
-  fi
-  if [ "${VARMDYN_DYNETAN_RECREATE:-0}" = "1" ]; then
-    echo "[WARN] removing incompatible conda environment: ${ENV_NAME}"
-    conda env remove -y -n "${ENV_NAME}"
   else
-    echo "[ERROR] conda environment exists but does not match the manuscript DyNetAn stack: ${ENV_NAME}"
+    echo "[ERROR] conda environment exists but does not match the required DyNetAn stack: ${ENV_NAME}"
     echo "        Set VARMDYN_DYNETAN_RECREATE=1 and rerun this script to rebuild it."
     exit 1
   fi

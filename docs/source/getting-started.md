@@ -1,12 +1,12 @@
 # Getting Started
 
-This page gives the shortest practical route through `varmdyn`.
+This page gives the shortest practical route through `VarMDyn`.
 
 ## 1. Clone And Enter The Repository
 
 ```bash
-git clone https://github.com/paulshamrat/varmdyn.git
-cd varmdyn
+git clone https://github.com/paulshamrat/VarMDyn.git
+cd VarMDyn
 ```
 
 ## 2. Create The Main Environment
@@ -14,9 +14,16 @@ cd varmdyn
 ```bash
 bash scripts/create_varmdyn_env.sh
 conda activate varmdyn_env
-export VARMDYN_RUN_ROOT=$PWD/runs
+export VARMDYN_RUN_ROOT=$PWD/data
 export VARMDYN_DATA_ROOT=$PWD/data
 export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
+```
+
+*Note: For Google Colab or ColabMDA, mount your Google Drive and set the path roots to your Google Drive repository directory:*
+```bash
+# mount drive in Python, then set paths:
+export VARMDYN_RUN_ROOT=/content/drive/MyDrive/VarMDyn/data
+export VARMDYN_DATA_ROOT=/content/drive/MyDrive/VarMDyn/data
 ```
 
 `VARMDYN_RUN_ROOT` is where run outputs are written. `VARMDYN_DATA_ROOT` is
@@ -26,8 +33,8 @@ where you can place input files and fetched lightweight analysis outputs.
 
 ```bash
 python scripts/check_repo_ready.py
-bash scripts/run_clustering_repro.sh
-bash scripts/run_varmodel_repro.sh --dry-run
+bash scripts/run_clustering.sh
+bash scripts/run_varmodel.sh --dry-run
 python scripts/check_manuscript_workflows.py
 ```
 
@@ -41,11 +48,10 @@ run.
 |---|---|
 | Reproduce the clustering workflow | [Clustering](workflows/clustering.md) |
 | Generate or dry-run mutant structures | [Variant Modeling](workflows/varmodel.md) |
-| Work with RMSD/RMSF/displacement scripts | [MD Analysis](workflows/mdan.md) |
-| Validate or replay DyNetAn network results | [Dynamic Network Analysis](workflows/network.md) |
-| Stage heavy work on an HPC system | [HPC Bridge](workflows/hpc.md) |
+| Run RMSD, RMSF, displacement, and network analysis | [Analysis](workflows/analysis.md) |
+| Stage heavy work on an HPC system | [HPC Bridge](setup/hpc.md) |
 
 ## 5. Keep Runs Organized
 
-Use `runs/` for generated outputs and `data/` for local data files. Both
-folders are already ignored by git.
+Use `data/` for local data files and generated outputs. This folder is
+already ignored by git.

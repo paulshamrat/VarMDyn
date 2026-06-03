@@ -13,8 +13,6 @@ data/
   network/replay/holo/
   structures/apo/
   structures/holo_atpmg/
-
-runs/
   mdan/network_validation/
   mdan/figures/
 ```
@@ -47,7 +45,7 @@ python workflows/mdan/network/network.py full --state all
 ```
 
 It discovers `NN_NAME` system folders automatically, keeps `01_WT` first, writes
-under ignored `data/network/full/` and `runs/mdan/network_full/`, and skips
+under ignored `data/network/full/` and `data/mdan/network_full/`, and skips
 completed DyNetAn outputs unless `--force` is used.
 
 For faster HPC runs, use the array wrapper so each variant gets its own Slurm
@@ -84,4 +82,4 @@ Existing manuscript-style DyNetAn work directories can also be staged,
 submitted, checked, compared, and fetched through the same CLI with the
 `hpc-*` subcommands.
 
-See the MkDocs page `docs/source/workflows/network.md` for the full protocol.
+See the MkDocs page `docs/source/workflows/analysis.md` for the full protocol.

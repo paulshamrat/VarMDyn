@@ -7,14 +7,14 @@ inputs:
 - `data/raw/target.B99990001_with_cryst.pdb`
 
 Generated exposure tables, cluster assignments, silhouettes, and figures are
-written to `runs/` and are not tracked.
+written to `data/` and are not tracked.
 
 ## 1. Run From Repository Root
 
 ```bash
 conda activate varmdyn_env
-export VARMDYN_RUN_ROOT=$PWD/runs
-bash scripts/run_clustering_repro.sh
+export VARMDYN_RUN_ROOT=$PWD/data
+bash scripts/run_clustering.sh
 ```
 
 ## 2. Run Directly
@@ -22,13 +22,13 @@ bash scripts/run_clustering_repro.sh
 ```bash
 cd workflows/clustering
 python -m pytest -q
-python -m distcluster.cli run all --config config.yaml --outdir ../../runs/clustering
+python -m distcluster.cli run all --config config.yaml --outdir ../../data/clustering
 ```
 
 ## 3. Outputs
 
 ```text
-runs/clustering/
+data/clustering/
   ddG_Fmax_with_rel_sasa_from_pymol.xlsx
   ddG_Fmax_exposure.xlsx
   ddG_Fmax_buried.xlsx

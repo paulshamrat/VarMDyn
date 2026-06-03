@@ -71,6 +71,9 @@ fi
 case "${MODE}" in
   variant)
     TASK_ID="${SLURM_ARRAY_TASK_ID:-0}"
+    PACKET_DIR="${SLURM_SUBMIT_DIR:-$PWD}"
+    cd "${PACKET_DIR}"
+    export NUMBA_CACHE_DIR="${NUMBA_CACHE_DIR:-${PACKET_DIR}/runs/numba_cache}"
     if (( TASK_ID < 0 || TASK_ID >= ${#VARIANTS[@]} )); then
       echo "[FAIL] SLURM_ARRAY_TASK_ID=${TASK_ID} outside variant count ${#VARIANTS[@]}" >&2
       exit 2

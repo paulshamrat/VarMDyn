@@ -9,12 +9,12 @@ if [[ -n "${CONDA_SH:-}" ]]; then
   source "${CONDA_SH}"
 fi
 if command -v conda >/dev/null 2>&1; then
-  conda activate "${VARMDYN_PYMOL_ENV:-pymol-viz}" >/dev/null 2>&1 || true
+  conda activate "${VARMDYN_PYMOL_ENV:-varmdyn_pymol}" >/dev/null 2>&1 || true
 fi
 
 /snap/bin/inkscape \
   "$HERE/fig2_variant_context_calpha_com_review_mod.svg" \
   --export-type=pdf \
-  --export-filename="${OUT_PDF:-$ROOT/runs/clustering_figures/fig2_variant_context_calpha_com_review_mod.pdf}"
+  --export-filename="${OUT_PDF:-$ROOT/data/clustering_figures/fig2_variant_context_calpha_com_review_mod.pdf}"
 
-echo "${OUT_PDF:-$ROOT/runs/clustering_figures/fig2_variant_context_calpha_com_review_mod.pdf}"
+echo "${OUT_PDF:-$ROOT/data/clustering_figures/fig2_variant_context_calpha_com_review_mod.pdf}"

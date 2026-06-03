@@ -1,4 +1,4 @@
-name: pymol-viz
+name: varmdyn_pymol
 channels:
   - conda-forge
   - bioconda
@@ -127,6 +127,7 @@ dependencies:
   - pymol-open-source=3.1.0
   - pyqt=5.15.11
   - pyqt5-sip=12.17.0
+  - pyside6=6.10.2
   - python=3.11.14
   - python_abi=3.11
   - qt-main=5.15.15
@@ -150,6 +151,7 @@ dependencies:
   - xorg-libx11=1.8.13
   - xorg-libxau=1.0.12
   - xorg-libxcomposite=0.4.7
+  - xorg-libxcursor=1.2.3
   - xorg-libxdamage=1.1.6
   - xorg-libxdmcp=1.1.5
   - xorg-libxext=1.3.7
@@ -160,7 +162,6 @@ dependencies:
   - zlib-ng=2.3.3
   - zstd=1.5.7
   - pip:
-      - colabmda==0.1.0
       - contourpy==1.3.3
       - cycler==0.12.1
       - filelock==3.29.0

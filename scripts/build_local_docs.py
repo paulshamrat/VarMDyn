@@ -83,7 +83,7 @@ def infer_source_root() -> str | None:
 def replacement_map() -> dict[str, str]:
     repo_root = str(ROOT)
     data_root = env_path("VARMDYN_DATA_ROOT", ROOT / "data")
-    run_root = env_path("VARMDYN_RUN_ROOT", ROOT / "runs")
+    run_root = env_path("VARMDYN_RUN_ROOT", ROOT / "data")
     source_root = infer_source_root()
     md_root = env_path("VARMDYN_MD_LEGACY_ROOT")
     hpc_project = env_path("VARMDYN_HPC_PROJECT")
@@ -95,6 +95,7 @@ def replacement_map() -> dict[str, str]:
     conda_env = os.environ.get("VARMDYN_CONDA_ENV")
 
     replacements = {
+        "/path/to/VarMDyn": repo_root,
         "/path/to/varmdyn": repo_root,
         "$PWD/data": data_root,
         "$PWD/runs": run_root,

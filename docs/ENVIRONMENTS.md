@@ -11,32 +11,38 @@ export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 ```
 
 Captured core versions include Python 3.10, Matplotlib 3.10, NumPy 2.2,
-pandas 2.3, SciPy 1.15, scikit-learn 1.7, MDAnalysis 2.9, PyMOL 3.1, and
-MODELLER 10.8.
+pandas 2.3, SciPy 1.15, scikit-learn 1.7, MDAnalysis 2.9, and PyMOL 3.1.
 
 ## 2. PyMOL Rendering Environment
 
-Use `envs/pymol-viz.yml` for PyMOL and MSA rendering utilities:
+Use `envs/varmdyn_pymol.yml` for PyMOL and MSA rendering utilities:
 
 ```bash
-conda env create -f envs/pymol-viz.yml
-conda activate pymol-viz
+conda env create -f envs/varmdyn_pymol.yml
+conda activate varmdyn_pymol
 export PYMOL_BIN="$(which pymol)"
 ```
 
-## 3. MODELLER
+## 3. MODELLER Environment
 
-MODELLER requires each user to supply their own license key. Configure it with:
+MODELLER requires each user to supply their own license key. Create the dedicated `varmdyn_modeller` environment:
 
 ```bash
-bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_env
+conda env create -f envs/varmdyn_modeller.yml
+conda activate varmdyn_modeller
+```
+
+Configure it with:
+
+```bash
+bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_modeller
 ```
 
 For non-interactive use:
 
 ```bash
 KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' \
-  bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_env
+  bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_modeller
 ```
 
 ## 4. HPC Tools

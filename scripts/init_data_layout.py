@@ -25,7 +25,7 @@ def write_env(path: Path, data_root: Path, stage_tag: str, *, force: bool) -> No
 # Load it with: source {path}
 
 export VARMDYN_DATA_ROOT={shell_quote(data_root)}
-export VARMDYN_RUN_ROOT={shell_quote(ROOT / 'runs')}
+export VARMDYN_RUN_ROOT={shell_quote(data_root)}
 export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 
 # Network manuscript tables supplied at run time.

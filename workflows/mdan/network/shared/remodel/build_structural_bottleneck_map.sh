@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 DATA_ROOT="${VARMDYN_DATA_ROOT:-${REPO_ROOT}/data}"
-RUN_ROOT="${VARMDYN_RUN_ROOT:-${REPO_ROOT}/runs}"
+RUN_ROOT="${VARMDYN_RUN_ROOT:-${REPO_ROOT}/data}"
 WORKSPACE_DIR="${VARMDYN_NETWORK_FIGURE_WORKSPACE:-${DATA_ROOT}/network/full/render}"
 
 mkdir -p "${WORKSPACE_DIR}/pymol"
@@ -33,7 +33,7 @@ export VARMDYN_NETWORK_HOLO_PDB
 
 cd "${WORKSPACE_DIR}"
 
-# Relying on the user's active environment (e.g., pymol-viz) instead of hardcoding.
+# Relying on the user's active environment (e.g., varmdyn_pymol) instead of hardcoding.
 
 # 1. Render PyMOL cartoons
 pymol -cq "${SCRIPT_DIR}/render_cartoon.py"

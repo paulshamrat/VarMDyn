@@ -74,7 +74,7 @@ def generate_msa_figure(fasta_path, sequence_ids, sequence_labels, label_colors,
                 out.write(f">{cid}\n{seq_trimmed}\n")
 
     # Run MUSCLE
-    muscle_bin = os.environ.get("MUSCLE_BIN") or shutil.which("muscle") or os.path.expanduser("~/miniforge3/envs/pymol-viz/bin/muscle")
+    muscle_bin = os.environ.get("MUSCLE_BIN") or shutil.which("muscle") or os.path.expanduser("~/miniforge3/envs/varmdyn_pymol/bin/muscle")
     subprocess.run(
         [muscle_bin,
          "-align", "temp_kd.fasta",

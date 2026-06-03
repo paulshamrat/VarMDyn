@@ -18,10 +18,10 @@ export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 
 ## 2. Pattern
 
-1. Stage scripts from local `varmdyn` into a HPC run folder.
+1. Stage scripts from local `VarMDyn` into a HPC run folder.
 2. Submit the job through SSH or an existing bridge.
 3. Monitor completion.
-4. Fetch compact outputs into `runs/` for local inspection.
+4. Fetch compact outputs into `data/` for local inspection.
 5. Keep all fetched outputs gitignored unless a future public fixture is
    intentionally created.
 

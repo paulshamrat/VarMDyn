@@ -3,8 +3,8 @@
 ## 1. Local Workstation
 
 ```bash
-git clone https://github.com/paulshamrat/varmdyn.git
-cd varmdyn
+git clone https://github.com/paulshamrat/VarMDyn.git
+cd VarMDyn
 bash scripts/create_varmdyn_env.sh
 conda activate varmdyn_env
 export VARMDYN_RUN_ROOT=$PWD/runs
@@ -35,7 +35,7 @@ export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
 ## 3. Google Colab Or ColabMDA Terminal
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/paulshamrat/varmdyn/main/scripts/bootstrap_colab_varmdyn.sh -o bootstrap_colab_varmdyn.sh
+curl -fsSL https://raw.githubusercontent.com/paulshamrat/VarMDyn/main/scripts/bootstrap_colab_varmdyn.sh -o bootstrap_colab_varmdyn.sh
 bash bootstrap_colab_varmdyn.sh
 ```
 

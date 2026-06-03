@@ -44,15 +44,15 @@ data/network/full/prepared/<state>/<variant>/<variant>.pdb
 Recommended folder-only download:
 
 ```bash
-svn export https://github.com/paulshamrat/varmdyn/trunk/workflows/mdan/network/shared network_shared
+svn export https://github.com/paulshamrat/VarMDyn/trunk/workflows/mdan/network/shared network_shared
 cd network_shared
 ```
 
 If `svn` is not available, use git sparse checkout:
 
 ```bash
-git clone --filter=blob:none --sparse https://github.com/paulshamrat/varmdyn.git varmdyn_sparse
-cd varmdyn_sparse
+git clone --filter=blob:none --sparse https://github.com/paulshamrat/VarMDyn.git VarMDyn_sparse
+cd VarMDyn_sparse
 git sparse-checkout set workflows/mdan/network/shared
 cp -R workflows/mdan/network/shared ../network_shared
 cd ../network_shared
@@ -68,11 +68,145 @@ bash check_shared_packet.sh
 python network_shared.py --help
 ```
 
-## 3. Expected Simulation Layout
+## 3. Software Requirements
 
-Set one or both simulation roots where your MD trajectories live:
+The packet uses different tools for local coordination, HPC analysis, and
+optional rendering.
+
+Required locally:
+
+```text
+bash
+python 3.10 or newer
+ssh and rsync, if syncing to HPC from a local machine
+```
+
+Required on HPC for `prepare`, `run`, and `full`:
+
+```text
+Slurm, for array submission
+conda, mamba, Miniforge, Mambaforge, or Anaconda
+AmberTools/cpptraj on PATH
+```
+
+The DyNetAn conda environment is created by:
 
 ```bash
+bash create_dynetan_env.sh
+```
+
+That script creates `varmdyn_dynetan` by default and installs the Python stack
+needed by `network_shared.py`:
+
+```text
+python 3.10
+dynetan 2.2.2
+MDAnalysis 2.9
+ParmEd
+NumPy
+SciPy
+pandas
+networkx
+matplotlib
+numba
+ipywidgets/traitlets
+python-louvain
+```
+
+Check the environment after installation:
+
+```bash
+conda activate varmdyn_dynetan
+export PYTHONNOUSERSITE=1
+export NUMBA_CACHE_DIR="${PWD}/data/numba_cache"
+mkdir -p "$NUMBA_CACHE_DIR"
+python -c "import dynetan, MDAnalysis, parmed, networkx; print('network environment OK')"
+cpptraj -h | head
+```
+
+Optional local rendering:
+
+```text
+PyMOL on PATH for `python network_shared.py render`
+ChimeraX, only if you use separate surface-rendering scripts
+```
+
+If your HPC uses environment modules, load conda and AmberTools before running
+the packet. Example module names vary by institution:
+
+```bash
+module load miniforge3
+module load amber
+```
+
+## 4. Local Setup
+
+From the local `network_shared` folder:
+
+```bash
+bash check_shared_packet.sh
+source env.sh.example
+```
+
+Edit the path exports for your machine/account. Optional local rendering needs
+PyMOL on `PATH`; ChimeraX can be used separately for publication-style surfaces
+if your lab has its own rendering scripts.
+
+## 5. Sync Code From Local To HPC
+
+Before you can set up the HPC environment or run the arrays, you must first copy this packet from your local computer to the HPC cluster.
+
+From the local `network_shared` folder:
+
+```bash
+export VARMDYN_HPC_HOST=user@login.example.edu
+export VARMDYN_HPC_REPO=/path/to/hpc/network_shared
+bash sync_code_to_hpc.sh
+```
+
+The sync helper copies the packet code and excludes the generated `data/` folder.
+
+If your site needs a custom SSH command, set:
+
+```bash
+export VARMDYN_SSH_COMMAND='ssh'
+export VARMDYN_RSYNC_SSH="$VARMDYN_SSH_COMMAND"
+```
+
+## 6. HPC Setup
+
+Once the packet is synced to your HPC working directory, SSH into the cluster and create the DyNetAn environment there:
+
+```bash
+cd /path/to/hpc/network_shared
+bash create_dynetan_env.sh
+source env.sh.example
+export VARMDYN_APO_ROOT=/path/to/apo/simulation/root
+export VARMDYN_HOLO_ROOT=/path/to/holo/simulation/root
+```
+
+The environment script expects `conda` on `PATH`. On many HPC systems this means loading a Miniforge, Mambaforge, or Anaconda module first.
+
+If the environment already exists but does not match the required stack, rebuild it once:
+
+```bash
+VARMDYN_DYNETAN_RECREATE=1 bash create_dynetan_env.sh
+```
+
+The script uses `conda env create` by default. If your site has a working `mamba` installation and you prefer it:
+
+```bash
+VARMDYN_CONDA_CREATE_TOOL=mamba bash create_dynetan_env.sh
+```
+
+## 7. Expected Simulation Layout (On HPC)
+
+Because MD trajectories are incredibly large, the DyNetAn calculations are performed directly on the HPC cluster. 
+
+On your **HPC environment**, you must define one or both simulation roots where your trajectories physically reside. You can set these in your terminal or inside an `env.sh` file:
+
+```bash
+# Exported on the HPC:
 export VARMDYN_APO_ROOT=/path/to/apo/simulation/root
 export VARMDYN_HOLO_ROOT=/path/to/holo/simulation/root
 ```
@@ -166,140 +300,6 @@ Manually specify variants instead of auto-discovering:
 export VARMDYN_VARIANTS=01_WT,02_L119R
 ```
 
-## 4. Software Requirements
-
-The packet uses different tools for local coordination, HPC analysis, and
-optional rendering.
-
-Required locally:
-
-```text
-bash
-python 3.10 or newer
-ssh and rsync, if syncing to HPC from a local machine
-```
-
-Required on HPC for `prepare`, `run`, and `full`:
-
-```text
-Slurm, for array submission
-conda, mamba, Miniforge, Mambaforge, or Anaconda
-AmberTools/cpptraj on PATH
-```
-
-The DyNetAn conda environment is created by:
-
-```bash
-bash create_dynetan_env.sh
-```
-
-That script creates `varmdyn_dynetan` by default and installs the Python stack
-needed by `network_shared.py`:
-
-```text
-python 3.10
-dynetan 2.2.2
-MDAnalysis 2.9
-ParmEd
-NumPy
-SciPy
-pandas
-networkx
-matplotlib
-numba
-ipywidgets/traitlets
-python-louvain
-```
-
-Check the environment after installation:
-
-```bash
-conda activate varmdyn_dynetan
-export PYTHONNOUSERSITE=1
-export NUMBA_CACHE_DIR="${PWD}/runs/numba_cache"
-mkdir -p "$NUMBA_CACHE_DIR"
-python -c "import dynetan, MDAnalysis, parmed, networkx; print('network environment OK')"
-cpptraj -h | head
-```
-
-Optional local rendering:
-
-```text
-PyMOL on PATH for `python network_shared.py render`
-ChimeraX, only if you use separate surface-rendering scripts
-```
-
-If your HPC uses environment modules, load conda and AmberTools before running
-the packet. Example module names vary by institution:
-
-```bash
-module load miniforge3
-module load amber
-```
-
-## 5. Local Setup
-
-From the local `network_shared` folder:
-
-```bash
-bash check_shared_packet.sh
-source env.sh.example
-```
-
-Edit the path exports for your machine/account. Optional local rendering needs
-PyMOL on `PATH`; ChimeraX can be used separately for publication-style surfaces
-if your lab has its own rendering scripts.
-
-## 6. HPC Setup
-
-Copy or sync the packet to your HPC working directory, then create the DyNetAn
-environment there:
-
-```bash
-cd /path/to/hpc/network_shared
-bash create_dynetan_env.sh
-source env.sh.example
-export VARMDYN_APO_ROOT=/path/to/apo/simulation/root
-export VARMDYN_HOLO_ROOT=/path/to/holo/simulation/root
-```
-
-The environment script expects `conda` on `PATH`. On many HPC systems this means
-loading a Miniforge, Mambaforge, or Anaconda module first.
-
-If the environment already exists but does not match the required stack, rebuild
-it once:
-
-```bash
-VARMDYN_DYNETAN_RECREATE=1 bash create_dynetan_env.sh
-```
-
-The script uses `conda env create` by default. If your site has a working
-`mamba` installation and you prefer it:
-
-```bash
-VARMDYN_CONDA_CREATE_TOOL=mamba bash create_dynetan_env.sh
-```
-
-## 7. Sync Code From Local To HPC
-
-From the local `network_shared` folder:
-
-```bash
-export VARMDYN_HPC_HOST=user@login.example.edu
-export VARMDYN_HPC_REPO=/path/to/hpc/network_shared
-bash sync_code_to_hpc.sh
-```
-
-The sync helper copies the packet code and excludes generated `data/` and
-`runs/` folders.
-
-If your site needs a custom SSH command, set:
-
-```bash
-export VARMDYN_SSH_COMMAND='ssh'
-export VARMDYN_RSYNC_SSH="$VARMDYN_SSH_COMMAND"
-```
-
 ## 8. Submit Array Jobs On HPC
 
 From the HPC `network_shared` folder:
@@ -331,7 +331,7 @@ The submit wrapper launches one Slurm array for variants and one dependent
 compare job. Logs go under:
 
 ```text
-runs/mdan/network_full/logs/
+data/mdan/network_full/logs/
 ```
 
 If you set a custom `VARMDYN_NETWORK_DATA_ROOT` on HPC, set the same location as
@@ -394,7 +394,7 @@ Use Slurm arrays for full production-size analyses.
 
 ## 12. Cleanup Rule
 
-Keep generated files under `data/` or `runs/`. These folders are ignored by the
+Keep generated files under `data/`. This folder is ignored by the
 main VarMDyn repository and are safe to remove after you have copied any results
 you need.
 
@@ -410,8 +410,8 @@ To run these advanced renders locally on your machine, you must have the followi
 #### Installing PyMOL
 The easiest way to install PyMOL is via `conda-forge`. You can create a dedicated visualization environment:
 ```bash
-conda create -n pymol-viz -c conda-forge pymol-open-source
-conda activate pymol-viz
+conda create -n varmdyn_pymol -c conda-forge pymol-open-source
+conda activate varmdyn_pymol
 ```
 
 #### Installing ChimeraX
@@ -422,7 +422,7 @@ ChimeraX is best installed directly from the UCSF website. Download the installe
 
 After you have downloaded the analysis results into the `data/` folder, you can generate all 3D visualizations (PyMOL cartoons, ChimeraX surfaces, and final SVG/PNG composite) at once using the master layout script.
 
-Ensure your visualization conda environment (e.g., `pymol-viz`) is active:
+Ensure your visualization conda environment (e.g., `varmdyn_pymol`) is active:
 
 ```bash
 cd remodel/

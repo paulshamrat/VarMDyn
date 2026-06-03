@@ -56,7 +56,7 @@ def _check_exposure(run_dir: Path) -> bool:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("run_dir", help="clustering output directory, normally runs/clustering")
+    parser.add_argument("run_dir", help="clustering output directory, normally data/clustering")
     args = parser.parse_args()
 
     run_dir = Path(args.run_dir)

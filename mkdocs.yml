@@ -1,5 +1,5 @@
 site_name: VarMDyn
-site_description: Reproducible protocols for CDKL5 variant clustering, variant modeling, and MD-analysis scripts.
+site_description: Reproducible protocols for variant clustering, variant modeling, and MD-analysis scripts.
 docs_dir: docs/source
 theme:
   name: readthedocs
@@ -11,13 +11,12 @@ nav:
       - Installation: setup/installation.md
       - Environments: setup/environments.md
       - Runtime Paths: setup/runtime-paths.md
+      - HPC Bridge: setup/hpc.md
   - Workflows:
       - Overview: workflows/index.md
       - Clustering: workflows/clustering.md
       - Variant Modeling: workflows/varmodel.md
-      - MD Analysis: workflows/mdan.md
-      - Dynamic Network Analysis: workflows/network.md
-      - HPC Bridge: workflows/hpc.md
+      - Analysis: workflows/analysis.md
   - Reference:
       - Commands: reference/commands.md
       - Outputs: reference/output-policy.md

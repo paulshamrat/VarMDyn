@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORKFLOW="$ROOT/workflows/clustering"
-OUTDIR="${OUTDIR:-${VARMDYN_RUN_ROOT:-$ROOT/runs}/clustering}"
+OUTDIR="${OUTDIR:-${VARMDYN_RUN_ROOT:-$ROOT/data}/clustering}"
 PYTHON_BIN="${PYTHON:-python}"
 
 mkdir -p "$OUTDIR"

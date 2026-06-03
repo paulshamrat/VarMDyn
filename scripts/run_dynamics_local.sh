@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORKFLOW="$ROOT/workflows/mdan/dynamics"
-OUTDIR="${OUTDIR:-${VARMDYN_RUN_ROOT:-$ROOT/runs}/mdan/dynamics}"
+OUTDIR="${OUTDIR:-${VARMDYN_RUN_ROOT:-$ROOT/data}/mdan/dynamics}"
 DATA_ROOT="${VARMDYN_DATA_ROOT:-$ROOT/data}"
 INPUT_ROOT="${DYNAMICS_NLOBE_Y171_INPUT_ROOT:-$DATA_ROOT/dynamics}"
 

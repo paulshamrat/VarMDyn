@@ -4,10 +4,10 @@ set -euo pipefail
 # Fresh Google Colab or ColabMDA-style terminal bootstrap.
 # Usage:
 #   bash scripts/bootstrap_colab_varmdyn.sh
-#   REPO=paulshamrat/varmdyn REF=main bash scripts/bootstrap_colab_varmdyn.sh
+#   REPO=paulshamrat/VarMDyn REF=main bash scripts/bootstrap_colab_varmdyn.sh
 
-INSTALL_DIR="${INSTALL_DIR:-/content/varmdyn}"
-REPO="${REPO:-paulshamrat/varmdyn}"
+INSTALL_DIR="${INSTALL_DIR:-/content/VarMDyn}"
+REPO="${REPO:-paulshamrat/VarMDyn}"
 REF="${REF:-main}"
 MINIFORGE_DIR="${MINIFORGE_DIR:-$HOME/miniforge3}"
 ENV_NAME="${ENV_NAME:-varmdyn_env}"
@@ -52,6 +52,6 @@ export VARMDYN_RUN_ROOT="${VARMDYN_RUN_ROOT:-/content/varmdyn-runs}"
 python scripts/check_repo_ready.py
 python scripts/compare_clustering_outputs.py --help >/dev/null
 
-echo "[OK] varmdyn is ready in ${INSTALL_DIR}"
+echo "[OK] VarMDyn is ready in ${INSTALL_DIR}"
 echo "[NEXT] conda activate ${ENV_NAME} && cd ${INSTALL_DIR}"
 echo "[NEXT] make check"

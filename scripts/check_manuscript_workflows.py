@@ -68,10 +68,9 @@ def check_shell_syntax(paths: list[Path]) -> list[Check]:
 
 def check_required_inventory() -> list[Check]:
     required = [
-        "scripts/run_clustering_repro.sh",
-        "scripts/run_varmodel_repro.sh",
+        "scripts/run_clustering.sh",
+        "scripts/run_varmodel.sh",
         "scripts/init_data_layout.py",
-        "scripts/check_data_inputs.py",
         "scripts/check_data_inputs.py",
         "scripts/compare_clustering_outputs.py",
         "workflows/clustering/distcluster/cli.py",
@@ -130,13 +129,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--run-root",
-        default=str(ROOT / "runs"),
-        help="Ignored run root to inspect for public smoke-run outputs.",
+        default=str(ROOT / "data"),
+        help="Ignored data root to inspect for public smoke-run outputs.",
     )
     parser.add_argument(
         "--varmodel-run-name",
         default="reviewer_smoke",
-        help="Variant-modeling run name to inspect under runs/varmodel/.",
+        help="Variant-modeling run name to inspect under data/varmodel/.",
     )
     parser.add_argument(
         "--outdir",

@@ -4,10 +4,10 @@ check:
 	python scripts/check_repo_ready.py
 
 clustering-smoke:
-	bash scripts/run_clustering_repro.sh
+	bash scripts/run_clustering.sh
 
 varmodel-dry-run:
-	bash scripts/run_varmodel_repro.sh --dry-run
+	bash scripts/run_varmodel.sh --dry-run
 
 dynamics-local:
 	bash scripts/run_dynamics_local.sh

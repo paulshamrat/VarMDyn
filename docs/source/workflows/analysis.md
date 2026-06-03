@@ -1,32 +1,122 @@
-# Dynamic Network Analysis
+# Analysis
+
+`workflows/mdan/` contains RMSD, RMSF, displacement, network, and structural
+rendering scripts used for the analysis parts of the study.
+
+## 1.1. Runtime Paths
+
+```bash
+export VARMDYN_RUN_ROOT=$PWD/data
+export VARMDYN_DATA_ROOT=$PWD/data
+export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
+export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
+export VARMDYN_HPC_HOST=user@login.example.edu
+```
+
+*Note: For Google Colab or ColabMDA, mount your Google Drive and set the path roots to your Google Drive repository directory:*
+```bash
+# mount drive in Python, then set paths:
+export VARMDYN_RUN_ROOT=/content/drive/MyDrive/VarMDyn/data
+export VARMDYN_DATA_ROOT=/content/drive/MyDrive/VarMDyn/data
+```
+
+## 1.2. Function And Structural Annotations
+
+Function-oriented figure scripts are grouped by purpose:
+
+```text
+workflows/mdan/function/full/       full-length protein schematic
+workflows/mdan/function/kinase/     kinase-domain annotation
+workflows/mdan/function/msa/        sequence retrieval, MSA, and domain tables
+workflows/mdan/function/mechanism/  mechanism composites
+```
+
+They read user-supplied source panels and sequence inputs from `data/` and write
+generated outputs under `data/mdan/function/`.
+
+## 1.3. RMSD
+
+Inspect available options:
+
+```bash
+python workflows/mdan/rmsd/summarize.py --help
+python workflows/mdan/rmsd/plot.py --help
+```
+
+Write outputs under:
+
+```text
+data/mdan/rmsd/
+```
+
+## 1.4. RMSF And Dynamics
+
+This section covers residue fluctuation (RMSF) overlay plotting and local dynamics displacement calculations.
+
+### 1.4.1. RMSF Figures
+
+RMSF figure scripts use `.agr` files or generated RMSF summaries:
+
+```bash
+python workflows/mdan/rmsf/overlay.py --help
+python workflows/mdan/rmsf/supplementary.py --help
+```
+
+Common variables:
+
+```bash
+export VARMDYN_RMSF_SOURCE_INPUT_ROOT=$VARMDYN_DATA_ROOT/rmsf_source_inputs
+export VARMDYN_RMSF_SOURCE_MANIFEST=$VARMDYN_DATA_ROOT/rmsf_source_input_manifest.tsv
+```
+
+### 1.4.2. N-Lobe/Y171 RMSF And Displacement
+
+Local plotting from kept displacement/RMSF tables:
+
+```bash
+export DYNAMICS_NLOBE_Y171_INPUT_ROOT=$VARMDYN_DATA_ROOT/dynamics
+bash scripts/run_dynamics_local.sh
+```
+
+Expected input layout:
+
+```text
+$DYNAMICS_NLOBE_Y171_INPUT_ROOT/
+  kept_tsvs/
+    nlobe_apo/
+    nlobe_holo/
+    y171_apo/
+    y171_holo/
+```
+
+## 1.5. Network Analysis
 
 This workflow validates and replays the DyNetAn residue-communication analysis
 used for the network tables and the network-remodeling figure.
 
-## 1. Folder Logic
+### 1.5.1. Folder Logic
 
 VarMDyn keeps code and data separate:
 
 ```text
 workflows/   code only
-data/        user-supplied inputs and fetched lightweight CSV outputs
-runs/        generated validation reports and rendered figures
+data/        user-supplied inputs, fetched CSVs, and generated outputs/figures
 ```
 
-The `data/` and `runs/` folders are ignored by git. A user can clone the
+The `data/` folder is ignored by git. A user can clone the
 repo, create this layout, place the required data files there, and run the same
 commands without knowing another user's folder structure.
 
 Create the local layout:
 
 ```bash
-cd /path/to/varmdyn
+cd /path/to/VarMDyn
 conda activate varmdyn_env
 python scripts/init_data_layout.py
 source data/varmdyn_data.env
 ```
 
-## 2. What DyNetAn Does Here
+### 1.5.2. What DyNetAn Does Here
 
 DyNetAn builds residue communication networks from MD trajectories. Each protein
 residue is a node. Edges are retained for residue pairs that remain in contact
@@ -44,7 +134,7 @@ The replay protocol uses:
 - top-25 bottleneck residues by edge-betweenness-derived score;
 - WT-referenced lost/gained residue comparisons across the five variants.
 
-## 3. Put Data In The VarMDyn Layout
+### 1.5.3. Put Data In The VarMDyn Layout
 
 For table validation and rendering, place or link files here. This is a folder
 map, not a shell command block:
@@ -78,7 +168,7 @@ python workflows/mdan/network/network.py full --state all
 ```
 
 It discovers system folders matching `NN_NAME`, keeps `01_WT` first, writes
-under ignored `data/network/full/` and `runs/mdan/network_full/`, and skips
+under ignored `data/network/full/` and `data/mdan/network_full/`, and skips
 completed DyNetAn outputs unless `--force` is used.
 
 Residue renders from this workflow use the prepared PDB for the same state and
@@ -116,19 +206,19 @@ DyNetAn replay directory:
 python scripts/check_data_inputs.py --module network --profile holo-replay
 ```
 
-## 4. Configure The DyNetAn Replay Environment
+### 1.5.4. Configure The DyNetAn Replay Environment
 
 Local table validation and figure rendering use `varmdyn_env`. The trajectory-level network replay also needs DyNetAn. Create the optional replay environment on the machine where the replay job will run:
 
 ```bash
-conda env create -f envs/dynetan_env.yml
+conda env create -f envs/varmdyn_dynetan.yml
 conda activate varmdyn_dynetan
 python -c "import dynetan, traitlets, ipywidgets, networkx, MDAnalysis; import importlib.metadata as md; print('DyNetAn environment OK:', md.version('dynetan'))"
 ```
 
 If your HPC system already has an equivalent environment, set `VARMDYN_CONDA_ENV` to that environment name. The tested replay stack uses DyNetAn 2.2.2 with MDAnalysis 2.9.
 
-## 5. Configure HPC Replay Paths
+### 1.5.5. Configure HPC Replay Paths
 
 Set these for HPC replay work:
 
@@ -153,14 +243,14 @@ Check the remote DyNetAn work directory:
 python scripts/check_data_inputs.py --module network --profile remote --remote --timeout-seconds 60
 ```
 
-## 6. Validate Existing Tables
+### 1.5.6. Validate Existing Tables
 
 With `source data/varmdyn_data.env` loaded, the validator uses the standard
 `data/` paths automatically:
 
 ```bash
 python workflows/mdan/network/validate_network_manuscript_outputs.py \
-  --outdir runs/mdan/network_validation/manuscript_tables
+  --outdir data/mdan/network_validation/manuscript_tables
 ```
 
 Expected table validation:
@@ -170,7 +260,7 @@ OK frequency: 25 rows, 5 columns
 OK overlap: 5 rows, 9 columns
 ```
 
-## 7. Run Full Network Analysis From Simulation Roots
+### 1.5.7. Run Full Network Analysis From Simulation Roots
 
 Set the apo and/or holo roots. Each root should contain folders such as
 `01_WT`, `02_L119R`, and so on:
@@ -279,7 +369,7 @@ export VARMDYN_VARIANTS=01_WT,02_L119R
 bash submit_network_array.sh apo 0-1
 ```
 
-## 8. Replay Apo Network Analysis From An Existing DyNetAn Work Directory
+### 1.5.8. Replay Apo Network Analysis From An Existing DyNetAn Work Directory
 
 Stage the sbatch script:
 
@@ -317,12 +407,12 @@ Fetch lightweight CSV outputs into the standard local data layout:
 python workflows/mdan/network/network.py hpc-fetch
 ```
 
-## 9. Validate Fetched Apo Replay Outputs
+### 1.5.9. Validate Fetched Apo Replay Outputs
 
 ```bash
 python workflows/mdan/network/validate_network_manuscript_outputs.py \
   --stage-tag $VARMDYN_DYNETAN_STAGE_TAG \
-  --outdir runs/mdan/network_validation/$VARMDYN_DYNETAN_STAGE_TAG
+  --outdir data/mdan/network_validation/$VARMDYN_DYNETAN_STAGE_TAG
 ```
 
 Expected replay validation:
@@ -334,10 +424,10 @@ OK apo frequency replay: 12 rows compared
 OK apo overlap replay: 20 fields compared
 ```
 
-## 10. Build The Associated Network Figure
+### 1.5.10. Build The Associated Network Figure
 
 The network-remodel figure reads apo and holo/ATP-Mg structure files from
-`data/structures/` by default and writes rendered outputs to `runs/`:
+`data/structures/` by default and writes rendered outputs to `data/`:
 
 ```bash
 python scripts/check_data_inputs.py --module network --profile render
@@ -347,8 +437,8 @@ bash workflows/mdan/network/remodel.sh
 Expected output:
 
 ```text
-runs/mdan/network/network_remodel_final.svg
-runs/mdan/network/network_remodel_final_preview.png
+data/mdan/network/network_remodel_final.svg
+data/mdan/network/network_remodel_final_preview.png
 ```
 
 The build uses PyMOL for residue-coloring cartoon panels, ChimeraX for surface

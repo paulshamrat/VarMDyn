@@ -273,7 +273,7 @@ def main() -> int:
 
     frequency = Path(args.frequency).expanduser() if args.frequency else default_frequency_table()
     overlap = Path(args.overlap).expanduser() if args.overlap else default_overlap_table()
-    outdir = Path(args.outdir or Path.cwd() / "runs" / "mdan" / "network_validation")
+    outdir = Path(args.outdir or Path.cwd() / "data" / "mdan" / "network_validation")
     outdir.mkdir(parents=True, exist_ok=True)
 
     messages: list[str] = []

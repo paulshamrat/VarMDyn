@@ -5,33 +5,38 @@ a gitignored output folder.
 
 ## 1. Dry Run
 
+Run from the repository root:
+
 ```bash
-conda activate varmdyn_env
-bash scripts/run_varmodel_repro.sh --dry-run
+conda env create -f envs/varmdyn_modeller.yml
+conda activate varmdyn_modeller
+bash scripts/run_varmodel.sh --dry-run
 ```
 
 ## 2. Configure MODELLER
 
-MODELLER requires a user license key. The public repo does not store keys.
+Run from the repository root:
 
 ```bash
-bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_env
+bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_modeller
 ```
 
 For non-interactive setup:
 
 ```bash
 KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' \
-  bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_env
+  bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_modeller
 ```
 
 ## 3. Full Run
 
+Run from the repository root:
+
 ```bash
-bash scripts/run_varmodel_repro.sh
+bash scripts/run_varmodel.sh
 ```
 
-Outputs are written to `$VARMDYN_RUN_ROOT/varmodel` or `runs/varmodel`.
+Outputs are written to `$VARMDYN_RUN_ROOT/varmodel` or `data/varmodel`.
 Each full run writes `manifest.csv`, `mutate_summary.csv`, `varmodel_qc.csv`,
 `varmodel_qc_summary.txt`, the MODELLER log, and generated mutant PDB files.
 

@@ -16,9 +16,8 @@ These are the first workflows to test from a fresh checkout:
 These workflows use MD-analysis inputs such as trajectories, RMSD/RMSF summaries,
 displacement tables, or DyNetAn outputs:
 
-- [MD Analysis](mdan.md)
-- [Dynamic Network Analysis](network.md)
-- [HPC Bridge](hpc.md)
+- [Analysis](analysis.md)
+- [HPC Bridge](../setup/hpc.md)
 
 ## 3. Reproducibility Pattern
 

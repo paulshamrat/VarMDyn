@@ -4,10 +4,10 @@ This module contains scripts for RMSD, RMSF, displacement, network, and structur
 
 ## 1. Runtime Paths
 
-All workflow scripts default to reading from the `data/` folder and writing their generated outputs/runs into the `runs/` folder using matching, organized directory structures.
+All workflow scripts default to reading from the `data/` folder and writing their generated outputs/runs into the `data/` folder using matching, organized directory structures.
 
 ```bash
-export VARMDYN_RUN_ROOT=$PWD/runs
+export VARMDYN_RUN_ROOT=$PWD/data
 export VARMDYN_DATA_ROOT=$PWD/data
 export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
 export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
@@ -46,7 +46,7 @@ bash workflows/mdan/network/remodel.sh
 ```
 
 Use `python scripts/init_data_layout.py` to create the standard `data/` layout.
-Validation reports are written to `runs/mdan/network/`.
+Validation reports are written to `data/mdan/network/`.
 
 ## 6. Function
 
@@ -58,4 +58,4 @@ python workflows/mdan/function/mechanism/mechanism_split.py --help
 ```
 
 Function scripts use source files under `data/function/` and write outputs under
-`runs/mdan/function/` unless a command exposes a specific output argument.
+`data/mdan/function/` unless a command exposes a specific output argument.

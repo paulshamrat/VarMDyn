@@ -9,7 +9,7 @@ set -euo pipefail
 #   bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_env
 #   KEY_MODELLER=YOUR_KEY bash workflows/varmodel/install_modeller_in_active_env.sh
 
-TARGET_ENV="varmdyn_env"
+TARGET_ENV="varmdyn_modeller"
 LICENSE_KEY="${KEY_MODELLER:-${MODELLER_LICENSE:-}}"
 
 while [[ $# -gt 0 ]]; do
@@ -39,7 +39,7 @@ CONDA_BASE="$(conda info --base)"
 source "$CONDA_BASE/etc/profile.d/conda.sh"
 
 if ! conda env list | awk '{print $1}' | grep -qx "$TARGET_ENV"; then
-  echo "ERROR: conda env '$TARGET_ENV' not found. Create it with scripts/create_varmdyn_env.sh." >&2
+  echo "ERROR: conda env '$TARGET_ENV' not found. Create it with: conda env create -f envs/varmdyn_modeller.yml" >&2
   exit 1
 fi
 
