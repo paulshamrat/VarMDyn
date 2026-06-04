@@ -38,7 +38,9 @@ tests/
 desktop.ini
 
 # Local maintainer/agent notes, not public docs.
-CHECKPOINT.md
+/CHECKPOINT.md
+/docs/CHECKPOINT.md
+/docs/private_notes/
 .local_notes/
 .local_docs/
 mkdocs.local.yml

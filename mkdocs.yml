@@ -1,5 +1,5 @@
 site_name: VarMDyn
-site_description: Reproducible protocols for variant clustering, variant modeling, and MD-analysis scripts.
+site_description: Reproducible protocols for variant clustering, variant modeling, MD simulation control, and MD-analysis scripts.
 docs_dir: docs/source
 theme:
   name: readthedocs
@@ -16,6 +16,7 @@ nav:
       - Overview: workflows/index.md
       - Clustering: workflows/clustering.md
       - Variant Modeling: workflows/varmodel.md
+      - Molecular Dynamics: workflows/md.md
       - Analysis: workflows/analysis.md
   - Reference:
       - Commands: reference/commands.md

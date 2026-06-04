@@ -1,6 +1,6 @@
 # VarMDyn
 
-**VarMDyn** contains reproducible workflows for variant clustering, variant modeling, and molecular-dynamics analysis.
+**VarMDyn** contains reproducible workflows for variant clustering, variant modeling, molecular-dynamics simulation control, and molecular-dynamics analysis.
 
 The repository is code-focused: generated outputs and analysis inputs are supplied at run time and kept outside the public git history.
 
@@ -48,6 +48,7 @@ VarMDyn/
   workflows/
     clustering/     # exposure classification and C-alpha/COM clustering
     varmodel/       # MODELLER mutate-only workflow wrapper
+    md/             # apo/holo simulation control and HPC bridge commands
     mdan/           # RMSD, RMSF, displacement, network, and rendering scripts
   scripts/          # setup, checks, and top-level helpers
   envs/             # conda environment definitions

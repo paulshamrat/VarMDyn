@@ -9,6 +9,7 @@ These are the first workflows to test from a fresh checkout:
 
 - [Clustering](clustering.md)
 - [Variant Modeling](varmodel.md) dry run or full MODELLER smoke panel
+- [Molecular Dynamics](md.md) dry-run control layer for apo/holo simulation campaigns
 
 ## 2. Analysis Workflows
 

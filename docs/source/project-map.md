@@ -10,6 +10,7 @@ VarMDyn/
   workflows/
     clustering/
     varmodel/
+    md/
     mdan/
   docs/
   data/
@@ -23,6 +24,7 @@ VarMDyn/
 | `scripts/` | Setup, checks, and top-level workflow helpers. |
 | `workflows/clustering/` | rSASA, exposure, C-alpha/COM clustering, reports, and plots. |
 | `workflows/varmodel/` | MODELLER mutation workflow and run wrapper. |
+| `workflows/md/` | Apo/holo simulation control layer, dry-run stages, checks, and HPC bridge commands. |
 | `workflows/mdan/` | RMSD, RMSF, displacement, network, and rendering workflows. |
 | `docs/source/` | MkDocs documentation source. |
 
@@ -41,6 +43,8 @@ folder.
 |---|---|---|
 | `clustering` | `bash scripts/run_clustering.sh` | `data/clustering/` |
 | `varmodel` | `bash scripts/run_varmodel.sh --dry-run` | `data/varmodel/` |
+| `md/apo` | `python workflows/md/apo/run.py --status` | `data/md/apo/` |
+| `md/holo` | `python workflows/md/holo/run.py --status` | `data/md/holo/` |
 | `mdan/rmsd` | `python workflows/mdan/rmsd/summarize.py --help` | `data/mdan/rmsd/` |
 | `mdan/rmsf` | `python workflows/mdan/rmsf/overlay.py --help` | `data/mdan/rmsf/` |
 | `mdan/dynamics` | `bash scripts/run_dynamics_local.sh` | `data/mdan/dynamics/` |

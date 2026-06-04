@@ -1,7 +1,8 @@
 # VarMDyn
 
 **VarMDyn** contains reproducible workflows for variant clustering,
-variant modeling, and molecular-dynamics analysis.
+variant modeling, molecular-dynamics simulation control, and
+molecular-dynamics analysis.
 
 Start with the quick setup, choose the workflow you want to run, and write run
 outputs to the local folder configured by `VARMDYN_RUN_ROOT`.
@@ -13,6 +14,7 @@ outputs to the local folder configured by `VARMDYN_RUN_ROOT`.
 - Understand folders and outputs: [Project Map](project-map.md)
 - Run clustering: [Clustering](workflows/clustering.md)
 - Run variant modeling: [Variant Modeling](workflows/varmodel.md)
+- Prepare MD runs: [Molecular Dynamics](workflows/md.md)
 - Run analysis: [Analysis](workflows/analysis.md)
 
 ## Main Workflow Groups
@@ -21,6 +23,7 @@ outputs to the local folder configured by `VARMDYN_RUN_ROOT`.
 |---|---|---|
 | Clustering | `workflows/clustering/` | rSASA, exposure classification, C-alpha clustering, COM clustering, and clustering reports. |
 | Variant modeling | `workflows/varmodel/` | MODELLER mutate-only workflow and mutation-model run records. |
+| Molecular dynamics | `workflows/md/` | Apo/holo simulation control layer, dry-run stages, checks, and HPC bridge commands. |
 | Analysis | `workflows/mdan/` | RMSD, RMSF, displacement, network, and structural rendering scripts. |
 | Scripts | `scripts/` | Setup helpers, repository checks, smoke tests, and input checks. |
 

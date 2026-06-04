@@ -43,6 +43,18 @@ export VARMDYN_HPC_HOST=user@login.example.edu
 export VARMDYN_HPC_USER=user
 ```
 
+For MD simulation campaigns, keep scratch and project storage roles separate:
+
+```bash
+export VARMDYN_SCRATCH_DATA_ROOT=/scratch/$USER/VarMDyn/data
+export VARMDYN_PROJECT_DATA_ROOT=/path/to/hpc_project/VarMDyn/data
+export VARMDYN_MD_GENERATION_ROOT=$VARMDYN_SCRATCH_DATA_ROOT/md
+export VARMDYN_MD_PROJECT_ROOT=$VARMDYN_PROJECT_DATA_ROOT/md
+```
+
+Scratch is for data generation. The HPC project partition is the durable source
+for analysis, replay, network calculations, and figure preparation.
+
 ## 4. Common Layout
 
 | Platform / Use | Typical path |
@@ -51,7 +63,8 @@ export VARMDYN_HPC_USER=user
 | local input files | `data/` |
 | Google Colab | `/content/drive/MyDrive/VarMDyn/data` |
 | fetched HPC outputs | `data/` |
-| large HPC runs | scratch or project storage |
+| active MD generation | `/scratch/$USER/VarMDyn/data/md` |
+| durable HPC MD analysis | `/path/to/hpc_project/VarMDyn/data/md` |
 
 ## 5. Local Documentation Preview
 

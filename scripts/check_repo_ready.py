@@ -14,6 +14,7 @@ REQUIRED_FILES = [
     "envs/varmdyn_pymol.yml",
     "envs/varmdyn_modeller.yml",
     "envs/varmdyn_dynetan.yml",
+    "envs/varmdyn_hpc.yml",
     "scripts/run_clustering.sh",
     "scripts/run_varmodel.sh",
     "workflows/clustering/config.yaml",
@@ -23,6 +24,20 @@ REQUIRED_FILES = [
     "workflows/varmodel/run.py",
     "workflows/varmodel/config.yaml",
     "workflows/varmodel/modeller/modeller6.py",
+    "scripts/run_md_apo.sh",
+    "scripts/run_md_holo.sh",
+    "workflows/md/README.md",
+    "workflows/md/lib.py",
+    "workflows/md/bridge.py",
+    "workflows/md/handoff.py",
+    "workflows/md/restart.py",
+    "workflows/md/smoke.py",
+    "workflows/md/submit.py",
+    "workflows/md/trajectory.py",
+    "workflows/md/apo/config.yaml",
+    "workflows/md/apo/run.py",
+    "workflows/md/holo/config.yaml",
+    "workflows/md/holo/run.py",
     "workflows/mdan/rmsd/summarize.py",
     "workflows/mdan/rmsd/plot.py",
     "workflows/mdan/rmsf/plot_rmsf_all_variants_replicas_range_mean.py",
@@ -60,6 +75,7 @@ def check_environment_packages() -> bool:
     import os
     import sys
     conda_env = os.environ.get("CONDA_DEFAULT_ENV", "")
+    profile = os.environ.get("VARMDYN_CHECK_PROFILE", "full")
     if not conda_env:
         if "varmdyn_env" in sys.executable:
             conda_env = "varmdyn_env"
@@ -71,16 +87,24 @@ def check_environment_packages() -> bool:
         return True
 
     if conda_env == "varmdyn_env":
-        print("[STEP] Verifying package versions in active varmdyn_env...")
-        expected_versions = {
-            "numpy": "2.2",
-            "pandas": "2.3",
-            "scipy": "1.15",
-            "sklearn": "1.7",
-            "matplotlib": "3.10",
-            "PIL": "12.1",
-            "MDAnalysis": "2.9",
-        }
+        print(f"[STEP] Verifying package versions in active varmdyn_env ({profile})...")
+        if profile == "hpc-control":
+            expected_versions = {
+                "numpy": "",
+                "pandas": "",
+                "yaml": "",
+                "Bio": "",
+            }
+        else:
+            expected_versions = {
+                "numpy": "2.2",
+                "pandas": "2.3",
+                "scipy": "1.15",
+                "sklearn": "1.7",
+                "matplotlib": "3.10",
+                "PIL": "12.1",
+                "MDAnalysis": "2.9",
+            }
     else:  # varmdyn_modeller
         print("[STEP] Verifying package versions in active varmdyn_modeller...")
         expected_versions = {
@@ -102,7 +126,7 @@ def check_environment_packages() -> bool:
             if not version:
                 print(f"[FAIL] {pkg_name} version could not be parsed.")
                 mismatches = True
-            elif not version.startswith(expected):
+            elif expected and not version.startswith(expected):
                 print(f"[FAIL] {pkg_name} version mismatch: expected {expected}.x, found {version}")
                 mismatches = True
             else:
