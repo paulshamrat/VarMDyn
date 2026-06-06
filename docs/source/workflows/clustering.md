@@ -11,15 +11,19 @@ workflows/clustering/data/raw/target.B99990001_with_cryst.pdb
 
 ## 2. Run From Repository Root
 
+Run on: local workstation. Environment: `varmdyn_env`; PyMOL is used from this
+environment for residue SASA.
+
 ```bash
 conda activate varmdyn_env
 export VARMDYN_RUN_ROOT=$PWD/data
 bash scripts/run_clustering.sh
 ```
 
-*Note: For Google Colab, mount your Google Drive and set the path roots to your Google Drive repository directory:*
+**Note: Google Colab/Drive.** For Colab, mount Google Drive and set the path
+root to your Drive repository directory before running the same command:
+
 ```bash
-# mount drive in Python, then set paths:
 export VARMDYN_RUN_ROOT=/content/drive/MyDrive/VarMDyn/data
 bash scripts/run_clustering.sh
 ```
@@ -83,6 +87,8 @@ The workflow folder stays code plus the small tracked seed inputs in
 
 ## 7. Direct Module Command
 
+Run on: local workstation. Environment: `varmdyn_env`.
+
 ```bash
 cd workflows/clustering
 python -m pytest -q
@@ -94,6 +100,8 @@ python -m distcluster.cli run all --config config.yaml --outdir ../../data/clust
 Instead of running the entire pipeline at once, you can run the individual steps one by one to inspect intermediate outputs, learn the workflow, or debug specific tasks.
 
 First, navigate to the clustering directory:
+
+Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
 cd workflows/clustering
@@ -169,4 +177,3 @@ python -m distcluster.cli step exposureplot --config config.yaml --outdir ../../
 ```
 
 *   **Outputs**: Exposure distribution figures (`exposure_hist.png`, `exposure_scatter.png`, etc.) under the active output directory.
-

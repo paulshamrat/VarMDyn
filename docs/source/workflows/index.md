@@ -24,7 +24,7 @@ displacement tables, or DyNetAn outputs:
 For each workflow:
 
 1. activate `varmdyn_env`;
-2. set runtime paths;
+2. confirm runtime paths are already set, or set them if starting a new shell;
 3. run a preflight or dry run when available;
 4. run the workflow;
 5. validate the outputs;

@@ -11,6 +11,9 @@ written to `data/` and are not tracked.
 
 ## 1. Run From Repository Root
 
+Run on: local workstation. Environment: `varmdyn_env`; PyMOL is used from this
+environment for SASA.
+
 ```bash
 conda activate varmdyn_env
 export VARMDYN_RUN_ROOT=$PWD/data
@@ -18,6 +21,8 @@ bash scripts/run_clustering.sh
 ```
 
 ## 2. Run Directly
+
+Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
 cd workflows/clustering

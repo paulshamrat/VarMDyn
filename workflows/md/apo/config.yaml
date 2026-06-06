@@ -1,19 +1,14 @@
 apo:
   generation_root: "${VARMDYN_MD_GENERATION_ROOT:-/scratch/$USER/VarMDyn/data/md}/apo"
   project_root: "${VARMDYN_MD_PROJECT_ROOT:-/path/to/hpc_project/VarMDyn/data/md}/apo"
-  variants_dir: "01_variants"
-  run_dir: "systems"
+  variants_dir: "variants"
+  run_dir: "."
   logs_dir: "logs"
   protocol_dir: "protocol"
   varmodel_root: "${VARMDYN_VARMODEL_ROOT:-data/varmodel}"
 
-  variants:
-    - 01_WT
-    - 02_L119R
-    - 03_D193H
-    - 04_G202E
-    - 05_Q219K
-    - 06_C291Y
+  variants: all
+  variant_aliases: {}
 
   replicas:
     - cr1
@@ -39,13 +34,21 @@ apo:
     handoff: "python workflows/md/handoff.py --state apo"
     prep: "bash workflows/md/apo/scripts/prep.sh"
     leap: "bash workflows/md/apo/scripts/leap.sh"
+    leap_submit: "bash workflows/md/apo/scripts/leap.sh --submit"
     eq_cr1: "bash workflows/md/apo/scripts/eq.sh"
     copy_restart: "bash workflows/md/apo/scripts/restart.sh"
+    restart: "bash workflows/md/apo/scripts/restart.sh"
     prod: "bash workflows/md/apo/scripts/prod.sh"
-    full_submit: "python workflows/md/submit.py --mode full --run-root ${VARMDYN_MD_GENERATION_ROOT:-/scratch/$USER/VarMDyn/data/md}/apo/systems --start ${VARMDYN_MD_PROD_START:-25} --end ${VARMDYN_MD_PROD_END:-29}"
+    full_submit: "python workflows/md/submit.py --mode full --array --run-root ${VARMDYN_MD_GENERATION_ROOT:-/scratch/$USER/VarMDyn/data/md}/apo --start ${VARMDYN_MD_PROD_START:-25} --end ${VARMDYN_MD_PROD_END:-29}"
+    validate_short: "python workflows/md/validate.py --state apo --variants ${VARMDYN_MD_VALIDATE_VARIANTS:-WT}"
     prod_plan: "python workflows/md/trajectory.py --state apo --action plan"
     prepared_plan: "python workflows/md/trajectory.py --state apo --action prepared-plan"
-    sync_project: "rsync -a --info=progress2 ./ ${VARMDYN_MD_PROJECT_ROOT:-/path/to/hpc_project/VarMDyn/data/md}/apo/"
+    sync_project: "python workflows/md/storage.py --state apo --variants all --action sync-project --verify"
+    restore_scratch: "python workflows/md/storage.py --state apo --variants all --action restore-scratch --verify"
+
+  stage_aliases:
+    prepare: prep
+    eq_submit: eq_cr1
 
   gates:
     prep:

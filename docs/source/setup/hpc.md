@@ -1,23 +1,84 @@
 # HPC Runs
 
-Use this workflow when an analysis is easier to run on an HPC system. Keep the
-repository lightweight, run heavy jobs in the configured HPC folder, and copy
-only compact outputs back into `data/`.
+Use this workflow when an analysis is easier to run on an HPC system. The
+normal pattern is local-first control: run bridge commands from the local
+checkout, keep a synced VarMDyn checkout on the durable HPC project partition,
+submit heavy jobs to HPC, and copy only compact outputs back into local `data/`.
 
 For MD simulation campaigns, scratch is for data generation and the HPC project
 partition is the durable working source for analysis.
 
+Code and data have different homes. Use `sync-code` from the local checkout to
+update the durable HPC project checkout; do not run the codebase from scratch.
+Use scratch only as the target for active MD generation. Slurm jobs are still
+submitted from local through `python workflows/md/bridge.py ...`; the bridge
+executes the remote command inside the project checkout and points outputs to
+scratch.
+
 ## 1. Runtime Variables
 
+In the local/private VarMDyn checkout, bridge commands auto-load ignored path
+values from `.local_docs/paths.env` and `data/varmdyn_data.env` when those files
+are present. That is the preferred path for Paul/local-agent work: authenticate
+the bridge, then run the Python bridge commands from the local checkout.
+
+For a generic public setup, or if no ignored local path file exists, run these
+exports in the local VarMDyn terminal:
+
 ```bash
-export VARMDYN_RUN_ROOT=/scratch/$USER/varmdyn-runs
+export VARMDYN_RUN_ROOT=$PWD/data
 export VARMDYN_DATA_ROOT=$PWD/data
 export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
-export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
 export VARMDYN_HPC_HOST=user@login.example.edu
 export VARMDYN_HPC_USER=user
-export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
+export VARMDYN_HPC_PROJECT=/path/to/hpc_project/VarMDyn
+export VARMDYN_HPC_SCRATCH=/scratch/user/VarMDyn
+export VARMDYN_HPC_PYTHON=/path/to/conda/envs/varmdyn_env/bin/python
+export VARMDYN_SSH_COMMAND="ssh -S /path/to/ssh_control_socket -o ControlPath=/path/to/ssh_control_socket"
 ```
+
+If your local helper exports `VARMDYN_SSH_CONTROL_PATH` instead of
+`VARMDYN_SSH_COMMAND`, VarMDyn infers the socket-based SSH command from that
+control path.
+
+## 2. Readiness Check
+
+Before syncing, submitting, or fetching HPC work, check both the local
+environments and the remote bridge from the local VarMDyn checkout:
+
+Run on: local workstation. Local environment: `varmdyn_env`. Remote
+environment used by the check: HPC `varmdyn_env` control environment. The
+readiness check contacts HPC through the authenticated bridge.
+
+```bash
+palmettostatus
+python scripts/check_readiness.py --hpc
+```
+
+This checks:
+
+- local `varmdyn_env`, `varmdyn_modeller`, and `varmdyn_pymol`;
+- the active SSH bridge socket;
+- remote project and scratch paths;
+- the remote lightweight `varmdyn_env` control environment.
+
+On systems that require interactive authentication, the user must establish the
+SSH bridge first. For Palmetto-style helper commands, run `palmettobridge`,
+approve the authentication prompt, then confirm with `palmettostatus`. Codex or
+another local agent can run the VarMDyn bridge commands only after that
+authenticated socket is alive.
+
+> **Troubleshooting Note**
+> If `palmettostatus` reports stale/down but you recently authenticated, a
+> direct socket `ssh` check can help diagnose the bridge. This is not part of
+> the normal workflow. If the socket check works, continue with
+> `workflows/md/bridge.py`; if it fails, remove the stale socket and run
+> `palmettobridge` again.
+
+`palmettorun` is useful for manual one-off Palmetto shell commands after the
+bridge is authenticated. VarMDyn workflow control should still go through
+`python workflows/md/bridge.py ...` so code sync, scratch/project paths, and
+remote environment checks stay consistent.
 
 MD generation and durable analysis roots:
 
@@ -28,49 +89,128 @@ export VARMDYN_MD_GENERATION_ROOT=$VARMDYN_SCRATCH_DATA_ROOT/md
 export VARMDYN_MD_PROJECT_ROOT=$VARMDYN_PROJECT_DATA_ROOT/md
 ```
 
-For Palmetto-style systems, create the lightweight control environment from the
-HPC-compatible file when the fully pinned local environment is not compatible
-with the system `glibc`:
+When setting these variables from a local workstation, make sure the scratch
+path uses the remote HPC username. If your local username differs from the HPC
+username, set `VARMDYN_HPC_USER` and use an explicit scratch path such as
+`/scratch/remote_user/VarMDyn`.
+
+## 3. Local-Controlled Setup
+
+Preferred local-controlled setup from the local VarMDyn terminal. This is the
+same pattern local agents use: the command is typed locally, and the actual HPC
+work runs remotely through the authenticated bridge.
+
+If you already completed the HPC block in [Getting Started](../getting-started.md),
+do not repeat this full block unless you are checking the bridge, resyncing
+code, refreshing the remote env, or repairing the remote MD directories.
+
+Run on: local workstation. Local environment: `varmdyn_env`. Remote
+environment: HPC `varmdyn_env` control environment. Runs on: HPC through bridge
+for remote checks, code sync, environment verification, and directory
+initialization.
 
 ```bash
-conda env create -f envs/varmdyn_hpc.yml
-conda activate varmdyn_env
-VARMDYN_CHECK_PROFILE=hpc-control python scripts/check_repo_ready.py
+# Local workstation: check the user-owned Palmetto bridge.
+palmettostatus
+
+# Local workstation command; checks project/scratch remotely.
+python workflows/md/bridge.py check --execute
+
+# Local workstation command; syncs code to the HPC project checkout.
+python workflows/md/bridge.py sync-code --execute
+
+# Local workstation command; creates or updates the lightweight remote control env.
+python workflows/md/bridge.py setup-env --env hpc --execute
+
+# Local workstation command; verifies local envs and remote control env.
+python scripts/check_readiness.py --hpc
+
+# Local workstation command; creates MD directories on HPC scratch/project.
+python workflows/md/bridge.py init --execute
 ```
+
+This makes the local checkout the controller. `sync-code` updates the durable
+HPC project checkout with code only, `setup-env --env hpc` creates or updates
+the lightweight remote control environment, `check_readiness.py --hpc` verifies
+the bridge and remote environment, and `init` prepares the scratch/project MD
+folders.
+
+If `palmettostatus` is not green, run `palmettobridge`, approve authentication,
+then rerun the local bridge commands. Do not SSH into the login node for the
+normal workflow just because a command affects HPC.
+
+> **Note**
+> A direct socket `ssh` check is only for manual debugging when
+> `palmettostatus` is confusing. It is not part of the normal setup sequence.
+
+The explicit remote environment command is safe to rerun. It creates the remote
+control env if it is missing, updates an existing env to match
+`envs/varmdyn_hpc.yml`, and verifies the command-line prep tools used by MD
+setup.
+
+Conda environment creation or update can be killed on busy or restricted login
+nodes. Prefer reusing an existing checked environment. If a create/update is
+killed, repeat it only when the login node is suitable for package solving or
+use an interactive compute allocation according to the HPC site's policy.
+
+> **Fallback Only**
+>
+> Do not copy manual HPC login-node setup during normal use. The local bridge
+> commands above are the preferred path.
+>
+> If you are intentionally logged into the HPC project checkout for inspection
+> or repair, use the lightweight `envs/varmdyn_hpc.yml` control environment and
+> check the repo with `VARMDYN_CHECK_PROFILE=hpc-control python
+> scripts/check_repo_ready.py`. Reuse an existing env when possible; conda
+> create/update can be killed on login nodes.
 
 The control environment covers configuration, docs, handoff, bridge, and Slurm
 orchestration. Heavier trajectory-analysis packages can live in the dedicated
 analysis environments used by those workflows.
 
+Point `VARMDYN_HPC_PYTHON` at the Python executable inside that environment so
+bridge-launched remote commands do not accidentally use a base interpreter
+missing workflow packages such as PyYAML.
+
 Current Palmetto AMBER smoke defaults are configurable:
+
+Run on: local workstation before bridge-submitted MD commands, or inside the
+HPC checkout for manual repair. Environment: local/HPC `varmdyn_env` control
+env; Slurm jobs load the listed AMBER modules.
 
 ```bash
 export VARMDYN_AMBER_MODULES="cuda/12.3.0 openmpi/5.0.1 amber/24.gpu_mpi"
 ```
 
-## 2. Pattern
+## 4. Normal Bridge Pattern
 
-1. Sync or clone `VarMDyn` into the HPC run folder.
-2. Submit data-generation jobs to scratch.
-3. Monitor completion in scratch.
-4. Sync completed products to the HPC project partition.
-5. Run analysis from the project partition.
-6. Fetch compact outputs into local `data/`.
-7. Inspect or validate fetched outputs locally.
+Do not run raw `rsync` commands during normal VarMDyn use. The bridge commands
+are the copy-safe interface.
 
-Common sync commands:
+1. From the local checkout, sync code to the durable HPC project checkout:
+   `python workflows/md/bridge.py sync-code --execute`
+2. From local, verify the remote checkout, paths, and control environment:
+   `python scripts/check_readiness.py --hpc`
+3. From local, initialize or submit remote stages through
+   `python workflows/md/bridge.py ...`
+4. Generate active MD data in HPC scratch.
+5. Monitor completion in scratch through bridge status/check commands.
+6. Copy completed simulation products from scratch to the HPC project partition
+   with the MD storage workflow.
+7. Run analysis from the HPC project partition.
+8. Fetch compact outputs into local `data/` through bridge fetch commands.
+9. Inspect or validate fetched outputs locally.
 
-```bash
-rsync -av --exclude data/ ./ "$VARMDYN_HPC_HOST:$VARMDYN_HPC_PROJECT/VarMDyn/"
-rsync -av "$VARMDYN_HPC_HOST:$VARMDYN_HPC_PROJECT/VarMDyn/data/" data/
-rsync -av "$VARMDYN_HPC_HOST:$VARMDYN_HPC_PROJECT/VarMDyn/data/network/" data/network/
-```
+Raw `rsync` is a manual fallback for inspection or repair only. If you use it,
+sync code-only paths, exclude generated `data/`, and avoid broad `--delete`
+against any root that may contain scratch or project analysis products.
 
-Use extra care with destructive sync flags. Code sync should exclude generated
-data and should not use broad `--delete` against a root that might contain
-scratch or project analysis products.
+Direct SSH into the HPC checkout is a manual fallback for inspection or repair,
+not the default workflow. If you work directly on the login node, use the
+lightweight `envs/varmdyn_hpc.yml` control environment rather than the full
+local workstation environment.
 
-## 3. Good Practices
+## 5. Good Practices
 
 - Keep active generation data in scratch.
 - Keep the durable VarMDyn code checkout in the HPC project partition.

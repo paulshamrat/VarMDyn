@@ -19,12 +19,16 @@ data/
 
 Create the folders and local env file from the repository root:
 
+Run on: local workstation. Environment: `varmdyn_env`.
+
 ```bash
 python scripts/init_data_layout.py
 source data/varmdyn_data.env
 ```
 
 Check data for network table validation, rendering, and replay:
+
+Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
 python scripts/check_data_inputs.py --module network --profile tables
@@ -38,6 +42,8 @@ has been copied or fetched into `data/network/replay/holo/`.
 For full trajectory-level replay from user-supplied apo/holo simulation roots,
 use the consolidated CLI:
 
+Run on: machine with trajectory inputs. Environment: `varmdyn_dynetan`.
+
 ```bash
 python workflows/mdan/network/network.py full --state apo
 python workflows/mdan/network/network.py full --state holo
@@ -50,6 +56,9 @@ completed DyNetAn outputs unless `--force` is used.
 
 For faster HPC runs, use the array wrapper so each variant gets its own Slurm
 task and the compare step runs only after the array succeeds:
+
+Run on: HPC system. Environment: Slurm job activates the configured DyNetAn
+environment, usually `varmdyn_dynetan`.
 
 ```bash
 export VARMDYN_APO_ROOT=/path/to/apo/root

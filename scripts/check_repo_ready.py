@@ -4,8 +4,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_MPLCONFIGDIR = ROOT / "data/.cache/matplotlib"
+os.environ.setdefault("MPLCONFIGDIR", str(DEFAULT_MPLCONFIGDIR))
+DEFAULT_MPLCONFIGDIR.mkdir(parents=True, exist_ok=True)
 
 REQUIRED_FILES = [
     "README.md",
@@ -17,6 +21,8 @@ REQUIRED_FILES = [
     "envs/varmdyn_hpc.yml",
     "scripts/run_clustering.sh",
     "scripts/run_varmodel.sh",
+    "scripts/ensure_modeller_env.sh",
+    "scripts/ensure_pymol_env.sh",
     "workflows/clustering/config.yaml",
     "workflows/clustering/data/raw/ddG_Fmax.xlsx",
     "workflows/clustering/data/raw/target.B99990001_with_cryst.pdb",
@@ -62,6 +68,7 @@ REQUIRED_FILES = [
     "workflows/mdan/network/shared/fetch_network_results.sh",
     "scripts/init_data_layout.py",
     "scripts/check_data_inputs.py",
+    "scripts/check_readiness.py",
     "workflows/mdan/dynamics/scripts/submit_hpc.py",
 ]
 

@@ -26,7 +26,7 @@ def write_env(path: Path, data_root: Path, stage_tag: str, *, force: bool) -> No
 
 export VARMDYN_DATA_ROOT={shell_quote(data_root)}
 export VARMDYN_RUN_ROOT={shell_quote(data_root)}
-export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
+export MPLCONFIGDIR="$VARMDYN_DATA_ROOT/.cache/matplotlib"
 
 # Network manuscript tables supplied at run time.
 export VARMDYN_NETWORK_FREQUENCY_TABLE="$VARMDYN_DATA_ROOT/network/tables/network_residue_transition_frequency.csv"
@@ -70,6 +70,7 @@ def main() -> int:
         data_root / "network/tables",
         data_root / "network/replay/apo",
         data_root / "network/replay/holo",
+        data_root / ".cache/matplotlib",
     ]
     for path in dirs:
         path.mkdir(parents=True, exist_ok=True)

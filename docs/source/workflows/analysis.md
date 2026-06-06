@@ -3,7 +3,31 @@
 `workflows/mdan/` contains RMSD, RMSF, displacement, network, and structural
 rendering scripts used for the analysis parts of the study.
 
-## 1.1. Runtime Paths
+## 1.1. Analysis Environments
+
+Use the main local environment for table checks, RMSD/RMSF plotting,
+displacement plots, and most structure/function figure scripts:
+
+```bash
+conda activate varmdyn_env
+```
+
+Use `varmdyn_pymol` only when a command renders through PyMOL. The Python
+workflow runner can stay in `varmdyn_env`; PyMOL-specific VarMDyn commands use
+the local `varmdyn_pymol` environment by default.
+
+Trajectory-level DyNetAn network replay uses `varmdyn_dynetan` on the machine
+where the replay job runs. Local table validation and network figure checks do
+not require `varmdyn_dynetan`.
+
+| Task | Where | Environment |
+|---|---|---|
+| RMSD/RMSF/displacement plotting and data checks | local workstation | `varmdyn_env` |
+| PyMOL rendered structure panels | local workstation or render host | `varmdyn_pymol` via `VARMDYN_PYMOL_CMD` |
+| DyNetAn trajectory replay | local workstation or HPC compute job | `varmdyn_dynetan` |
+| HPC network staging/submission helpers | local workstation controlling HPC | `varmdyn_env`; remote replay env from `VARMDYN_CONDA_ENV` |
+
+## 1.2. Runtime Paths
 
 ```bash
 export VARMDYN_RUN_ROOT=$PWD/data
@@ -13,14 +37,15 @@ export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
 export VARMDYN_HPC_HOST=user@login.example.edu
 ```
 
-*Note: For Google Colab, mount your Google Drive and set the path roots to your Google Drive repository directory:*
+**Note: Google Colab/Drive.** For Colab, mount Google Drive and set the path
+roots to your Drive repository directory before running analysis commands:
+
 ```bash
-# mount drive in Python, then set paths:
 export VARMDYN_RUN_ROOT=/content/drive/MyDrive/VarMDyn/data
 export VARMDYN_DATA_ROOT=/content/drive/MyDrive/VarMDyn/data
 ```
 
-## 1.2. Function And Structural Annotations
+## 1.3. Function And Structural Annotations
 
 Function-oriented figure scripts are grouped by purpose:
 
@@ -34,9 +59,34 @@ workflows/mdan/function/mechanism/  mechanism composites
 They read user-supplied source panels and sequence inputs from `data/` and write
 generated outputs under `data/mdan/function/`.
 
-## 1.3. RMSD
+### ATP/Mg And 38R Transfer Context
+
+Use this figure when you want a Supplementary-Figure-S2-style explanation of
+where ligand coordinates came from. It is separate from the MD transfer QA panel:
+the MD panel checks the current simulation inputs, while this analysis figure
+labels the source/provenance context.
+
+Run on: local workstation. Environment: `varmdyn_env`; PyMOL rendering uses
+the local `varmdyn_pymol` environment.
+
+```bash
+export VARMDYN_SOURCE_ROOT=/path/to/source/tree
+
+python workflows/mdan/function/kinase/atpmg_context.py \
+  --out data/md/figures/atpmg_context_panel.png
+```
+
+The generated panel labels:
+
+- `4BGQ`: CDKL5 source structure with `38R`;
+- `8FP5`: CDK2 source structure with ATP/Mg;
+- transferred ATP/Mg and 38R positions on the CDKL5 homology model.
+
+## 1.4. RMSD
 
 Inspect available options:
+
+Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
 python workflows/mdan/rmsd/summarize.py --help
@@ -49,13 +99,15 @@ Write outputs under:
 data/mdan/rmsd/
 ```
 
-## 1.4. RMSF And Dynamics
+## 1.5. RMSF And Dynamics
 
 This section covers residue fluctuation (RMSF) overlay plotting and local dynamics displacement calculations.
 
-### 1.4.1. RMSF Figures
+### 1.5.1. RMSF Figures
 
 RMSF figure scripts use `.agr` files or generated RMSF summaries:
+
+Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
 python workflows/mdan/rmsf/overlay.py --help
@@ -69,9 +121,11 @@ export VARMDYN_RMSF_SOURCE_INPUT_ROOT=$VARMDYN_DATA_ROOT/rmsf_source_inputs
 export VARMDYN_RMSF_SOURCE_MANIFEST=$VARMDYN_DATA_ROOT/rmsf_source_input_manifest.tsv
 ```
 
-### 1.4.2. N-Lobe/Y171 RMSF And Displacement
+### 1.5.2. N-Lobe/Y171 RMSF And Displacement
 
 Local plotting from kept displacement/RMSF tables:
+
+Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
 export DYNAMICS_NLOBE_Y171_INPUT_ROOT=$VARMDYN_DATA_ROOT/dynamics
@@ -89,12 +143,12 @@ $DYNAMICS_NLOBE_Y171_INPUT_ROOT/
     y171_holo/
 ```
 
-## 1.5. Network Analysis
+## 1.6. Network Analysis
 
 This workflow validates and replays the DyNetAn residue-communication analysis
 used for the network tables and the network-remodeling figure.
 
-### 1.5.1. Folder Logic
+### 1.6.1. Folder Logic
 
 VarMDyn keeps code and data separate:
 
@@ -109,6 +163,8 @@ commands without knowing another user's folder structure.
 
 Create the local layout:
 
+Run on: local workstation. Environment: `varmdyn_env`.
+
 ```bash
 cd /path/to/VarMDyn
 conda activate varmdyn_env
@@ -116,7 +172,7 @@ python scripts/init_data_layout.py
 source data/varmdyn_data.env
 ```
 
-### 1.5.2. What DyNetAn Does Here
+### 1.6.2. What DyNetAn Does Here
 
 DyNetAn builds residue communication networks from MD trajectories. Each protein
 residue is a node. Edges are retained for residue pairs that remain in contact
@@ -134,7 +190,7 @@ The replay protocol uses:
 - top-25 bottleneck residues by edge-betweenness-derived score;
 - WT-referenced lost/gained residue comparisons across the five variants.
 
-### 1.5.3. Put Data In The VarMDyn Layout
+### 1.6.3. Put Data In The VarMDyn Layout
 
 For table validation and rendering, place or link files here. This is a folder
 map, not a shell command block:
@@ -161,6 +217,9 @@ data/network/replay/holo/$VARMDYN_DYNETAN_STAGE_TAG/
 For full trajectory-level replay from simulation roots, VarMDyn uses one
 consolidated CLI:
 
+Run on: machine with trajectory inputs. Environment: `varmdyn_dynetan` for
+trajectory-level replay.
+
 ```bash
 python workflows/mdan/network/network.py full --state apo
 python workflows/mdan/network/network.py full --state holo
@@ -182,6 +241,8 @@ data/network/full/prepared/<state>/<variant>/<variant>.pdb
 If you have a local read-only source tree containing reference tables and replay
 CSVs, copy only the lightweight inputs into `data/`:
 
+Run on: local workstation. Environment: `varmdyn_env`.
+
 ```bash
 export VARMDYN_SOURCE_ROOT=/path/to/source/tree
 python scripts/sync_data_from_sources.py --module network
@@ -193,6 +254,8 @@ tracking, because `data/` is ignored.
 
 Check the local data layout:
 
+Run on: local workstation. Environment: `varmdyn_env`.
+
 ```bash
 python scripts/check_data_inputs.py --module network --profile tables
 python scripts/check_data_inputs.py --module network --profile render
@@ -202,13 +265,18 @@ python scripts/check_data_inputs.py --module network --profile apo-replay
 Run the holo replay check only after you have copied or fetched a matching holo
 DyNetAn replay directory:
 
+Run on: local workstation. Environment: `varmdyn_env`.
+
 ```bash
 python scripts/check_data_inputs.py --module network --profile holo-replay
 ```
 
-### 1.5.4. Configure The DyNetAn Replay Environment
+### 1.6.4. Configure The DyNetAn Replay Environment
 
 Local table validation and figure rendering use `varmdyn_env`. The trajectory-level network replay also needs DyNetAn. Create the optional replay environment on the machine where the replay job will run:
+
+Run on: local workstation or HPC system that will execute DyNetAn replay.
+Environment: create or activate `varmdyn_dynetan`.
 
 ```bash
 conda env create -f envs/varmdyn_dynetan.yml
@@ -218,7 +286,7 @@ python -c "import dynetan, traitlets, ipywidgets, networkx, MDAnalysis; import i
 
 If your HPC system already has an equivalent environment, set `VARMDYN_CONDA_ENV` to that environment name. The tested replay stack uses DyNetAn 2.2.2 with MDAnalysis 2.9.
 
-### 1.5.5. Configure HPC Replay Paths
+### 1.6.5. Configure HPC Replay Paths
 
 Set these for HPC replay work:
 
@@ -233,20 +301,27 @@ export VARMDYN_DYNETAN_STAGE_TAG=concat750_w1_s750_apo_validation_YYYYMMDD
 
 Verify that SSH can run a real command:
 
+Run on: local workstation. Environment: `varmdyn_env`.
+
 ```bash
 ssh "$VARMDYN_HPC_HOST" "hostname"
 ```
 
 Check the remote DyNetAn work directory:
 
+Run on: local workstation. Environment: `varmdyn_env`; remote replay jobs use
+the conda environment named by `VARMDYN_CONDA_ENV`.
+
 ```bash
 python scripts/check_data_inputs.py --module network --profile remote --remote --timeout-seconds 60
 ```
 
-### 1.5.6. Validate Existing Tables
+### 1.6.6. Validate Existing Tables
 
 With `source data/varmdyn_data.env` loaded, the validator uses the standard
 `data/` paths automatically:
+
+Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
 python workflows/mdan/network/validate_network_manuscript_outputs.py \
@@ -260,7 +335,7 @@ OK frequency: 25 rows, 5 columns
 OK overlap: 5 rows, 9 columns
 ```
 
-### 1.5.7. Run Full Network Analysis From Simulation Roots
+### 1.6.7. Run Full Network Analysis From Simulation Roots
 
 Set the apo and/or holo roots. Each root should contain folders such as
 `01_WT`, `02_L119R`, and so on:
@@ -271,6 +346,8 @@ export VARMDYN_HOLO_ROOT=/path/to/legacy/holo/root
 ```
 
 Run all discovered apo systems:
+
+Run on: machine with trajectory inputs. Environment: `varmdyn_dynetan`.
 
 ```bash
 python workflows/mdan/network/network.py full --state apo
@@ -298,6 +375,9 @@ python workflows/mdan/network/network.py full \
 
 For Slurm:
 
+Run on: HPC system. Environment: Slurm job activates the configured DyNetAn
+environment, usually `varmdyn_dynetan`.
+
 ```bash
 sbatch workflows/mdan/network/run_full_network.slurm apo
 sbatch workflows/mdan/network/run_full_network.slurm holo
@@ -307,6 +387,9 @@ sbatch workflows/mdan/network/run_full_network.slurm all
 For production-sized runs, prefer the array wrapper. Each variant runs in a
 separate Slurm task, then one dependent compare job builds the WT-referenced
 lost/gained tables:
+
+Run on: HPC system. Environment: Slurm job activates the configured DyNetAn
+environment, usually `varmdyn_dynetan`.
 
 ```bash
 export VARMDYN_APO_ROOT=/path/to/legacy/apo/root
@@ -318,6 +401,9 @@ sbatch --dependency=afterok:${jobid} workflows/mdan/network/run_network_array.sl
 ```
 
 For a two-system test, set the variant list and shrink the array:
+
+Run on: HPC system. Environment: Slurm job activates the configured DyNetAn
+environment, usually `varmdyn_dynetan`.
 
 ```bash
 export VARMDYN_VARIANTS=01_WT,02_L119R
@@ -361,6 +447,9 @@ Raw mode still supports chunked inputs such as:
 For a strict replay, point the state root to the folder that already contains
 the prepared files, then run the array wrapper from inside the shared packet:
 
+Run on: HPC system inside `workflows/mdan/network/shared/`. Environment:
+the shared wrapper uses its own configured DyNetAn environment.
+
 ```bash
 source env.sh.example
 export VARMDYN_INPUT_MODE=prepared
@@ -369,9 +458,12 @@ export VARMDYN_VARIANTS=01_WT,02_L119R
 bash submit_network_array.sh apo 0-1
 ```
 
-### 1.5.8. Replay Apo Network Analysis From An Existing DyNetAn Work Directory
+### 1.6.8. Replay Apo Network Analysis From An Existing DyNetAn Work Directory
 
 Stage the sbatch script:
+
+Run on: local workstation. Environment: `varmdyn_env`; remote job execution
+uses the environment named by `VARMDYN_CONDA_ENV`.
 
 ```bash
 python workflows/mdan/network/network.py hpc-stage
@@ -407,7 +499,9 @@ Fetch lightweight CSV outputs into the standard local data layout:
 python workflows/mdan/network/network.py hpc-fetch
 ```
 
-### 1.5.9. Validate Fetched Apo Replay Outputs
+### 1.6.9. Validate Fetched Apo Replay Outputs
+
+Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
 python workflows/mdan/network/validate_network_manuscript_outputs.py \
@@ -424,10 +518,14 @@ OK apo frequency replay: 12 rows compared
 OK apo overlap replay: 20 fields compared
 ```
 
-### 1.5.10. Build The Associated Network Figure
+### 1.6.10. Build The Associated Network Figure
 
 The network-remodel figure reads apo and holo/ATP-Mg structure files from
 `data/structures/` by default and writes rendered outputs to `data/`:
+
+Run on: local workstation. Environment: `varmdyn_env`; PyMOL is delegated
+through `VARMDYN_PYMOL_CMD`, while ChimeraX and Inkscape must be available on
+the system PATH.
 
 ```bash
 python scripts/check_data_inputs.py --module network --profile render

@@ -1,0 +1,47 @@
+# Hu 2024 ATP·Mg setup with ff19SB + OPC
+
+addAtomTypes {{"O3" "O" "sp2"}}
+addAtomTypes {{"O2" "O" "sp2"}}
+addAtomTypes {{"O"  "O" "sp2"}}
+addAtomTypes {{"OW" "O" "sp3"}}
+addAtomTypes {{"OY" "O" "sp3"}}
+
+source leaprc.protein.ff19SB
+source leaprc.water.opc
+
+# OPC water + compatible ion parameters
+loadamberparams frcmod.opc
+loadamberparams frcmod.ionslm_126_opc
+loadamberparams frcmod.ionslm_1264_opc
+
+# Hu 2024 ATP (B3LYP parameters)
+loadAmberPrep   ../ligprep/hu2024/ATP-B3.prepi
+loadAmberParams ../ligprep/hu2024/ATP-B3.frcmod
+
+REC = loadpdb ../01.prep/cdl.prot.noH.pdb
+LIG = loadpdb ../01.prep/ligand-only-from-complex-atponly.pdb
+MG  = loadpdb ../01.prep/mg-only-from-complex-mgonly.pdb
+
+COM2 = combine { REC LIG MG }
+
+# charge before solvation
+charge COM2
+
+# gas-phase system
+saveamberparm COM2 cdl.hu_atpmg.opc_gas.prmtop cdl.hu_atpmg.opc_gas.inpcrd
+savepdb COM2 cdl.hu_atpmg.opc_gas.pdb
+
+# solvate in OPC
+solvateBox COM2 OPCBOX 14.0
+
+# neutralize only based on current system charge
+# VARMDYN_ION_COMMANDS
+
+# solvated system
+saveamberparm COM2 cdl.hu_atpmg.opc.prmtop cdl.hu_atpmg.opc.inpcrd
+savepdb COM2 cdl.hu_atpmg.opc.pdb
+
+# final charge check
+charge COM2
+
+quit

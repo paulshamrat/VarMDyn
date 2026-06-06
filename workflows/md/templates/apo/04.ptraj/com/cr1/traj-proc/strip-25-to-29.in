@@ -1,0 +1,12 @@
+parm ../../../../02.leap/com/cdl.com.wat.leap.prmtop
+
+trajin ../../../../03.pmemd/com/cr1/25md.mdcrd.nc
+trajin ../../../../03.pmemd/com/cr1/26md.mdcrd.nc
+trajin ../../../../03.pmemd/com/cr1/27md.mdcrd.nc
+trajin ../../../../03.pmemd/com/cr1/28md.mdcrd.nc
+trajin ../../../../03.pmemd/com/cr1/29md.mdcrd.nc
+autoimage
+
+strip ':WAT,Na+,Cl-'
+
+trajout production-25-to-29-500ns.cr1.striped.mdcrd.nc nobox

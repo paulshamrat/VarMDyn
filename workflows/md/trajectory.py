@@ -7,7 +7,15 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-from lib import expand_path, iter_replicas, iter_variants, load_yaml, resolve_config_path
+from lib import (
+    expand_path,
+    iter_replicas,
+    iter_variants,
+    load_default_env_files,
+    load_yaml,
+    resolve_config_path,
+    resolve_variants,
+)
 
 
 DEFAULT_CONFIGS = {
@@ -26,7 +34,7 @@ def load_state_config(state: str, override: str | None) -> dict[str, Any]:
 
 
 def run_root(state: str, cfg: dict[str, Any]) -> Path:
-    return expand_path(cfg["generation_root"]) / str(cfg.get("run_dir", "systems"))
+    return expand_path(cfg["generation_root"]) / str(cfg.get("run_dir", "."))
 
 
 def production(cfg: dict[str, Any]) -> dict[str, Any]:
@@ -57,7 +65,10 @@ def plan(state: str, cfg: dict[str, Any], target_ns: int) -> None:
     print("configured_completed_chunks=" + ",".join(str(x) for x in completed))
     print("extension_chunks=" + ",".join(str(x) for x in extension))
     print(f"replicas={','.join(iter_replicas(cfg))}")
-    print(f"variants={','.join(iter_variants(cfg))}")
+    variants = resolve_variants(cfg, run_root(state, cfg))
+    if not variants and cfg.get("variants") == "all":
+        variants = ["all (run handoff to resolve system folders)"]
+    print(f"variants={','.join(variants or iter_variants(cfg))}")
 
 
 def check_prod(state: str, cfg: dict[str, Any], target_ns: int) -> int:
@@ -67,7 +78,11 @@ def check_prod(state: str, cfg: dict[str, Any], target_ns: int) -> int:
     token = str(prod.get("completion_token", cfg.get("prod_token", "")))
     root = run_root(state, cfg)
     failures = 0
-    for variant in iter_variants(cfg):
+    variants = resolve_variants(cfg, root)
+    if not variants:
+        print("[ERROR] no MD system folders found; run handoff/prep first")
+        return 1
+    for variant in variants:
         for replica in iter_replicas(cfg):
             for chunk in chunk_list(start, target_ns, chunk_ns):
                 rel = Path("03.pmemd") / "com" / replica / f"{chunk}md.mdout"
@@ -88,6 +103,7 @@ def prepared_plan(state: str, cfg: dict[str, Any]) -> None:
 
 
 def main() -> int:
+    load_default_env_files()
     parser = argparse.ArgumentParser(description="Plan/check MD production chunks and prepared trajectories.")
     parser.add_argument("--state", choices=["apo", "holo"], required=True)
     parser.add_argument("--config", default=None)

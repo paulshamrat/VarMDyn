@@ -3,34 +3,43 @@
 The variant-modeling workflow wraps the MODELLER mutate-only script and writes
 each run to an ignored output directory.
 
-## 1. Dry Run
+## 1. Prepare The MODELLER Environment
 
-Run from the repository root directory (dry run does not require a MODELLER license key):
+Run from the repository root directory on the local workstation. Environment:
+start from any conda-capable shell; the helper creates or updates
+`varmdyn_modeller`.
 
 ```bash
-conda env create -f envs/varmdyn_modeller.yml
+bash scripts/ensure_modeller_env.sh
 conda activate varmdyn_modeller
+```
+
+The helper creates the environment if missing, updates it if present, and
+checks/configures the MODELLER license. It uses `KEY_MODELLER`,
+`MODELLER_LICENSE`, a key already stored in the conda environment, or an
+interactive prompt.
+
+For non-interactive setup:
+
+```bash
+KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' bash scripts/ensure_modeller_env.sh
+```
+
+## 2. Dry Run
+
+Dry run does not launch a full MODELLER build.
+
+Run on: local workstation. Environment: `varmdyn_modeller`.
+
+```bash
 bash scripts/run_varmodel.sh --dry-run
-```
-
-## 2. Configure MODELLER
-
-Run from the repository root directory (MODELLER requires a user-provided license key):
-
-```bash
-bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_modeller
-```
-
-Non-interactive setup:
-
-```bash
-KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' \
-  bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_modeller
 ```
 
 ## 3. Full Run
 
-Run from the repository root directory:
+Run from the repository root directory.
+
+Run on: local workstation. Environment: `varmdyn_modeller`.
 
 ```bash
 bash scripts/run_varmodel.sh
@@ -38,15 +47,19 @@ bash scripts/run_varmodel.sh
 
 ## 4. Single Mutation Run
 
-You can also run a single mutation directly without editing the mutations list. Run from the repository root directory:
+You can also run a single mutation directly without editing the mutations list.
+Run from the repository root directory.
+
+Run on: local workstation. Environment: `varmdyn_modeller`.
 
 ```bash
 bash scripts/run_varmodel.sh --mut L119R
 ```
 
-*Note: For Google Colab, mount your Google Drive and set the path roots to your Google Drive repository directory:*
+**Note: Google Colab/Drive.** For Colab, mount Google Drive and set the path
+root to your Drive repository directory before running the same command:
+
 ```bash
-# mount drive in Python, then set paths:
 export VARMDYN_RUN_ROOT=/content/drive/MyDrive/VarMDyn/data
 bash scripts/run_varmodel.sh
 ```
@@ -102,10 +115,9 @@ The underlying modeling engine (`workflows/varmodel/modeller/modeller6.py`) is p
 ### 8.1. Build Mode (Generating the WT Starting Structure)
 If you do not have a pre-refined wild-type structure, you can use the template **Build Mode** to download a structural template from the PDB, align it to a UniProt sequence, build missing coordinates, and reinsert CRYST1 data:
 
-```bash
-# Activate the environment
-conda activate varmdyn_modeller
+Run on: local workstation. Environment: `varmdyn_modeller`.
 
+```bash
 # Run Build Mode: PDB_ID UniProt_ID [options]
 python workflows/varmodel/modeller/modeller6.py 4bgq O76039 \
   --chain A \
@@ -122,6 +134,8 @@ python workflows/varmodel/modeller/modeller6.py 4bgq O76039 \
 
 ### 8.2. Mutate Mode (Generating Mutants)
 If you already have a starting PDB file, you can run the **Mutate-only Mode** to model specific amino acid substitutions. The script will perform local conjugate gradient optimization and energy minimization on the mutated sidechain, maintaining coordinates of the rest of the protein intact:
+
+Run on: local workstation. Environment: `varmdyn_modeller`.
 
 ```bash
 # Run Mutate-only mode on an existing PDB structure:
@@ -151,4 +165,3 @@ varmodel:
   seed: -49837                               # Modeller random seed
   out_root: varmodel/outputs
 ```
-

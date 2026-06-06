@@ -8,11 +8,47 @@ import os
 import re
 import shlex
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+SUPPORT_VARIANT_DIRS = {"variants", "logs", "all", "*"}
+DEFAULT_ENV_FILES = [
+    REPO_ROOT / "data/varmdyn_data.env",
+    REPO_ROOT / ".local_docs/paths.env",
+]
+
+
+def load_env_file(path: Path) -> None:
+    """Load simple KEY=VALUE or export KEY=VALUE lines without overriding env."""
+    if not path.is_file():
+        return
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line.removeprefix("export ").strip()
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        if not key or key in os.environ:
+            continue
+        try:
+            parsed = shlex.split(value.strip())
+        except ValueError:
+            parsed = [value.strip().strip("\"'")]
+        if parsed:
+            os.environ[key] = os.path.expandvars(parsed[0])
+
+
+def load_default_env_files() -> None:
+    """Load ignored local path files used by local-first bridge workflows."""
+    for path in DEFAULT_ENV_FILES:
+        load_env_file(path)
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
@@ -59,10 +95,17 @@ def quote_command(parts: list[str]) -> str:
 
 
 def run_shell(command: str, cwd: Path | None, execute: bool) -> None:
+    if command.startswith("python "):
+        command = f"{shlex.quote(sys.executable)} {command.removeprefix('python ')}"
+    elif command.startswith("python3 "):
+        command = f"{shlex.quote(sys.executable)} {command.removeprefix('python3 ')}"
     print(f"[CMD] {command}")
     if not execute:
         return
-    subprocess.run(command, cwd=str(cwd) if cwd else None, shell=True, check=True)
+    env = os.environ.copy()
+    python_bin = str(Path(sys.executable).resolve().parent)
+    env["PATH"] = python_bin + os.pathsep + env.get("PATH", "")
+    subprocess.run(command, cwd=str(cwd) if cwd else None, shell=True, check=True, env=env)
 
 
 def path_status(path: Path) -> str:
@@ -86,9 +129,32 @@ def check_file(path: Path, token: str | None = None) -> tuple[bool, str]:
 
 def iter_variants(cfg: dict[str, Any]) -> list[str]:
     variants = cfg.get("variants", [])
+    if variants == "all":
+        return ["all"]
     if not isinstance(variants, list) or not all(isinstance(v, str) for v in variants):
-        raise ValueError("`variants` must be a list of strings")
+        raise ValueError("`variants` must be `all` or a list of strings")
     return variants
+
+
+def is_support_variant_name(name: str) -> bool:
+    return name in SUPPORT_VARIANT_DIRS or any(ch in name for ch in "*?[]")
+
+
+def iter_existing_variants(run_root: Path) -> list[str]:
+    if not run_root.is_dir():
+        return []
+    return sorted(
+        path.name
+        for path in run_root.iterdir()
+        if path.is_dir() and not is_support_variant_name(path.name)
+    )
+
+
+def resolve_variants(cfg: dict[str, Any], run_root: Path) -> list[str]:
+    variants = cfg.get("variants", [])
+    if variants == "all":
+        return iter_existing_variants(run_root)
+    return iter_variants(cfg)
 
 
 def iter_replicas(cfg: dict[str, Any]) -> list[str]:
@@ -110,9 +176,21 @@ def init_common_parser(description: str, default_config: str) -> argparse.Argume
 
 
 def mkdir(path: Path, execute: bool) -> None:
-    print(f"[MKDIR] {path}")
+    print(f"[MKDIR] {path}", flush=True)
     if execute:
-        path.mkdir(parents=True, exist_ok=True)
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            hint = ""
+            if str(path).startswith(("/scratch/", "/project/")):
+                hint = (
+                    "\n[HINT] This looks like an HPC filesystem path. From the local "
+                    "workstation, initialize remote MD folders with:\n"
+                    "       python workflows/md/bridge.py init --execute\n"
+                    "       Direct run.py --init --execute should be used only inside "
+                    "the HPC checkout, or with local test roots."
+                )
+            raise SystemExit(f"[ERROR] cannot create {path}: {exc}{hint}") from exc
 
 
 def print_table(rows: list[tuple[str, str, str]]) -> None:

@@ -21,11 +21,22 @@ fi
 
 # shellcheck source=/dev/null
 source "${MINIFORGE_DIR}/etc/profile.d/conda.sh"
+CONDA_BASE="$(conda info --base)"
 
-if ! command -v mamba >/dev/null 2>&1; then
+if ! command -v mamba >/dev/null 2>&1 && [[ ! -x "${CONDA_BASE}/bin/mamba" ]]; then
   echo "[STEP] Install mamba"
   conda install -y -n base -c conda-forge mamba
 fi
+
+if command -v mamba >/dev/null 2>&1; then
+  ENV_TOOL=(mamba)
+elif [[ -x "${CONDA_BASE}/bin/mamba" ]]; then
+  ENV_TOOL=("${CONDA_BASE}/bin/mamba")
+else
+  echo "[WARN] mamba not found after install attempt; using conda env commands"
+  ENV_TOOL=(conda)
+fi
+echo "[INFO] Environment solver: ${ENV_TOOL[*]}"
 
 if [[ ! -d "${INSTALL_DIR}/.git" ]]; then
   echo "[STEP] Clone ${REPO}@${REF}"
@@ -39,10 +50,12 @@ cd "${INSTALL_DIR}"
 
 if conda env list | awk '{print $1}' | grep -qx "${ENV_NAME}"; then
   echo "[STEP] Update ${ENV_NAME}"
-  mamba env update -n "${ENV_NAME}" -f envs/varmdyn_env.yml --prune
+  if ! "${ENV_TOOL[@]}" env update -n "${ENV_NAME}" -f envs/varmdyn_env.yml --prune; then
+    echo "[WARN] Environment update failed; using existing ${ENV_NAME} and running checks"
+  fi
 else
   echo "[STEP] Create ${ENV_NAME}"
-  mamba env create -n "${ENV_NAME}" -f envs/varmdyn_env.yml
+  "${ENV_TOOL[@]}" env create -n "${ENV_NAME}" -f envs/varmdyn_env.yml
 fi
 
 conda activate "${ENV_NAME}"

@@ -8,10 +8,13 @@ import shutil
 from pathlib import Path
 
 
+SUPPORT_DIRS = {"variants", "logs"}
+
+
 def variant_dirs(run_root: Path, names: list[str] | None) -> list[Path]:
     if names:
         return [run_root / name for name in names]
-    return sorted(p for p in run_root.glob("[0-9][0-9]_*") if p.is_dir())
+    return sorted(p for p in run_root.iterdir() if p.is_dir() and p.name not in SUPPORT_DIRS)
 
 
 def propagate(run_root: Path, names: list[str] | None, execute: bool, status: bool) -> int:

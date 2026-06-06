@@ -1,0 +1,29 @@
+  "01mi.in: minimization (5000 SD & 5000 CG) by relaxing the added solvent, nutralizing ions but restraining protein,ligand,ions and lipid with weight 100 kcal/mol-A2"
+
+  &cntrl
+  imin = 1,                         ! Run minimization
+  maxcyc = 5000,                   ! number of minimization steps
+  ntmin = 1,                        ! For NCYC steps steepest descent method is used, then switched to conjugate gradient
+  ncyc = 2500,
+  
+  ntx = 1,                          ! (default) X is read formatted with no initial velocity
+  ntc = 1,                          ! SHAKE is not performed
+  ntf = 1,                          ! Complete interaction is calculated
+  ntb = 1,                          ! Constant volume (defualt when ntp and igb both are 0)
+  ntp = 0,
+
+  ioutfm = 1,                       ! Binary NetCDF trajectory (mdcrd, mdvel and inptraj, mdfrc)
+  iwrap = 1,                        ! If iwrap = 1, the coordinates written to the restart and trajectory files will be "wrapped" into a primary 
+                                    ! box. This means that for each molecule, its periodic image closest to the middle of the "primary box" 
+                                     
+  ntwx = 1000,                      ! Every ntwx step coordinates are written to mdcrd file
+  ntwe = 0,                         ! every ntwe step energies and temperature will be writtein to “mden” file
+  ntpr = 20,                        ! Every ntpr step energy is writtein human readable format in mdout file
+  
+  cut = 10.0,                       ! This is used to specify the nonbonded cutoff, in Angstroms. For PME, the cutoff is used to limit direct space sum.
+  fswitch = 8.0,                    ! sets a force switching region where the force cutoff smoothly approaches 0 between the region of the fswitch = 8.0 to the cut = 10.0 value
+
+  ntr = 1,                          ! >0 Restrain atoms in Cartesian space using a harmonic potential
+  restraintmask = ':1-303 & !@H=',  ! mask for protein, and , water and neutralizing ions free.
+  restraint_wt = 100.0,             ! Weight for positional restraint in ( kcal/mol-A2 )
+  /

@@ -39,17 +39,17 @@ folder.
 
 ## 3. Module Entry Points
 
-| Module | Start here | Typical output |
-|---|---|---|
-| `clustering` | `bash scripts/run_clustering.sh` | `data/clustering/` |
-| `varmodel` | `bash scripts/run_varmodel.sh --dry-run` | `data/varmodel/` |
-| `md/apo` | `python workflows/md/apo/run.py --status` | `data/md/apo/` |
-| `md/holo` | `python workflows/md/holo/run.py --status` | `data/md/holo/` |
-| `mdan/rmsd` | `python workflows/mdan/rmsd/summarize.py --help` | `data/mdan/rmsd/` |
-| `mdan/rmsf` | `python workflows/mdan/rmsf/overlay.py --help` | `data/mdan/rmsf/` |
-| `mdan/dynamics` | `bash scripts/run_dynamics_local.sh` | `data/mdan/dynamics/` |
-| `mdan/network` | `python workflows/mdan/network/network.py --help` | `data/mdan/network/` |
-| `mdan/function/full` | `python workflows/mdan/function/full/schematic.py` | `data/mdan/function/full/` |
-| `mdan/function/kinase` | `python workflows/mdan/function/kinase/annotation.py` | `data/mdan/function/kinase/` |
-| `mdan/function/msa` | `python workflows/mdan/function/msa/msa.py` | `data/mdan/function/msa/` |
-| `mdan/function/mechanism` | `python workflows/mdan/function/mechanism/mechanism_split.py --help` | `data/mdan/function/mechanism/` |
+| Module | Start here | Environment | Typical output |
+|---|---|---|---|
+| `clustering` | `bash scripts/run_clustering.sh` | `varmdyn_env` | `data/clustering/` |
+| `varmodel` | `bash scripts/run_varmodel.sh --dry-run` | `varmdyn_modeller` | `data/varmodel/` |
+| `md/apo` | `bash scripts/run_md.sh status --state apo` | local `varmdyn_env`; remote HPC control env | `data/md/apo/` |
+| `md/holo` | `bash scripts/run_md.sh status --state holo` | local `varmdyn_env`; `varmdyn_pymol` for transfer | `data/md/holo/` |
+| `mdan/rmsd` | `python workflows/mdan/rmsd/summarize.py --help` | `varmdyn_env` | `data/mdan/rmsd/` |
+| `mdan/rmsf` | `python workflows/mdan/rmsf/overlay.py --help` | `varmdyn_env` | `data/mdan/rmsf/` |
+| `mdan/dynamics` | `bash scripts/run_dynamics_local.sh` | `varmdyn_env` | `data/mdan/dynamics/` |
+| `mdan/network` | `python workflows/mdan/network/network.py --help` | `varmdyn_env`; `varmdyn_dynetan` for replay | `data/mdan/network/` |
+| `mdan/function/full` | `python workflows/mdan/function/full/schematic.py` | `varmdyn_env` | `data/mdan/function/full/` |
+| `mdan/function/kinase` | `python workflows/mdan/function/kinase/annotation.py` | `varmdyn_env`; `varmdyn_pymol` for PyMOL renders | `data/mdan/function/kinase/` |
+| `mdan/function/msa` | `python workflows/mdan/function/msa/msa.py` | `varmdyn_env` | `data/mdan/function/msa/` |
+| `mdan/function/mechanism` | `python workflows/mdan/function/mechanism/mechanism_split.py --help` | `varmdyn_env` | `data/mdan/function/mechanism/` |

@@ -2,7 +2,16 @@
 
 This module contains scripts for RMSD, RMSF, displacement, network, and structure-rendering analyses. It does not track trajectories, manuscript figures, source tables, HPC job products, or replay outputs.
 
-## 1. Runtime Paths
+## 1. Analysis Environments
+
+| Task | Where | Environment |
+|---|---|---|
+| RMSD/RMSF/displacement plotting and data checks | local workstation | `varmdyn_env` |
+| PyMOL-rendered structure panels | local workstation or render host | `varmdyn_pymol` via `VARMDYN_PYMOL_CMD` |
+| DyNetAn trajectory replay | local workstation or HPC compute job | `varmdyn_dynetan` |
+| HPC network staging/submission helpers | local workstation controlling HPC | `varmdyn_env`; remote replay env from `VARMDYN_CONDA_ENV` |
+
+## 2. Runtime Paths
 
 All workflow scripts default to reading from the `data/` folder and writing their generated outputs/runs into the `data/` folder using matching, organized directory structures.
 
@@ -14,14 +23,18 @@ export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
 export VARMDYN_HPC_HOST=user@login.example.edu
 ```
 
-## 2. RMSD
+## 3. RMSD
+
+Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
 python workflows/mdan/rmsd/summarize.py --help
 python workflows/mdan/rmsd/plot.py --help
 ```
 
-## 3. RMSF
+## 4. RMSF
+
+Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
 python workflows/mdan/rmsf/plot_rmsf_all_variants_replicas_range_mean.py --help
@@ -29,7 +42,9 @@ python workflows/mdan/rmsf/overlay.py --help
 python workflows/mdan/rmsf/supplementary.py --help
 ```
 
-## 4. N-Lobe/Y171 Dynamics
+## 5. N-Lobe/Y171 Dynamics
+
+Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
 bash scripts/run_dynamics_local.sh
@@ -37,7 +52,10 @@ bash scripts/run_dynamics_local.sh
 
 The local wrapper expects kept-TSV files under `$VARMDYN_DATA_ROOT/dynamics/kept_tsvs/`.
 
-## 5. Dynamic Network
+## 6. Dynamic Network
+
+Run on: local workstation. Environment: `varmdyn_env` for validation/help and
+`varmdyn_dynetan` for trajectory-level replay.
 
 ```bash
 python workflows/mdan/network/validate_network_manuscript_outputs.py --help
@@ -48,7 +66,10 @@ bash workflows/mdan/network/remodel.sh
 Use `python scripts/init_data_layout.py` to create the standard `data/` layout.
 Validation reports are written to `data/mdan/network/`.
 
-## 6. Function
+## 7. Function
+
+Run on: local workstation. Environment: `varmdyn_env`; PyMOL-rendered panels
+delegate to `varmdyn_pymol` through `VARMDYN_PYMOL_CMD`.
 
 ```bash
 python workflows/mdan/function/full/schematic.py

@@ -5,23 +5,30 @@ a gitignored output folder.
 
 ## 1. Dry Run
 
-Run from the repository root:
+Run from the repository root.
+
+Run on: local workstation. Environment: create/update and activate
+`varmdyn_modeller`.
 
 ```bash
-conda env create -f envs/varmdyn_modeller.yml
+bash scripts/ensure_modeller_env.sh
 conda activate varmdyn_modeller
 bash scripts/run_varmodel.sh --dry-run
 ```
 
 ## 2. Configure MODELLER
 
-Run from the repository root:
+Run from the repository root.
+
+Run on: local workstation. Environment: `varmdyn_modeller`.
 
 ```bash
 bash workflows/varmodel/install_modeller_in_active_env.sh --env varmdyn_modeller
 ```
 
 For non-interactive setup:
+
+Run on: local workstation. Environment: `varmdyn_modeller`.
 
 ```bash
 KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' \
@@ -30,7 +37,9 @@ KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' \
 
 ## 3. Full Run
 
-Run from the repository root:
+Run from the repository root.
+
+Run on: local workstation. Environment: `varmdyn_modeller`.
 
 ```bash
 bash scripts/run_varmodel.sh
@@ -38,7 +47,9 @@ bash scripts/run_varmodel.sh
 
 ## 4. Single Mutation Run
 
-Run from the repository root:
+Run from the repository root.
+
+Run on: local workstation. Environment: `varmdyn_modeller`.
 
 ```bash
 bash scripts/run_varmodel.sh --mut L119R

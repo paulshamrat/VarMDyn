@@ -16,17 +16,24 @@ STATE_DIRS = {
     "holo": "05_cdkl5atpmg",
 }
 
-WT = "01_WT"
-REPLICA = "cr1"
 NSTLIM_1NS = 500_000
 VARIANTS = [
-    "01_WT",
-    "02_L119R",
-    "03_D193H",
-    "04_G202E",
-    "05_Q219K",
-    "06_C291Y",
+    "WT",
+    "L119R",
+    "D193H",
+    "G202E",
+    "Q219K",
+    "C291Y",
 ]
+LEGACY_VARIANT_MAP = {
+    "WT": "01_WT",
+    "L119R": "02_L119R",
+    "D193H": "03_D193H",
+    "G202E": "04_G202E",
+    "Q219K": "05_Q219K",
+    "C291Y": "06_C291Y",
+}
+REPLICAS = ["cr1", "cr2", "cr3"]
 
 
 def env(name: str, default: str | None = None) -> str:
@@ -52,25 +59,39 @@ def state_root(state: str) -> Path:
     return generation_root() / state
 
 
-def copy_required(src_root: Path, dst_root: Path, variant: str) -> None:
+def legacy_variant_name(variant: str) -> str:
+    mapping_text = os.environ.get("VARMDYN_MD_LEGACY_VARIANT_MAP", "")
+    mapping = dict(item.split("=", 1) for item in mapping_text.split() if "=" in item)
+    return mapping.get(variant, LEGACY_VARIANT_MAP.get(variant, variant))
+
+
+def copy_required(src_root: Path, dst_root: Path, variant: str, replica: str) -> None:
+    source_variant = legacy_variant_name(variant)
     required = [
         "02.leap/com/cdl.com.wat.leap.prmtop",
-        "03.pmemd/com/cr1/14mi.restrt",
-        "03.pmemd/com/cr1/24md.restrt",
+        f"03.pmemd/com/{replica}/24md.restrt",
     ]
     for rel in required:
-        src = src_root / variant / rel
+        src = src_root / source_variant / rel
         dst = dst_root / variant / rel
         if not src.is_file():
             raise FileNotFoundError(src)
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst)
-    protocol_src = src_root / variant / "protocol" / "com" / "cr1" / "25md.in"
+    ref_src = src_root / source_variant / "03.pmemd" / "com" / replica / "14mi.restrt"
+    if not ref_src.is_file() and replica in {"cr2", "cr3"}:
+        ref_src = src_root / source_variant / "03.pmemd" / "com" / "cr1" / "14mi.restrt"
+    if not ref_src.is_file():
+        raise FileNotFoundError(ref_src)
+    ref_dst = dst_root / variant / "03.pmemd" / "com" / replica / "14mi.restrt"
+    ref_dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ref_src, ref_dst)
+    protocol_src = src_root / source_variant / "protocol" / "com" / replica / "25md.in"
     if not protocol_src.is_file():
-        protocol_src = src_root / variant / "protocol_cdl" / "com" / "cr1" / "25md.in"
+        protocol_src = src_root / source_variant / "protocol_cdl" / "com" / replica / "25md.in"
     if not protocol_src.is_file():
         raise FileNotFoundError(protocol_src)
-    protocol_dst = dst_root / variant / "protocol" / "com" / "cr1" / "25md.in"
+    protocol_dst = dst_root / variant / "protocol" / "com" / replica / "25md.in"
     protocol_dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(protocol_src, protocol_dst)
 
@@ -97,10 +118,21 @@ def parse_variants(value: str) -> list[str]:
     return selected
 
 
-def write_slurm(root: Path, state: str, variants: list[str]) -> Path:
+def parse_replicas(value: str) -> list[str]:
+    if value == "all":
+        return REPLICAS
+    selected = [item.strip() for item in value.split(",") if item.strip()]
+    unknown = sorted(set(selected) - set(REPLICAS))
+    if unknown:
+        raise SystemExit(f"unknown replicas: {', '.join(unknown)}")
+    return selected
+
+
+def write_slurm(root: Path, state: str, variants: list[str], replicas: list[str]) -> Path:
     path = root / "run_1ns.slurm"
-    variant_words = " ".join(variants)
-    array_max = len(variants) - 1
+    tasks = [f"{variant}:{replica}" for variant in variants for replica in replicas]
+    task_words = " ".join(tasks)
+    array_max = len(tasks) - 1
     amber_modules = os.environ.get(
         "VARMDYN_AMBER_MODULES",
         "cuda/12.3.0 openmpi/5.0.1 amber/24.gpu_mpi",
@@ -114,7 +146,7 @@ def write_slurm(root: Path, state: str, variants: list[str]) -> Path:
 #SBATCH --mem=16gb
 #SBATCH --time=04:00:00
 #SBATCH --array=0-{array_max}
-#SBATCH --output=slurm-%j.out
+#SBATCH --output=slurm-%A_%a.out
 
 set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
@@ -123,9 +155,10 @@ module --ignore_cache load {amber_modules}
 PMEMD="$(which pmemd.cuda_SPFP)"
 
 STATE="{state}"
-VARIANTS=({variant_words})
-VARIANT="${{VARIANTS[$SLURM_ARRAY_TASK_ID]}}"
-RUNNO="{REPLICA}"
+TASKS=({task_words})
+TASK="${{TASKS[$SLURM_ARRAY_TASK_ID]}}"
+VARIANT="${{TASK%%:*}}"
+RUNNO="${{TASK##*:}}"
 PROTOCOL="$VARIANT/protocol/com/$RUNNO"
 TRAJDIR="$VARIANT/03.pmemd/com/$RUNNO"
 LEAPDIR="$VARIANT/02.leap/com"
@@ -133,6 +166,7 @@ LEAPDIR="$VARIANT/02.leap/com"
 echo "VARMDYN_MD_SMOKE_START $(date -Is)"
 echo "state=$STATE"
 echo "variant=$VARIANT"
+echo "replica=$RUNNO"
 echo "workdir=$PWD"
 echo "pmemd=$PMEMD"
 
@@ -153,19 +187,21 @@ echo "VARMDYN_MD_SMOKE_DONE $(date -Is)"
     return path
 
 
-def prepare(state: str, variants: list[str]) -> None:
+def prepare(state: str, variants: list[str], replicas: list[str]) -> None:
     src = source_root() / STATE_DIRS[state]
     dst = state_root(state)
     if not src.is_dir():
         raise FileNotFoundError(src)
     dst.mkdir(parents=True, exist_ok=True)
     for variant in variants:
-        copy_required(src, dst, variant)
-        template = dst / variant / "protocol/com/cr1/25md.in"
-        short_mdin(template, dst / variant / "protocol/com/cr1/varmdyn_1ns.in")
-    slurm = write_slurm(dst, state, variants)
+        for replica in replicas:
+            copy_required(src, dst, variant, replica)
+            template = dst / variant / "protocol" / "com" / replica / "25md.in"
+            short_mdin(template, dst / variant / "protocol" / "com" / replica / "varmdyn_1ns.in")
+    slurm = write_slurm(dst, state, variants, replicas)
     print(f"[PREPARED] {state} {dst}")
     print(f"[VARIANTS] {', '.join(variants)}")
+    print(f"[REPLICAS] {', '.join(replicas)}")
     print(f"[SLURM] {slurm}")
 
 
@@ -180,25 +216,27 @@ def submit(state: str, execute: bool) -> None:
         subprocess.run(cmd, cwd=str(root), check=True)
 
 
-def check_state(state: str, variants: list[str]) -> int:
+def check_state(state: str, variants: list[str], replicas: list[str]) -> int:
     root = state_root(state)
     failures = 0
     for variant in variants:
-        out = root / variant / "03.pmemd/com/cr1/varmdyn_1ns.mdout"
-        info = root / variant / "03.pmemd/com/cr1/varmdyn_1ns.info"
-        rst = root / variant / "03.pmemd/com/cr1/varmdyn_1ns.restrt"
-        for path in [out, info, rst]:
-            status = "OK" if path.is_file() and path.stat().st_size > 0 else "MISSING"
-            print(f"{state} {variant} {status} {path}")
-            failures += 0 if status == "OK" else 1
-        if out.is_file():
-            text = out.read_text(encoding="utf-8", errors="ignore")
-            token_ok = f"NSTEP =   {NSTLIM_1NS}" in text or f"NSTEP ={NSTLIM_1NS:10d}" in text
-            done_ok = "Total wall time:" in text or "Final Performance Info:" in text
-            print(f"{state} {variant} {'OK' if token_ok else 'MISSING'} nstlim_token {NSTLIM_1NS}")
-            print(f"{state} {variant} {'OK' if done_ok else 'MISSING'} completion_marker")
-            failures += 0 if token_ok else 1
-            failures += 0 if done_ok else 1
+        for replica in replicas:
+            base = root / variant / "03.pmemd" / "com" / replica
+            out = base / "varmdyn_1ns.mdout"
+            info = base / "varmdyn_1ns.info"
+            rst = base / "varmdyn_1ns.restrt"
+            for path in [out, info, rst]:
+                status = "OK" if path.is_file() and path.stat().st_size > 0 else "MISSING"
+                print(f"{state} {variant} {replica} {status} {path}")
+                failures += 0 if status == "OK" else 1
+            if out.is_file():
+                text = out.read_text(encoding="utf-8", errors="ignore")
+                token_ok = f"NSTEP =   {NSTLIM_1NS}" in text or f"NSTEP ={NSTLIM_1NS:10d}" in text
+                done_ok = "Total wall time:" in text or "Final Performance Info:" in text
+                print(f"{state} {variant} {replica} {'OK' if token_ok else 'MISSING'} nstlim_token {NSTLIM_1NS}")
+                print(f"{state} {variant} {replica} {'OK' if done_ok else 'MISSING'} completion_marker")
+                failures += 0 if token_ok else 1
+                failures += 0 if done_ok else 1
     return failures
 
 
@@ -212,8 +250,8 @@ def sync_project(state: str, execute: bool) -> None:
         subprocess.run(cmd, check=True)
 
 
-def run_all(state: str, variants: list[str], execute: bool) -> int:
-    prepare(state, variants)
+def run_all(state: str, variants: list[str], replicas: list[str], execute: bool) -> int:
+    prepare(state, variants, replicas)
     submit(state, execute)
     return 0
 
@@ -224,7 +262,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--variants",
         default="all",
-        help="Variant list: all or comma-separated names such as 01_WT,04_G202E",
+        help="Variant list: all or comma-separated names such as WT,G202E",
+    )
+    parser.add_argument(
+        "--replicas",
+        default="cr1",
+        help="Replica list: all or comma-separated names such as cr1,cr2",
     )
     parser.add_argument("--action", choices=["prepare", "submit", "check", "sync-project", "all"], default="check")
     parser.add_argument("--execute", action="store_true", help="Execute submit/sync actions")
@@ -235,18 +278,19 @@ def main() -> int:
     args = build_parser().parse_args()
     states = ["apo", "holo"] if args.state == "all" else [args.state]
     variants = parse_variants(args.variants)
+    replicas = parse_replicas(args.replicas)
     failures = 0
     for state in states:
         if args.action == "prepare":
-            prepare(state, variants)
+            prepare(state, variants, replicas)
         elif args.action == "submit":
             submit(state, args.execute)
         elif args.action == "check":
-            failures += check_state(state, variants)
+            failures += check_state(state, variants, replicas)
         elif args.action == "sync-project":
             sync_project(state, args.execute)
         elif args.action == "all":
-            failures += run_all(state, variants, args.execute)
+            failures += run_all(state, variants, replicas, args.execute)
     return 1 if failures else 0
 
 

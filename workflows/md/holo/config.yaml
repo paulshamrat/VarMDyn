@@ -2,18 +2,14 @@ holo:
   generation_root: "${VARMDYN_MD_GENERATION_ROOT:-/scratch/$USER/VarMDyn/data/md}/holo"
   project_root: "${VARMDYN_MD_PROJECT_ROOT:-/path/to/hpc_project/VarMDyn/data/md}/holo"
   apo_generation_root: "${VARMDYN_MD_GENERATION_ROOT:-/scratch/$USER/VarMDyn/data/md}/apo"
-  run_dir: "systems"
+  variants_dir: "variants"
+  run_dir: "."
   logs_dir: "logs"
   protocol_dir: "protocol"
   varmodel_root: "${VARMDYN_VARMODEL_ROOT:-data/varmodel}"
 
-  variants:
-    - 01_WT
-    - 02_L119R
-    - 03_D193H
-    - 04_G202E
-    - 05_Q219K
-    - 06_C291Y
+  variants: all
+  variant_aliases: {}
 
   replicas:
     - cr1
@@ -38,25 +34,43 @@ holo:
 
   stages:
     handoff: "python workflows/md/handoff.py --state holo"
-    stage0_seed: "bash workflows/md/holo/scripts/seed.sh"
-    stage0_transfer: "bash workflows/md/holo/scripts/transfer.sh"
-    stage0_validate: "bash workflows/md/holo/scripts/validate.sh"
-    stage1_prepare: "bash workflows/md/holo/scripts/prepare.sh"
-    stage1_leap: "bash workflows/md/holo/scripts/leap.sh"
-    stage2_prepare_eq: "bash workflows/md/holo/scripts/eq_layout.sh"
-    stage2_submit_eq: "bash workflows/md/holo/scripts/eq.sh"
-    stage3_copy_restart: "bash workflows/md/holo/scripts/restart.sh"
-    stage3_submit_prod: "bash workflows/md/holo/scripts/prod.sh"
-    full_submit: "python workflows/md/submit.py --mode full --run-root ${VARMDYN_MD_GENERATION_ROOT:-/scratch/$USER/VarMDyn/data/md}/holo/systems --start ${VARMDYN_MD_PROD_START:-25} --end ${VARMDYN_MD_PROD_END:-29}"
+    seed: "bash workflows/md/holo/scripts/seed.sh"
+    transfer: "bash workflows/md/holo/scripts/transfer.sh"
+    transfer_check: "bash workflows/md/holo/scripts/validate.sh"
+    prepare: "bash workflows/md/holo/scripts/prepare.sh"
+    leap: "bash workflows/md/holo/scripts/leap.sh"
+    leap_submit: "bash workflows/md/holo/scripts/leap.sh --submit"
+    eq_layout: "bash workflows/md/holo/scripts/eq_layout.sh"
+    eq_submit: "bash workflows/md/holo/scripts/eq.sh"
+    restart: "bash workflows/md/holo/scripts/restart.sh"
+    prod: "bash workflows/md/holo/scripts/prod.sh"
+    full_submit: "python workflows/md/submit.py --mode full --array --run-root ${VARMDYN_MD_GENERATION_ROOT:-/scratch/$USER/VarMDyn/data/md}/holo --start ${VARMDYN_MD_PROD_START:-25} --end ${VARMDYN_MD_PROD_END:-29}"
+    validate_short: "python workflows/md/validate.py --state holo --variants ${VARMDYN_MD_VALIDATE_VARIANTS:-WT}"
     prod_plan: "python workflows/md/trajectory.py --state holo --action plan"
     prepared_plan: "python workflows/md/trajectory.py --state holo --action prepared-plan"
-    sync_project: "rsync -a --info=progress2 ./ ${VARMDYN_MD_PROJECT_ROOT:-/path/to/hpc_project/VarMDyn/data/md}/holo/"
+    sync_project: "python workflows/md/storage.py --state holo --variants all --action sync-project --verify"
+    restore_scratch: "python workflows/md/storage.py --state holo --variants all --action restore-scratch --verify"
+
+  stage_aliases:
+    stage0_seed: seed
+    stage0_transfer: transfer
+    stage0_validate: transfer_check
+    stage1_prepare: prepare
+    stage1_leap: leap
+    stage1_leap_submit: leap_submit
+    stage2_prepare_eq: eq_layout
+    stage2_submit_eq: eq_submit
+    stage3_copy_restart: restart
+    stage3_submit_prod: prod
 
   gates:
-    stage0:
+    transfer:
       - "ligprep/cdl.prot.noH.pdb"
       - "ligprep/ligand-only-from-complex-atponly.pdb"
       - "ligprep/mg-only-from-complex-mgonly.pdb"
+      - "ligprep/transfer_kinase_context.png"
+      - "ligprep/transfer_ligand_zoom.png"
+      - "ligprep/transfer_core_30_220_overlay.png"
     leap:
       - "02.leap/com/cdl.com.gas.leap.prmtop"
       - "02.leap/com/cdl.com.gas.leap.inpcrd"
@@ -66,6 +80,9 @@ holo:
       - "02.leap/com/cdl.com.wat.leap.pdb"
     eq:
       - "03.pmemd/com/cr1/24md.mdout"
+
+  gate_aliases:
+    stage0: transfer
 
   prod_file: "03.pmemd/com/{replica}/29md.mdout"
   prod_token: "NSTEP = 50000000"

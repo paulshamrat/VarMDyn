@@ -1,0 +1,7 @@
+parm ../../../02.leap/com/cdl.com.gas.leap.prmtop
+
+trajin ../cr1/traj-proc/production-25-to-29-500ns.cr1.striped.mdcrd.nc 1 last 20
+trajin ../cr2/traj-proc/production-25-to-29-500ns.cr2.striped.mdcrd.nc 1 last 20
+trajin ../cr3/traj-proc/production-25-to-29-500ns.cr3.striped.mdcrd.nc 1 last 20
+
+trajout production-25-to-29-concatenated-sampled-20.striped.mdcrd.nc

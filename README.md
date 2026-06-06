@@ -10,6 +10,9 @@ Full protocol: **https://paulshamrat.github.io/VarMDyn/**
 
 Local preview:
 
+Run on: local workstation. Environment: `varmdyn_env` or any environment with
+the docs requirements installed.
+
 ```bash
 python -m pip install -r docs/requirements.txt
 mkdocs serve
@@ -17,9 +20,14 @@ mkdocs serve
 
 Local preview with your machine paths filled in:
 
+Run on: local workstation. Environment: `varmdyn_env`.
+
 ```bash
 python scripts/build_local_docs.py --serve
 ```
+
+The local preview starts at `127.0.0.1:8001` when available. If that port is
+already in use, the helper automatically prints the next available preview URL.
 
 ## Quick Start
 
@@ -30,14 +38,28 @@ bash scripts/create_varmdyn_env.sh
 conda activate varmdyn_env
 export VARMDYN_RUN_ROOT=$PWD/data
 export VARMDYN_DATA_ROOT=$PWD/data
-export MPLCONFIGDIR=/tmp/varmdyn-matplotlib
+mkdir -p "$VARMDYN_DATA_ROOT/.cache/matplotlib"
+export MPLCONFIGDIR="$VARMDYN_DATA_ROOT/.cache/matplotlib"
 python scripts/check_repo_ready.py
 ```
 
 Optional public smoke workflows:
 
+Clustering smoke:
+
+Run on: local workstation. Environment: `varmdyn_env`.
+
 ```bash
 bash scripts/run_clustering.sh
+```
+
+Variant-model dry-run:
+
+Run on: local workstation. Environment: `varmdyn_modeller`.
+
+```bash
+bash scripts/ensure_modeller_env.sh
+conda activate varmdyn_modeller
 bash scripts/run_varmodel.sh --dry-run
 ```
 

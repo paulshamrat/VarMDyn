@@ -1,0 +1,4 @@
+parm ../../../../02.leap/com/cdl.com.wat.leap.prmtop
+
+trajin production-25-to-29-500ns.cr1.striped.mdcrd.nc
+trajout production-25-to-29-500ns.cr1.unstrip.mdcrd.nc nobox

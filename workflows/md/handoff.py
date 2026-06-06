@@ -12,14 +12,44 @@ from pathlib import Path
 from lib import REPO_ROOT, expand_path, load_yaml, resolve_config_path
 
 
-CANONICAL_VARIANTS = {
-    "WT": "01_WT",
-    "L119R": "02_L119R",
-    "D193H": "03_D193H",
-    "G202E": "04_G202E",
-    "Q219K": "05_Q219K",
-    "C291Y": "06_C291Y",
-}
+def clean_system_id(name: str) -> str:
+    cleaned = "".join(ch if ch.isalnum() or ch in {"_", "-", "."} else "_" for ch in name.strip())
+    cleaned = cleaned.strip("._-")
+    if not cleaned:
+        raise ValueError(f"cannot make system ID from {name!r}")
+    return cleaned
+
+
+def configured_variants(cfg: dict, modeled: dict[str, Path]) -> list[tuple[str, str]]:
+    """Return (mutation/source key, system folder id) pairs."""
+    aliases = cfg.get("variant_aliases", {})
+    if aliases is None:
+        aliases = {}
+    if not isinstance(aliases, dict):
+        raise ValueError("`variant_aliases` must be a mapping when present")
+    aliases = {str(key): str(value) for key, value in aliases.items()}
+    reverse_aliases = {value: key for key, value in aliases.items()}
+
+    variants = cfg.get("variants", "all")
+    if variants == "all":
+        variants = ["WT", *sorted(modeled)]
+    if not isinstance(variants, list) or not variants:
+        raise ValueError("`variants` must be `all` or a non-empty list")
+
+    out: list[tuple[str, str]] = []
+    for item in variants:
+        raw = str(item)
+        if raw in aliases:
+            mutation = raw
+            system_id = aliases[raw]
+        elif raw in reverse_aliases:
+            mutation = reverse_aliases[raw]
+            system_id = raw
+        else:
+            mutation = raw
+            system_id = clean_system_id(raw)
+        out.append((mutation, clean_system_id(system_id)))
+    return out
 
 
 def varmodel_root() -> Path:
@@ -81,26 +111,27 @@ def stage_file(src: Path, dst: Path, execute: bool) -> None:
 def stage_variants(state: str, config: str | None, execute: bool) -> None:
     cfg = state_config(state, config)
     generation = expand_path(cfg["generation_root"])
-    variants_dir = generation / "01_variants"
+    variants_dir = generation / str(cfg.get("variants_dir", "variants"))
     manifest = varmodel_root() / "manifest.csv"
     modeled = read_manifest(manifest)
     varmodel_cfg = load_varmodel_config()
     wt_src = (REPO_ROOT / "workflows" / str(varmodel_cfg["wt_pdb"])).resolve()
 
-    stage_file(wt_src, variants_dir / "01_WT.pdb", execute)
-    for mutation, variant_id in CANONICAL_VARIANTS.items():
+    systems = configured_variants(cfg, modeled)
+    for mutation, system_id in systems:
         if mutation == "WT":
-            continue
-        src = modeled.get(mutation)
-        if src is None:
-            raise FileNotFoundError(f"mutation {mutation} missing from {manifest}")
-        stage_file(src, variants_dir / f"{variant_id}.pdb", execute)
+            src = wt_src
+        else:
+            src = modeled.get(mutation)
+            if src is None:
+                raise FileNotFoundError(f"mutation {mutation} missing from {manifest}")
+        stage_file(src, variants_dir / f"{system_id}.pdb", execute)
 
     # Create expected simulation roots without filling AMBER outputs yet.
-    run_dir = str(cfg.get("run_dir", "systems"))
+    run_dir = str(cfg.get("run_dir", "."))
     protocol_dir = str(cfg.get("protocol_dir", "protocol"))
-    for variant_id in CANONICAL_VARIANTS.values():
-        base = generation / run_dir / variant_id
+    for _mutation, system_id in systems:
+        base = generation / run_dir / system_id
         planned = [
             base / "01.prep",
             base / "02.leap" / "com",

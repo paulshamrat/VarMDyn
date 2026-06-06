@@ -10,5 +10,7 @@ dependencies:
   - openpyxl
   - numpy
   - biopython
+  - pdb2pqr
+  - propka
   - pytest
   - mkdocs
