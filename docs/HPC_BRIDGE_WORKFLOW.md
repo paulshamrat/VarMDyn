@@ -12,7 +12,6 @@ control HPC commands:
 ```bash
 export VARMDYN_RUN_ROOT=$PWD/data
 export VARMDYN_DATA_ROOT=$PWD/data
-export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
 export VARMDYN_HPC_HOST=user@login.example.edu
 export VARMDYN_HPC_USER=user
 export VARMDYN_HPC_PROJECT=/path/to/hpc_project/VarMDyn
@@ -30,7 +29,7 @@ Before syncing, submitting, or fetching HPC work, check local packages, the
 authenticated bridge, project/scratch paths, and the remote control env:
 
 ```bash
-python scripts/check_readiness.py --hpc
+python scripts/checks/check_readiness.py --hpc
 ```
 
 For Palmetto, authentication is user-owned. Run `palmettobridge`, approve the
@@ -62,7 +61,7 @@ from local, not from the HPC login node:
 ```bash
 python workflows/md/bridge.py check --execute
 python workflows/md/bridge.py sync-code --execute
-python scripts/check_readiness.py --hpc
+python scripts/checks/check_readiness.py --hpc
 python workflows/md/bridge.py init --execute
 ```
 
@@ -80,7 +79,7 @@ because create/update operations can be killed on login nodes.
 > If you are intentionally logged into the HPC project checkout for inspection
 > or repair, use the lightweight `envs/varmdyn_hpc.yml` control environment and
 > check the repo with `VARMDYN_CHECK_PROFILE=hpc-control python
-> scripts/check_repo_ready.py`. Reuse an existing env when possible; conda
+> scripts/checks/check_repo_ready.py`. Reuse an existing env when possible; conda
 > create/update can be killed on login nodes.
 
 Point `VARMDYN_HPC_PYTHON` at that control environment's Python executable so
@@ -103,7 +102,7 @@ are the copy-safe interface.
    source, updated from local with `python workflows/md/bridge.py sync-code
    --execute`.
 2. Verify local packages, the authenticated bridge, remote project/scratch
-   paths, and the remote control env with `python scripts/check_readiness.py
+   paths, and the remote control env with `python scripts/checks/check_readiness.py
    --hpc`.
 3. Initialize, submit, check, and fetch remote workflow stages from local with
    `python workflows/md/bridge.py ...`.

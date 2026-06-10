@@ -9,4 +9,4 @@ varmdyn_load_amber_modules
 
 echo "[INFO] holo eq root: ${STATE_ROOT}"
 test -d "${RUN_DIR}" || { echo "[ERROR] missing ${RUN_DIR}; run earlier stages first"; exit 2; }
-python workflows/md/submit.py --mode eq --run-root "${RUN_DIR}" "${@}"
+python workflows/md/stages/submit.py --mode eq --run-root "${RUN_DIR}" "${@}"

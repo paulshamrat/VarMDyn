@@ -7,7 +7,7 @@ Use `envs/varmdyn_env.yml` as the main public analysis environment.
 Run on: local workstation.
 
 ```bash
-bash scripts/create_varmdyn_env.sh
+bash scripts/env/create_varmdyn_env.sh
 conda activate varmdyn_env
 ```
 
@@ -23,7 +23,7 @@ Run on: local workstation or the HPC project checkout that will perform
 PyMOL rendering.
 
 ```bash
-bash scripts/ensure_pymol_env.sh
+bash scripts/env/ensure_pymol_env.sh
 ```
 
 The helper creates the env if missing, updates it if present, and checks the
@@ -42,7 +42,7 @@ license:
 Run on: local workstation. Environment created/updated: `varmdyn_modeller`.
 
 ```bash
-bash scripts/ensure_modeller_env.sh
+bash scripts/env/ensure_modeller_env.sh
 ```
 
 The helper uses `KEY_MODELLER`, `MODELLER_LICENSE`, a key already stored in the
@@ -51,7 +51,7 @@ conda env, or an interactive prompt. For non-interactive setup:
 Run on: local workstation. Environment created/updated: `varmdyn_modeller`.
 
 ```bash
-KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' bash scripts/ensure_modeller_env.sh
+KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' bash scripts/env/ensure_modeller_env.sh
 ```
 
 ## 4. Remote HPC Control Environment
@@ -66,7 +66,7 @@ Run on: local workstation. Environment: local `varmdyn_env`; remote environment
 checked/created: HPC `varmdyn_env` control env.
 
 ```bash
-python scripts/check_readiness.py --hpc
+python scripts/checks/check_readiness.py --hpc
 ```
 
 The readiness check verifies whether the remote `varmdyn_env` exists and works
@@ -81,8 +81,8 @@ full local environment:
 Run on: local workstation.
 
 ```bash
-bash scripts/create_varmdyn_env.sh
-python scripts/check_readiness.py
+bash scripts/env/create_varmdyn_env.sh
+python scripts/checks/check_readiness.py
 ```
 
 ## 5. HPC Tools

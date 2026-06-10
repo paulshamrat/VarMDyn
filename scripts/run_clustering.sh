@@ -15,6 +15,6 @@ MPLCONFIGDIR="${MPLCONFIGDIR:-/tmp/varmdyn-matplotlib}" \
     --config config.yaml \
     --outdir "$OUTDIR"
 
-"$PYTHON_BIN" "$ROOT/scripts/compare_clustering_outputs.py" "$OUTDIR"
+"$PYTHON_BIN" "$ROOT/scripts/checks/compare_clustering_outputs.py" "$OUTDIR"
 
 echo "[OK] clustering outputs: $OUTDIR"

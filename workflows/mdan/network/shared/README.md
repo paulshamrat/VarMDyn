@@ -26,17 +26,17 @@ For each state and variant, the workflow:
    when explicitly requested;
 2. keeps the prepared-input route separate from the raw-input convenience route;
 3. writes prepared topology, sampled NetCDF, PDB, PSF, and DCD files under
-   `data/network/full/prepared/<state>/<variant>/`;
+   `data/mdan/network/full/prepared/<state>/<variant>/`;
 4. runs DyNetAn on the prepared PDB/PSF/DCD pair;
 5. writes top-node, top-edge, bottleneck, and network report files under
-   `data/network/full/dynetan/<state>/<variant>/`;
+   `data/mdan/network/full/dynetan/<state>/<variant>/`;
 6. compares WT top-25 bottleneck residues with each variant;
 7. fetches only lightweight CSV/TXT/PDB files back to the local machine.
 
 The PDB used for local rendering is generated from the same simulation input:
 
 ```text
-data/network/full/prepared/<state>/<variant>/<variant>.pdb
+data/mdan/network/full/prepared/<state>/<variant>/<variant>.pdb
 ```
 
 ## 2. Download Only This Folder
@@ -331,7 +331,7 @@ The submit wrapper launches one Slurm array for variants and one dependent
 compare job. Logs go under:
 
 ```text
-data/mdan/network_full/logs/
+data/mdan/network/runs/logs/
 ```
 
 If you set a custom `VARMDYN_NETWORK_DATA_ROOT` on HPC, set the same location as
@@ -344,17 +344,17 @@ From the local `network_shared` folder:
 ```bash
 export VARMDYN_HPC_HOST=user@login.example.edu
 export VARMDYN_HPC_REPO=/path/to/hpc/network_shared
-export VARMDYN_HPC_NETWORK_DATA_ROOT=/path/to/hpc/network_shared/data/network/full
+export VARMDYN_HPC_NETWORK_DATA_ROOT=/path/to/hpc/network_shared/data/mdan/network/full
 bash fetch_network_results.sh
 ```
 
 This fetches:
 
 ```text
-data/network/full/dynetan/**/*.csv
-data/network/full/dynetan/**/*.txt
-data/network/full/compare/**/*.csv
-data/network/full/prepared/**/*.pdb
+data/mdan/network/full/dynetan/**/*.csv
+data/mdan/network/full/dynetan/**/*.txt
+data/mdan/network/full/compare/**/*.csv
+data/mdan/network/full/prepared/**/*.pdb
 ```
 
 It does not fetch trajectories, DCD files, NetCDF files, PSF files, or topology
@@ -367,7 +367,7 @@ After fetching lightweight results:
 ```bash
 python network_shared.py compare \
   --state apo \
-  --root data/network/full/prepared/apo \
+  --root data/mdan/network/full/prepared/apo \
   --variants 01_WT,02_L119R
 ```
 
@@ -431,7 +431,7 @@ cd remodel/
 bash build_structural_bottleneck_map.sh
 ```
 
-This script will automatically locate your downloaded PDBs, launch PyMOL and ChimeraX to render the structures with the ATP/Mg, crop the excess whitespace, and generate the final composite at: `data/network/full/render/structural_bottleneck_remodeling_map.png`
+This script will automatically locate your downloaded PDBs, launch PyMOL and ChimeraX to render the structures with the ATP/Mg, crop the excess whitespace, and generate the final composite at: `data/mdan/network/full/render/structural_bottleneck_remodeling_map.png`
 
 ### 13c. Generating 2D Network Grids
 
@@ -449,4 +449,4 @@ python render_mutant_network_pathways.py
 python build_network_pathway_grid.py
 ```
 
-These scripts will automatically output the final high-resolution PNG: `data/network/full/render/mutant_network_pathway_grid.png`.
+These scripts will automatically output the final high-resolution PNG: `data/mdan/network/full/render/mutant_network_pathway_grid.png`.

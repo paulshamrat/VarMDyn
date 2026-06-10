@@ -105,7 +105,10 @@ def run_shell(command: str, cwd: Path | None, execute: bool) -> None:
     env = os.environ.copy()
     python_bin = str(Path(sys.executable).resolve().parent)
     env["PATH"] = python_bin + os.pathsep + env.get("PATH", "")
-    subprocess.run(command, cwd=str(cwd) if cwd else None, shell=True, check=True, env=env)
+    result = subprocess.run(command, cwd=str(cwd) if cwd else None, shell=True, check=False, env=env)
+    if result.returncode:
+        print(f"[FAIL] command exited with status {result.returncode}: {command}", file=sys.stderr)
+        raise SystemExit(result.returncode)
 
 
 def path_status(path: Path) -> str:

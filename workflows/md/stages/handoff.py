@@ -7,7 +7,10 @@ import argparse
 import csv
 import os
 import shutil
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from lib import REPO_ROOT, expand_path, load_yaml, resolve_config_path
 

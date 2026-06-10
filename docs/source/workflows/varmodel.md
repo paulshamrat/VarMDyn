@@ -3,14 +3,24 @@
 The variant-modeling workflow wraps the MODELLER mutate-only script and writes
 each run to an ignored output directory.
 
+The public first run should be small: WT plus one example mutation using
+`--mut`. Full panels are discovered from the configured mutation list and are
+recorded in `data/varmodel/manifest.csv`; downstream MD uses that manifest
+rather than a hard-coded variant count. In Colab, keep inputs and outputs under
+your Drive-backed `VARMDYN_RUN_ROOT`/`VARMDYN_DATA_ROOT` so the run survives the
+session.
+
 ## 1. Prepare The MODELLER Environment
 
 Run from the repository root directory on the local workstation. Environment:
 start from any conda-capable shell; the helper creates or updates
 `varmdyn_modeller`.
 
+Run on: local workstation from the repository root. Environment created/updated:
+`varmdyn_modeller`.
+
 ```bash
-bash scripts/ensure_modeller_env.sh
+bash scripts/env/ensure_modeller_env.sh
 conda activate varmdyn_modeller
 ```
 
@@ -21,8 +31,10 @@ interactive prompt.
 
 For non-interactive setup:
 
+Run on: local workstation. Environment created/updated: `varmdyn_modeller`.
+
 ```bash
-KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' bash scripts/ensure_modeller_env.sh
+KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' bash scripts/env/ensure_modeller_env.sh
 ```
 
 ## 2. Dry Run
@@ -37,7 +49,9 @@ bash scripts/run_varmodel.sh --dry-run
 
 ## 3. Full Run
 
-Run from the repository root directory.
+Run from the repository root directory. This uses every mutation listed in
+`workflows/varmodel/modeller/mutations.txt` or the mutation list configured in
+`workflows/varmodel/config.yaml`.
 
 Run on: local workstation. Environment: `varmdyn_modeller`.
 
@@ -48,7 +62,8 @@ bash scripts/run_varmodel.sh
 ## 4. Single Mutation Run
 
 You can also run a single mutation directly without editing the mutations list.
-Run from the repository root directory.
+Run from the repository root directory. This is the recommended public smoke
+run before launching a larger configured panel.
 
 Run on: local workstation. Environment: `varmdyn_modeller`.
 
@@ -56,17 +71,16 @@ Run on: local workstation. Environment: `varmdyn_modeller`.
 bash scripts/run_varmodel.sh --mut L119R
 ```
 
-**Note: Google Colab/Drive.** For Colab, mount Google Drive and set the path
-root to your Drive repository directory before running the same command:
+For Google Colab, complete the [Google Colab](../setup/colab.md) setup first,
+then run the same variant-modeling wrapper inside that Colab session with the
+appropriate MODELLER environment.
 
-```bash
-export VARMDYN_RUN_ROOT=/content/drive/MyDrive/VarMDyn/data
-bash scripts/run_varmodel.sh
-```
-
-This will write the outputs directly under `data/varmodel/` for the single mutation.
+This writes outputs under `data/varmodel/` for the configured mutation set or
+for the single mutation supplied with `--mut`.
 
 ## 5. Outputs
+
+Path map only. Outputs are generated under ignored local `data/`.
 
 ```text
 data/varmodel/
@@ -75,11 +89,13 @@ data/varmodel/
   varmodel_qc.csv
   varmodel_qc_summary.txt
   mutants/
-    target.B99990001_with_cryst_L119R_with_cryst.pdb
+    target.B99990001_with_cryst_<MUTATION>_with_cryst.pdb
     ...
 ```
 
 The wrapper records a manifest, mutation list, MODELLER log, generated mutant PDBs, and two QC files:
+
+Path map only.
 
 ```text
 data/varmodel/varmodel_qc.csv
@@ -91,7 +107,7 @@ data/varmodel/varmodel_qc_summary.txt
 
 ## 6. QC Interpretation
 
-The QC report checks that every expected mutant structure was produced, that the observed WT residue matches the requested mutation, and that MODELLER energies can be parsed from `mutate_summary.csv`. Very high initial or optimized energies are reported as warnings so the structure can be inspected before downstream use. The public smoke panel is expected to produce five structures; energy warnings do not by themselves mean that the command failed.
+The QC report checks that every expected mutant structure was produced, that the observed WT residue matches the requested mutation, and that MODELLER energies can be parsed from `mutate_summary.csv`. Very high initial or optimized energies are reported as warnings so the structure can be inspected before downstream use. A single-mutation public smoke run should produce one mutant structure; a full configured run produces one structure per mutation in the configured list. Energy warnings do not by themselves mean that the command failed.
 
 ## 7. Step-by-Step Execution Details
 
@@ -113,21 +129,21 @@ To understand what happens behind the scenes during a variant modeling run, the 
 The underlying modeling engine (`workflows/varmodel/modeller/modeller6.py`) is project-agnostic. It can be used to generate wild-type starting structures and mutant structures for **any** protein system.
 
 ### 8.1. Build Mode (Generating the WT Starting Structure)
-If you do not have a pre-refined wild-type structure, you can use the template **Build Mode** to download a structural template from the PDB, align it to a UniProt sequence, build missing coordinates, and reinsert CRYST1 data:
+If you do not have a pre-refined wild-type structure, you can use the template **Build Mode** to download a structural template from the PDB, align it to a UniProt sequence, build missing coordinates, and reinsert CRYST1 data. Replace `PDB_ID` and `UNIPROT_ID` with your system:
 
 Run on: local workstation. Environment: `varmdyn_modeller`.
 
 ```bash
 # Run Build Mode: PDB_ID UniProt_ID [options]
-python workflows/varmodel/modeller/modeller6.py 4bgq O76039 \
+python workflows/varmodel/modeller/modeller6.py PDB_ID UNIPROT_ID \
   --chain A \
   --range 1 303 \
   --outdir data/varmodel/my_system
 ```
 
 *Parameters:*
-*   `pdb_id` (e.g., `4bgq`): The structural template PDB to download.
-*   `uni_id` (e.g., `O76039`): The target protein UniProt accession ID.
+*   `pdb_id`: The structural template PDB to download.
+*   `uni_id`: The target protein UniProt accession ID.
 *   `--chain`: The template chain ID to use.
 *   `--range`: The specific residues matching the UniProt sequence range (1-based index).
 *   `--outdir`: Output directory where template logs, alignments, and the final relaxed starting structure (`target.B99990001_with_cryst.pdb`) will be written.
@@ -155,9 +171,11 @@ python workflows/varmodel/modeller/modeller6.py \
 ### 8.3. Customizing the Wrapper Config
 Alternatively, you can run the top-level wrapper script for a different protein by modifying `workflows/varmodel/config.yaml` to match your new system:
 
+Configuration example only. Edit from the repository root.
+
 ```yaml
 varmodel:
-  legacy_script: varmodel/modeller/modeller6.py
+  source_script: varmodel/modeller/modeller6.py
   python_exe: ""
   wt_pdb: path/to/your/new_wildtype.pdb     # Point to your custom wildtype PDB
   mutations_list: path/to/your/mutations.txt  # Point to your mutations file

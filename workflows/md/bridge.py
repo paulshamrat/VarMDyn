@@ -151,7 +151,7 @@ def sync_code(args: argparse.Namespace) -> None:
         "--exclude",
         ".git/",
         "--exclude",
-        "data/",
+        "/data/",
         "--exclude",
         "_archive/",
         "--exclude",
@@ -184,7 +184,7 @@ def setup_env(args: argparse.Namespace) -> None:
         check_command = (
             "conda run -n varmdyn_env "
             "env VARMDYN_CHECK_PROFILE=hpc-control "
-            "python scripts/check_repo_ready.py && "
+            "python scripts/checks/check_repo_ready.py && "
             "conda run -n varmdyn_env python -c "
             + shlex.quote(
                 "import shutil, sys; "

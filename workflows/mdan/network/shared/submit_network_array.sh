@@ -25,7 +25,7 @@ fi
 
 bash create_dynetan_env.sh
 
-mkdir -p runs/mdan/network_full/logs
+mkdir -p data/mdan/network/runs/logs
 
 array_job="$(
   sbatch --parsable --array="${ARRAY_RANGE}" \

@@ -2,12 +2,28 @@
 
 The clustering workflow performs structural exposure and variant position clustering analysis from the seed inputs.
 
+Unless a subsection says otherwise, run commands from the VarMDyn repository
+root on the local workstation in `varmdyn_env`. The wrapper writes outputs under
+ignored `data/clustering/`.
+
+Public runs start from the bundled example PDB and ddG Excel file. To use a
+different protein, place your PDB and optional ddG/variant Excel file under
+ignored `data/`, then update
+`workflows/clustering/config.yaml` so `paths.pdb`, `paths.ddg_excel`,
+`mutation_col`, `chain`, and the residue window match your system.
+
 ## 1. Inputs
+
+Path map only. These tracked seed inputs live inside the repository.
 
 ```text
 workflows/clustering/data/raw/ddG_Fmax.xlsx
 workflows/clustering/data/raw/target.B99990001_with_cryst.pdb
 ```
+
+For a custom run, keep the same workflow shape but replace those config paths
+with your own local input files. For Google Colab, set Drive-backed paths first
+on the dedicated [Google Colab](../setup/colab.md) page.
 
 ## 2. Run From Repository Root
 
@@ -20,13 +36,8 @@ export VARMDYN_RUN_ROOT=$PWD/data
 bash scripts/run_clustering.sh
 ```
 
-**Note: Google Colab/Drive.** For Colab, mount Google Drive and set the path
-root to your Drive repository directory before running the same command:
-
-```bash
-export VARMDYN_RUN_ROOT=/content/drive/MyDrive/VarMDyn/data
-bash scripts/run_clustering.sh
-```
+For Google Colab, complete the [Google Colab](../setup/colab.md) setup first,
+then run the same clustering wrapper inside that Colab session.
 
 ## 3. What The Wrapper Does
 
@@ -66,11 +77,13 @@ The distance-clustering workflow implements two distinct geometric representatio
     *   **Result**: Silhouette analysis optimizes to **4 clusters** ($k=4$, silhouette score 0.329).
 
 ### Key Scientific Parameter Checklist
-*   **Active Window**: Residues `108-303` to target the kinase-domain core (regulatory motifs, active site, and MAPK insert).
+*   **Active Window**: Set in `workflows/clustering/config.yaml`; the bundled example uses residues `108-303`.
 *   **Buried Threshold**: Relative SASA $\le 10\%$ is classified as buried.
 *   **Linkage Rule**: Complete linkage hierarchical clustering (`linkage: complete`).
 
 ## 6. Outputs
+
+Path map only. Outputs are generated under ignored local `data/`.
 
 ```text
 data/clustering/
@@ -107,8 +120,14 @@ Run on: local workstation. Environment: `varmdyn_env`.
 cd workflows/clustering
 ```
 
+The step commands below run from `workflows/clustering` in `varmdyn_env` and
+write to `../../data/clustering`.
+
 ### Step 1: Compute SASA and Merge to Excel (`sasa`)
 This step uses PyMOL to calculate the relative Solvent Accessible Surface Area (SASA) for each residue of the PDB structure, then merges these values into the ΔΔG dataset.
+
+Run on: local workstation from `workflows/clustering`. Environment:
+`varmdyn_env`. Path: outputs to `../../data/clustering`.
 
 ```bash
 python -m distcluster.cli step sasa --config config.yaml --outdir ../../data/clustering --only
@@ -120,6 +139,9 @@ python -m distcluster.cli step sasa --config config.yaml --outdir ../../data/clu
 ### Step 2: Classify Exposure (`exposure`)
 Classifies each variant position as **Buried**, **Partially exposed**, or **Exposed** according to relative SASA thresholds (default: `< 10.0%` for Buried, `> 50.0%` for Exposed).
 
+Run on: local workstation from `workflows/clustering`. Environment:
+`varmdyn_env`. Path: outputs to `../../data/clustering`.
+
 ```bash
 python -m distcluster.cli step exposure --config config.yaml --outdir ../../data/clustering --only
 ```
@@ -130,6 +152,9 @@ python -m distcluster.cli step exposure --config config.yaml --outdir ../../data
 ### Step 3: Extract Buried Positions (`buried`)
 Filters the dataset to extract only the variants classified as **Buried** for spatial clustering.
 
+Run on: local workstation from `workflows/clustering`. Environment:
+`varmdyn_env`. Path: outputs to `../../data/clustering`.
+
 ```bash
 python -m distcluster.cli step buried --config config.yaml --outdir ../../data/clustering --only
 ```
@@ -139,6 +164,9 @@ python -m distcluster.cli step buried --config config.yaml --outdir ../../data/c
 
 ### Step 4: Perform Distance-Based Clustering (`calpha` or `com`)
 Runs either C-alpha spatial clustering or side-chain center-of-mass (COM) clustering:
+
+Run on: local workstation from `workflows/clustering`. Environment:
+`varmdyn_env`. Path: outputs to `../../data/clustering`.
 
 ```bash
 # C-alpha spatial clustering
@@ -154,6 +182,9 @@ python -m distcluster.cli step com --config config.yaml --outdir ../../data/clus
 ### Step 5: Plot Dendrograms (`dendrogram`)
 Generates classical hierarchical dendrogram trees of the clusters.
 
+Run on: local workstation from `workflows/clustering`. Environment:
+`varmdyn_env`. Path: outputs to `../../data/clustering`.
+
 ```bash
 python -m distcluster.cli step dendrogram --config config.yaml --outdir ../../data/clustering --only
 ```
@@ -163,6 +194,9 @@ python -m distcluster.cli step dendrogram --config config.yaml --outdir ../../da
 ### Step 6: Generate Visual Reports & Heatmaps (`visual`)
 Creates cluster heatmaps and bar plots comparing ΔΔG distributions across clusters, and builds a comprehensive multi-sheet Excel summary report.
 
+Run on: local workstation from `workflows/clustering`. Environment:
+`varmdyn_env`. Path: outputs to `../../data/clustering`.
+
 ```bash
 python -m distcluster.cli step visual --config config.yaml --outdir ../../data/clustering --only
 ```
@@ -171,6 +205,9 @@ python -m distcluster.cli step visual --config config.yaml --outdir ../../data/c
 
 ### Step 7: Plot Exposure Distribution (`exposureplot`)
 Plots SASA distribution histograms, scatter plots of SASA vs ΔΔG, and class count bar charts.
+
+Run on: local workstation from `workflows/clustering`. Environment:
+`varmdyn_env`. Path: outputs to `../../data/clustering`.
 
 ```bash
 python -m distcluster.cli step exposureplot --config config.yaml --outdir ../../data/clustering --only

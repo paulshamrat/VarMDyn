@@ -8,7 +8,6 @@ shell that controls the bridge. Environment: `varmdyn_env`.
 ```bash
 export VARMDYN_RUN_ROOT=$PWD/data
 export VARMDYN_DATA_ROOT=$PWD/data
-export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
 export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
 export VARMDYN_HPC_HOST=user@login.example.edu
 export VARMDYN_MD_GENERATION_ROOT=/scratch/$USER/VarMDyn/data/md
@@ -21,12 +20,8 @@ repo-local gitignored `data/` directory. On HPC systems, point it to scratch.
 `VARMDYN_DATA_ROOT` is a gitignored local folder for input files and fetched
 lightweight outputs.
 
-`VARMDYN_MD_LEGACY_ROOT` points to an external simulation tree containing:
-
-```text
-03_mdsim/
-05_cdkl5atpmg/
-```
+Private reproducibility roots are not part of normal data setup. Keep them in
+ignored local notes or ignored local environment files.
 
 For a site-specific HPC validation workspace, set the same variables to the
 durable project-partition checkout and data root for that site:
@@ -52,7 +47,7 @@ Run on: HPC checkout or through `python workflows/md/bridge.py exec`.
 Environment: HPC `varmdyn_env` control env.
 
 ```bash
-python workflows/md/storage.py --state all --variants all --action sync-project --verify --execute
+python workflows/md/stages/storage.py --state all --variants all --action sync-project --verify --execute
 ```
 
 Restore a saved campaign from project to scratch before extending it:
@@ -61,7 +56,7 @@ Run on: HPC checkout or through `python workflows/md/bridge.py exec`.
 Environment: HPC `varmdyn_env` control env.
 
 ```bash
-python workflows/md/storage.py --state all --variants all --action restore-scratch --verify --execute
+python workflows/md/stages/storage.py --state all --variants all --action restore-scratch --verify --execute
 ```
 
 The public repo tracks only the clustering seed Excel/PDB required to start the

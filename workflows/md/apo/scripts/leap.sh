@@ -84,13 +84,13 @@ charge COM2
 quit
 EOF
   (cd "${leap_dir}" && tleap -s -f charge_probe.in > charge_probe.log)
-  python workflows/md/leap_neutralize.py \
+  python workflows/md/leap/neutralize.py \
     --template "${leap_dir}/tleap.com.in" \
     --charge-log "${leap_dir}/charge_probe.log" \
     --out "${leap_dir}/tleap.com.varmdyn.in" \
     --report "${leap_dir}/neutralization_plan.txt"
   (cd "${leap_dir}" && tleap -s -f tleap.com.varmdyn.in > leap.log)
-  python workflows/md/ion_report.py \
+  python workflows/md/leap/ion_report.py \
     --state apo \
     --variant "$(basename "${variant_dir}")" \
     --log "${leap_dir}/leap.log" \

@@ -25,10 +25,10 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR
 DATA_ROOT = Path(
-    os.environ.get("VARMDYN_NETWORK_DATA_ROOT", REPO_ROOT / "data" / "network" / "full")
+    os.environ.get("VARMDYN_NETWORK_DATA_ROOT", REPO_ROOT / "data" / "mdan" / "network" / "full")
 ).expanduser()
 RUN_ROOT = Path(
-    os.environ.get("VARMDYN_NETWORK_RUN_ROOT", REPO_ROOT / "runs" / "mdan" / "network_full")
+    os.environ.get("VARMDYN_NETWORK_RUN_ROOT", REPO_ROOT / "data" / "mdan" / "network" / "runs")
 ).expanduser()
 os.environ.setdefault("NUMBA_CACHE_DIR", str(RUN_ROOT / "numba_cache"))
 LEGACY_REPLAY_SBATCH = SCRIPT_DIR / "dynetan_replay_validation_apo.sh"

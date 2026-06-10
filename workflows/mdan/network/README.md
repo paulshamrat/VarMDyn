@@ -22,7 +22,7 @@ Create the folders and local env file from the repository root:
 Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
-python scripts/init_data_layout.py
+python scripts/data/init_data_layout.py
 source data/varmdyn_data.env
 ```
 
@@ -31,9 +31,9 @@ Check data for network table validation, rendering, and replay:
 Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
-python scripts/check_data_inputs.py --module network --profile tables
-python scripts/check_data_inputs.py --module network --profile render
-python scripts/check_data_inputs.py --module network --profile apo-replay
+python scripts/checks/check_data_inputs.py --module network --profile tables
+python scripts/checks/check_data_inputs.py --module network --profile render
+python scripts/checks/check_data_inputs.py --module network --profile apo-replay
 ```
 
 Use `--profile holo-replay` only after a matching holo DyNetAn replay directory
@@ -50,9 +50,10 @@ python workflows/mdan/network/network.py full --state holo
 python workflows/mdan/network/network.py full --state all
 ```
 
-It discovers `NN_NAME` system folders automatically, keeps `01_WT` first, writes
-under ignored `data/network/full/` and `data/mdan/network_full/`, and skips
-completed DyNetAn outputs unless `--force` is used.
+It discovers system folders automatically, keeps WT first, writes
+trajectory-derived outputs under ignored `data/mdan/network/full/`, writes run
+logs under `data/mdan/network/runs/`, and skips completed DyNetAn outputs unless
+`--force` is used.
 
 For faster HPC runs, use the array wrapper so each variant gets its own Slurm
 task and the compare step runs only after the array succeeds:
@@ -65,6 +66,7 @@ export VARMDYN_APO_ROOT=/path/to/apo/root
 export VARMDYN_HOLO_ROOT=/path/to/holo/root
 export VARMDYN_DYNETAN_STAGE_TAG=varmdyn_full_holo
 
+mkdir -p data/mdan/network/runs/logs
 jobid=$(sbatch --parsable --array=0-5 workflows/mdan/network/run_network_array.slurm holo variant)
 sbatch --dependency=afterok:${jobid} workflows/mdan/network/run_network_array.slurm holo compare
 ```
@@ -84,7 +86,7 @@ Network residue renders use the prepared structure for the same state and
 variant by default:
 
 ```text
-data/network/full/prepared/<state>/<variant>/<variant>.pdb
+data/mdan/network/full/prepared/<state>/<variant>/<variant>.pdb
 ```
 
 Existing manuscript-style DyNetAn work directories can also be staged,

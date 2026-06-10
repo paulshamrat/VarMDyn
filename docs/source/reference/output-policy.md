@@ -11,6 +11,9 @@ data/
 
 The default local run folder is `data/`:
 
+Run on: local workstation from the repository root. Environment:
+`varmdyn_env`. Path: ignored local `data/`.
+
 ```bash
 export VARMDYN_RUN_ROOT=$PWD/data
 ```

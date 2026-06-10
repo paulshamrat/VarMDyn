@@ -23,7 +23,21 @@ export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
 export VARMDYN_HPC_HOST=user@login.example.edu
 ```
 
-## 3. RMSD
+## 3. RMSD/RMSF From Completed MD Outputs
+
+Run on: local workstation. Environment: `varmdyn_env`; remote cpptraj jobs use
+HPC AMBER modules through Slurm.
+
+```bash
+bash scripts/run_analysis.sh rms plan --state apo --start 25 --end 29
+bash scripts/run_analysis.sh rms submit --state apo --start 25 --end 29 --run
+bash scripts/run_analysis.sh rms check --state apo --start 25 --end 29
+```
+
+This route reads post-processed per-replica stripped trajectories and writes
+RMSD/RMSF mean/SD tables under `data/mdan/rms/`.
+
+## 4. RMSD Plotting
 
 Run on: local workstation. Environment: `varmdyn_env`.
 
@@ -32,7 +46,7 @@ python workflows/mdan/rmsd/summarize.py --help
 python workflows/mdan/rmsd/plot.py --help
 ```
 
-## 4. RMSF
+## 5. RMSF Plotting
 
 Run on: local workstation. Environment: `varmdyn_env`.
 
@@ -42,7 +56,7 @@ python workflows/mdan/rmsf/overlay.py --help
 python workflows/mdan/rmsf/supplementary.py --help
 ```
 
-## 5. N-Lobe/Y171 Dynamics
+## 6. N-Lobe/Y171 Dynamics
 
 Run on: local workstation. Environment: `varmdyn_env`.
 
@@ -52,7 +66,7 @@ bash scripts/run_dynamics_local.sh
 
 The local wrapper expects kept-TSV files under `$VARMDYN_DATA_ROOT/dynamics/kept_tsvs/`.
 
-## 6. Dynamic Network
+## 7. Dynamic Network
 
 Run on: local workstation. Environment: `varmdyn_env` for validation/help and
 `varmdyn_dynetan` for trajectory-level replay.
@@ -63,10 +77,10 @@ python workflows/mdan/network/network.py --help
 bash workflows/mdan/network/remodel.sh
 ```
 
-Use `python scripts/init_data_layout.py` to create the standard `data/` layout.
+Use `python scripts/data/init_data_layout.py` to create the standard `data/` layout.
 Validation reports are written to `data/mdan/network/`.
 
-## 7. Function
+## 8. Function
 
 Run on: local workstation. Environment: `varmdyn_env`; PyMOL-rendered panels
 delegate to `varmdyn_pymol` through `VARMDYN_PYMOL_CMD`.

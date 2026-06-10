@@ -5,8 +5,8 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --time=08:00:00
-#SBATCH --output=runs/mdan/network_full/logs/network_full_%j.out
-#SBATCH --error=runs/mdan/network_full/logs/network_full_%j.err
+#SBATCH --output=data/mdan/network/runs/logs/network_full_%j.out
+#SBATCH --error=data/mdan/network/runs/logs/network_full_%j.err
 
 set -euo pipefail
 
@@ -15,7 +15,7 @@ NCORES="${VARMDYN_NCORES:-${SLURM_CPUS_PER_TASK:-8}}"
 export VARMDYN_NCORES="${NCORES}"
 export PYTHONNOUSERSITE=1
 
-mkdir -p runs/mdan/network_full/logs
+mkdir -p data/mdan/network/runs/logs
 
 if command -v module >/dev/null 2>&1; then
   module purge || true
@@ -33,4 +33,35 @@ eval "$(conda shell.bash hook)"
 conda activate "${VARMDYN_DYNETAN_ENV:-varmdyn_dynetan}"
 
 python -c "import dynetan, traitlets, ipywidgets, MDAnalysis, networkx, parmed; import importlib.metadata as md; print('DyNetAn environment OK:', 'dynetan=' + md.version('dynetan'), 'MDAnalysis=' + md.version('MDAnalysis'))"
-python workflows/mdan/network/network.py full --state "${STATE}"
+FULL_ARGS=()
+if [[ -n "${VARMDYN_APO_ROOT:-}" ]]; then
+  FULL_ARGS+=(--apo-root "${VARMDYN_APO_ROOT}")
+fi
+if [[ -n "${VARMDYN_HOLO_ROOT:-}" ]]; then
+  FULL_ARGS+=(--holo-root "${VARMDYN_HOLO_ROOT}")
+fi
+if [[ -n "${VARMDYN_VARIANTS:-}" ]]; then
+  FULL_ARGS+=(--variants "${VARMDYN_VARIANTS}")
+fi
+if [[ -n "${VARMDYN_WT:-}" ]]; then
+  FULL_ARGS+=(--wt "${VARMDYN_WT}")
+fi
+if [[ -n "${VARMDYN_TOPOLOGY_SUFFIX:-}" ]]; then
+  FULL_ARGS+=(--topology-suffix "${VARMDYN_TOPOLOGY_SUFFIX}")
+fi
+if [[ -n "${VARMDYN_TRAJ_TEMPLATE:-}" ]]; then
+  FULL_ARGS+=(--traj-template "${VARMDYN_TRAJ_TEMPLATE}")
+fi
+if [[ -n "${VARMDYN_REPLICAS:-}" ]]; then
+  FULL_ARGS+=(--replicas "${VARMDYN_REPLICAS}")
+fi
+if [[ -n "${VARMDYN_CHUNKS:-}" ]]; then
+  FULL_ARGS+=(--chunks "${VARMDYN_CHUNKS}")
+fi
+if [[ -n "${VARMDYN_STRIDE:-}" ]]; then
+  FULL_ARGS+=(--stride "${VARMDYN_STRIDE}")
+fi
+if [[ -n "${VARMDYN_DYNETAN_STAGE_TAG:-}" ]]; then
+  FULL_ARGS+=(--stage-tag "${VARMDYN_DYNETAN_STAGE_TAG}")
+fi
+python workflows/mdan/network/network.py full --state "${STATE}" "${FULL_ARGS[@]}"

@@ -1,8 +1,8 @@
 varmodel:
-  # Keep legacy modeller implementation untouched; this wrapper calls it.
-  legacy_script: varmodel/modeller/modeller6.py
+  # Keep the underlying MODELLER implementation isolated; this wrapper calls it.
+  source_script: varmodel/modeller/modeller6.py
 
-  # Optional Python executable to run legacy script. Leave empty to use the active
+  # Optional Python executable to run the MODELLER script. Leave empty to use the active
   # varmdyn_env Python after MODELLER is installed/configured.
   python_exe: ""
 

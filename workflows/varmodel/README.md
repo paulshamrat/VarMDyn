@@ -1,6 +1,6 @@
 # varmodel
 
-This module wraps the legacy MODELLER mutate-only script and writes each run to
+This module wraps the source MODELLER mutate-only script and writes each run to
 a gitignored output folder.
 
 ## 1. Dry Run
@@ -11,7 +11,7 @@ Run on: local workstation. Environment: create/update and activate
 `varmdyn_modeller`.
 
 ```bash
-bash scripts/ensure_modeller_env.sh
+bash scripts/env/ensure_modeller_env.sh
 conda activate varmdyn_modeller
 bash scripts/run_varmodel.sh --dry-run
 ```

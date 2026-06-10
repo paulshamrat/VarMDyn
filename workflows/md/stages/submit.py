@@ -12,8 +12,9 @@ from pathlib import Path
 
 
 DEFAULT_REPLICAS = ["cr1", "cr2", "cr3"]
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 SUPPORT_DIRS = {"variants", "logs", "all", "*"}
+DEFAULT_COMPLETION_TOKEN = "NSTEP = 50000000"
 
 
 def variant_dirs(run_root: Path) -> list[Path]:
@@ -97,6 +98,83 @@ def active_prod_array_jobs(state: str, start: int, end: int) -> list[str]:
         if name in names and state_text in active_states:
             matches.append(f"{jobid} {name} {state_text}")
     return matches
+
+
+def completion_token() -> str:
+    return os.environ.get("VARMDYN_PROD_COMPLETION_TOKEN", DEFAULT_COMPLETION_TOKEN)
+
+
+def chunk_complete(rundir: Path, step: int, token: str) -> bool:
+    mdout = rundir / f"{step}md.mdout"
+    restart = rundir / f"{step}md.restrt"
+    if not mdout.is_file() or mdout.stat().st_size == 0:
+        return False
+    if not restart.is_file() or restart.stat().st_size == 0:
+        return False
+    if token:
+        return token in mdout.read_text(encoding="utf-8", errors="ignore")
+    return True
+
+
+def completed_chunks(run_root: Path, start: int, end: int) -> dict[tuple[str, str], list[int]]:
+    token = completion_token()
+    out: dict[tuple[str, str], list[int]] = {}
+    for variant in variant_dirs(run_root):
+        for replica in replicas():
+            rundir = variant / "03.pmemd" / "com" / replica
+            out[(variant.name, replica)] = [
+                step for step in range(start, end + 1) if chunk_complete(rundir, step, token)
+            ]
+    return out
+
+
+def consecutive_completed_ns(run_root: Path, chunk_ns: int = 100, first_chunk: int = 25) -> int:
+    variants = variant_dirs(run_root)
+    if not variants:
+        return 0
+    reps = replicas()
+    token = completion_token()
+    completed = 0
+    step = first_chunk
+    while True:
+        if all(
+            chunk_complete(variant / "03.pmemd" / "com" / replica, step, token)
+            for variant in variants
+            for replica in reps
+        ):
+            completed += chunk_ns
+            step += 1
+            continue
+        return completed
+
+
+def report_completion_state(run_root: Path, start: int, end: int) -> None:
+    current_ns = consecutive_completed_ns(run_root)
+    status = completed_chunks(run_root, start, end)
+    print(f"detected_completed_ns={current_ns}")
+    for (variant, replica), chunks in sorted(status.items()):
+        value = ",".join(str(chunk) for chunk in chunks) if chunks else "-"
+        print(f"completed_chunks {variant} {replica} {value}")
+
+
+def guard_existing_chunks(run_root: Path, start: int, end: int, force: bool) -> int:
+    """Refuse to resubmit already complete production chunks unless forced."""
+    report_completion_state(run_root, start, end)
+    status = completed_chunks(run_root, start, end)
+    existing = [(variant, replica, chunks) for (variant, replica), chunks in status.items() if chunks]
+    if not existing or force:
+        if force and existing:
+            print("FORCE_SUBMIT_EXISTING_CHUNKS=1")
+        return 0
+    print("EXISTING_PRODUCTION_CHUNKS_FOUND")
+    for variant, replica, chunks in existing:
+        print(f"  {variant}/{replica}: {','.join(str(chunk) for chunk in chunks)}")
+    print(
+        "Refusing to submit because one or more target production chunks already exist. "
+        "Use an extension window that starts after the completed target, or pass --force "
+        "only when you intentionally want to resubmit/overwrite."
+    )
+    return 1
 
 
 def write_text(path: Path, text: str, execute: bool) -> None:
@@ -272,7 +350,7 @@ def submit_restart(run_root: Path, after: dict[str, str], execute: bool) -> tupl
             continue
         name = f"varmdyn_{state}_restart_{variant.name}"
         command = (
-            f"python {REPO_ROOT / 'workflows/md/restart.py'} "
+            f"python {REPO_ROOT / 'workflows/md/stages/restart.py'} "
             f"--run-root {run_root} --variants {variant.name} --execute"
         )
         cmd = [
@@ -311,7 +389,7 @@ mapfile -t rows < {manifest}
 variant="${{rows[$SLURM_ARRAY_TASK_ID-1]}}"
 echo "[RESTART_ARRAY] $variant"
 cd {REPO_ROOT}
-python workflows/md/restart.py --run-root {run_root} --variants "$variant" --execute
+python workflows/md/stages/restart.py --run-root {run_root} --variants "$variant" --execute
 """,
         execute,
     )
@@ -349,6 +427,7 @@ def submit_prod(
     end: int,
     execute: bool,
     initial_deps: dict[tuple[str, str], str] | None = None,
+    force: bool = False,
 ) -> int:
     failures = 0
     partition = os.environ.get("PARTITION", "work1")
@@ -360,6 +439,9 @@ def submit_prod(
     logs.mkdir(parents=True, exist_ok=True)
     previous: dict[tuple[str, str], str] = dict(initial_deps or {})
     state = state_from_run_root(run_root)
+
+    if guard_existing_chunks(run_root, start, end, force):
+        return 1
 
     print(f"Submitting production chunks {start}..{end} under {run_root}")
     print(f"logs={logs}")
@@ -407,7 +489,14 @@ def submit_prod(
     return failures
 
 
-def submit_prod_arrays(run_root: Path, start: int, end: int, execute: bool, after: str | None = None) -> tuple[int, str]:
+def submit_prod_arrays(
+    run_root: Path,
+    start: int,
+    end: int,
+    execute: bool,
+    after: str | None = None,
+    force: bool = False,
+) -> tuple[int, str]:
     failures = 0
     partition = os.environ.get("PARTITION", "work1")
     gpus = os.environ.get("GPUS", "a100:1")
@@ -417,6 +506,8 @@ def submit_prod_arrays(run_root: Path, start: int, end: int, execute: bool, afte
     logs = stage_logs(run_root, "prod")
     previous = after or ""
     state = state_from_run_root(run_root)
+    if guard_existing_chunks(run_root, start, end, force):
+        return 1, previous
     if execute and not previous and os.environ.get("VARMDYN_ALLOW_OVERLAPPING_PROD") != "1":
         active = active_prod_array_jobs(state, start, end)
         if active:
@@ -492,11 +583,15 @@ def main() -> int:
     parser.add_argument("--start", type=int, default=25)
     parser.add_argument("--end", type=int, default=29)
     parser.add_argument("--array", action="store_true", help="Submit one Slurm array per stage/chunk.")
+    parser.add_argument("--force", action="store_true", help="Allow resubmitting chunks that already exist.")
     parser.add_argument("--execute", action="store_true")
     args = parser.parse_args()
     run_root = args.run_root.resolve()
     if not run_root.is_dir():
         raise SystemExit(f"missing run root: {run_root}")
+    force = args.force or os.environ.get("VARMDYN_MD_FORCE_SUBMIT") == "1"
+    if args.mode == "full" and guard_existing_chunks(run_root, args.start, args.end, force):
+        return 1
     if args.mode == "eq":
         if args.array:
             failures, _job = submit_eq_array(run_root, args.execute)
@@ -512,7 +607,7 @@ def main() -> int:
             eq_failures, eq_job = submit_eq_array(run_root, args.execute)
             restart_failures, restart_job = submit_restart_array(run_root, eq_job, args.execute)
             prod_failures, _prod_job = submit_prod_arrays(
-                run_root, args.start, args.end, args.execute, restart_job
+                run_root, args.start, args.end, args.execute, restart_job, force
             )
             return 1 if eq_failures + restart_failures + prod_failures else 0
         eq_failures, eq_jobs = submit_eq(run_root, args.execute)
@@ -523,12 +618,12 @@ def main() -> int:
             if variant.name in restart_jobs
             for replica in replicas()
         }
-        prod_failures = submit_prod(run_root, args.start, args.end, args.execute, initial)
+        prod_failures = submit_prod(run_root, args.start, args.end, args.execute, initial, force)
         return 1 if eq_failures + restart_failures + prod_failures else 0
     if args.array:
-        failures, _job = submit_prod_arrays(run_root, args.start, args.end, args.execute)
+        failures, _job = submit_prod_arrays(run_root, args.start, args.end, args.execute, force=force)
         return 1 if failures else 0
-    return 1 if submit_prod(run_root, args.start, args.end, args.execute) else 0
+    return 1 if submit_prod(run_root, args.start, args.end, args.execute, force=force) else 0
 
 
 if __name__ == "__main__":

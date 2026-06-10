@@ -10,7 +10,7 @@ from an HPC login shell.
 ```bash
 git clone https://github.com/paulshamrat/VarMDyn.git
 cd VarMDyn
-bash scripts/create_varmdyn_env.sh
+bash scripts/env/create_varmdyn_env.sh
 conda activate varmdyn_env
 export VARMDYN_RUN_ROOT=$PWD/runs
 export VARMDYN_DATA_ROOT=$PWD/data
@@ -39,7 +39,7 @@ make clustering-smoke
 Run the variant-modeling dry-run from `varmdyn_modeller`:
 
 ```bash
-bash scripts/ensure_modeller_env.sh
+bash scripts/env/ensure_modeller_env.sh
 conda activate varmdyn_modeller
 make varmodel-dry-run
 ```
@@ -63,7 +63,7 @@ export VARMDYN_SSH_COMMAND="ssh -S /path/to/ssh_control_socket -o ControlPath=/p
 
 python workflows/md/bridge.py check --execute
 python workflows/md/bridge.py sync-code --execute
-python scripts/check_readiness.py --hpc
+python scripts/checks/check_readiness.py --hpc
 python workflows/md/bridge.py init --execute
 ```
 
@@ -85,7 +85,7 @@ For Palmetto, run `palmettobridge` and approve authentication first if
 > If you are intentionally logged into the HPC project checkout for inspection
 > or repair, use the lightweight `envs/varmdyn_hpc.yml` control environment and
 > check the repo with `VARMDYN_CHECK_PROFILE=hpc-control python
-> scripts/check_repo_ready.py`. Reuse an existing env when possible; conda
+> scripts/checks/check_repo_ready.py`. Reuse an existing env when possible; conda
 > create/update can be killed on login nodes.
 
 ## 3. HPC Runtime Paths
@@ -95,45 +95,14 @@ Set real paths only in your shell session:
 ```bash
 export VARMDYN_RUN_ROOT=/scratch/$USER/varmdyn-runs
 export VARMDYN_DATA_ROOT=$PWD/data
-export VARMDYN_MD_LEGACY_ROOT=/path/to/md_input_root
 export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
 export VARMDYN_HPC_HOST=user@login.example.edu
 ```
 
-## 4. Optional Note: Google Colab Terminal
+## 4. Google Colab
 
-The main installation path is local workstation or HPC setup. Use this optional
-Colab path only when running inside a Google Colab notebook.
-
-### 4.1. Connect Runtime and Drive
-Before starting, set up your Google Colab session:
-1. **Runtime Type**: A standard CPU runtime is sufficient for all `VarMDyn` tasks (clustering, MODELLER variant generation, and analysis).
-2. **Terminal Access**: Open the **Colab Terminal** (via the **⋮** menu in the top right -> **Terminal**), or run these commands inside notebook cells by prefixing them with an exclamation mark `!`.
-3. **Mount Google Drive** (Optional, for persistent storage):
-   ```python
-   from google.colab import drive
-   drive.mount('/content/drive')
-   ```
-
-### 4.2. Installation
-The bootstrap script automatically clones the repository to `/content/VarMDyn` and configures the environment.
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/paulshamrat/VarMDyn/main/scripts/bootstrap_colab.sh -o bootstrap_colab.sh
-bash bootstrap_colab.sh
-```
-
-Change directory to the cloned repository:
-
-```bash
-cd /content/VarMDyn
-```
-
-Then run pre-flight checks:
-
-```bash
-/root/miniforge3/bin/conda run -n varmdyn_env python scripts/check_repo_ready.py
-```
+Keep Google Colab setup separate from local/HPC installation. Use the MkDocs
+`Setup -> Google Colab` page for Colab runtime, Drive, and Colab CLI commands.
 
 ## 5. MODELLER
 
@@ -141,11 +110,11 @@ MODELLER requires a user license key. Use one command to create or update the
 dedicated environment and configure the key:
 
 ```bash
-bash scripts/ensure_modeller_env.sh
+bash scripts/env/ensure_modeller_env.sh
 ```
 
 For non-interactive use:
 
 ```bash
-KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' bash scripts/ensure_modeller_env.sh
+KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' bash scripts/env/ensure_modeller_env.sh
 ```

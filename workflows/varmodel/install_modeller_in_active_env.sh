@@ -30,7 +30,7 @@ if ! command -v conda >/dev/null 2>&1; then
 fi
 
 if ! command -v conda >/dev/null 2>&1; then
-  echo "ERROR: conda not found. Run scripts/install_miniforge.sh first." >&2
+  echo "ERROR: conda not found. Run scripts/env/install_miniforge.sh first." >&2
   exit 1
 fi
 

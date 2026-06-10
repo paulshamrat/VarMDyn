@@ -9,7 +9,9 @@ ranges as transparent bands, and mean traces in the manuscript variant colors.
 
 from __future__ import annotations
 
+import argparse
 import csv
+import os
 from collections import defaultdict
 from pathlib import Path
 
@@ -34,9 +36,6 @@ matplotlib.rcParams.update(
         "pdf.fonttype": 42,
     }
 )
-
-import os
-
 
 ROOT = Path(__file__).resolve().parents[4]
 RUN_ROOT = Path(os.environ.get("VARMDYN_RUN_ROOT", ROOT / "runs"))
@@ -86,9 +85,34 @@ def read_agr(path: Path) -> tuple[np.ndarray, np.ndarray]:
     return np.asarray(xs), np.asarray(ys)
 
 
-def load_manifest() -> dict[tuple[str, str], list[Path]]:
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Build the two-row apo/ATP-Mg RMSF supplementary figure from replica-level .agr files."
+    )
+    parser.add_argument(
+        "--source-manifest",
+        type=Path,
+        default=SOURCE_MANIFEST,
+        help="TSV manifest listing RMSF source files. Defaults to VARMDYN_RMSF_SOURCE_MANIFEST or data/rmsf_source_input_manifest.tsv.",
+    )
+    parser.add_argument(
+        "--source-input-root",
+        type=Path,
+        default=SOURCE_INPUT_ROOT,
+        help="Root containing copied RMSF source inputs. Defaults to VARMDYN_RMSF_SOURCE_INPUT_ROOT or data/rmsf_source_inputs.",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=OUT,
+        help="Output PNG path. Defaults to OUT or data/supplementary_figures/supp_s4_rmsf_grid_apo_holo.png.",
+    )
+    return parser.parse_args()
+
+
+def load_manifest(source_manifest: Path, source_input_root: Path) -> dict[tuple[str, str], list[Path]]:
     grouped: dict[tuple[str, str], list[Path]] = defaultdict(list)
-    with SOURCE_MANIFEST.open(newline="") as handle:
+    with source_manifest.open(newline="") as handle:
         reader = csv.DictReader(handle, delimiter="\t")
         for row in reader:
             if row["used_by_plot"] != "yes":
@@ -99,7 +123,7 @@ def load_manifest() -> dict[tuple[str, str], list[Path]]:
                 suffix = row["local_path"].split("source_inputs/", 1)[1]
             except IndexError as exc:
                 raise ValueError(f"Unexpected local_path in manifest: {row['local_path']}") from exc
-            path = SOURCE_INPUT_ROOT / suffix
+            path = source_input_root / suffix
             if not path.exists():
                 raise FileNotFoundError(path)
             grouped[(state, variant)].append(path)
@@ -145,7 +169,8 @@ def style_axis(ax: plt.Axes, row: int, col: int) -> None:
 
 
 def main() -> None:
-    grouped = load_manifest()
+    args = parse_args()
+    grouped = load_manifest(args.source_manifest, args.source_input_root)
     fig, axes = plt.subplots(
         2,
         6,
@@ -179,10 +204,10 @@ def main() -> None:
     fig.text(0.012, 0.46, "B", fontsize=11, fontweight="bold")
 
     fig.subplots_adjust(left=0.07, right=0.987, bottom=0.115, top=0.89, wspace=0.10, hspace=0.18)
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT, dpi=780, facecolor="white")
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(args.out, dpi=780, facecolor="white")
     plt.close(fig)
-    print(OUT)
+    print(args.out)
 
 
 if __name__ == "__main__":

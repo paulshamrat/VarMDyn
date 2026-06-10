@@ -33,7 +33,7 @@ holo:
     reuse_rule: "prepare once in project partition; analysis reads prepared outputs"
 
   stages:
-    handoff: "python workflows/md/handoff.py --state holo"
+    handoff: "python workflows/md/stages/handoff.py --state holo"
     seed: "bash workflows/md/holo/scripts/seed.sh"
     transfer: "bash workflows/md/holo/scripts/transfer.sh"
     transfer_check: "bash workflows/md/holo/scripts/validate.sh"
@@ -44,12 +44,12 @@ holo:
     eq_submit: "bash workflows/md/holo/scripts/eq.sh"
     restart: "bash workflows/md/holo/scripts/restart.sh"
     prod: "bash workflows/md/holo/scripts/prod.sh"
-    full_submit: "python workflows/md/submit.py --mode full --array --run-root ${VARMDYN_MD_GENERATION_ROOT:-/scratch/$USER/VarMDyn/data/md}/holo --start ${VARMDYN_MD_PROD_START:-25} --end ${VARMDYN_MD_PROD_END:-29}"
-    validate_short: "python workflows/md/validate.py --state holo --variants ${VARMDYN_MD_VALIDATE_VARIANTS:-WT}"
-    prod_plan: "python workflows/md/trajectory.py --state holo --action plan"
-    prepared_plan: "python workflows/md/trajectory.py --state holo --action prepared-plan"
-    sync_project: "python workflows/md/storage.py --state holo --variants all --action sync-project --verify"
-    restore_scratch: "python workflows/md/storage.py --state holo --variants all --action restore-scratch --verify"
+    full_submit: "python workflows/md/stages/submit.py --mode full --array --run-root ${VARMDYN_MD_GENERATION_ROOT:-/scratch/$USER/VarMDyn/data/md}/holo --start ${VARMDYN_MD_PROD_START:-25} --end ${VARMDYN_MD_PROD_END:-29}"
+    validate_short: "python workflows/md/stages/validate.py --state holo --variants ${VARMDYN_MD_VALIDATE_VARIANTS:-WT}"
+    prod_plan: "python workflows/md/stages/trajectory.py --state holo --action plan"
+    prepared_plan: "python workflows/md/stages/trajectory.py --state holo --action prepared-plan"
+    sync_project: "python workflows/md/stages/storage.py --state holo --variants all --action sync-project --verify"
+    restore_scratch: "python workflows/md/stages/storage.py --state holo --variants all --action restore-scratch --verify"
 
   stage_aliases:
     stage0_seed: seed

@@ -1,0 +1,266 @@
+:root {
+  color-scheme: light dark;
+}
+
+.vm-theme-toggle {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #c9d1d9;
+  border-radius: 4px;
+  color: #2f343a;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 13px;
+  gap: 6px;
+  line-height: 1;
+  margin: 0 0 18px;
+  padding: 7px 10px;
+}
+
+.vm-theme-toggle:hover,
+.vm-theme-toggle:focus {
+  background: #f2f5f8;
+  border-color: #8fa1b3;
+  outline: none;
+}
+
+html[data-varmdyn-theme="dark"] {
+  color-scheme: dark;
+  --vm-bg: #111418;
+  --vm-panel: #171b21;
+  --vm-panel-soft: #202631;
+  --vm-border: #313947;
+  --vm-text: #e7edf4;
+  --vm-heading: #f7fbff;
+  --vm-muted: #adbac7;
+  --vm-link: #85c8ff;
+  --vm-link-hover: #b5deff;
+  --vm-code-bg: #0d1117;
+  --vm-code-text: #edf5ff;
+  --vm-sidebar: #151a21;
+  --vm-sidebar-top: #10151b;
+  --vm-accent: #70b8ec;
+}
+
+html[data-varmdyn-theme="dark"],
+html[data-varmdyn-theme="dark"] body {
+  background: var(--vm-bg);
+  color: var(--vm-text);
+}
+
+html[data-varmdyn-theme="dark"] .wy-body-for-nav,
+html[data-varmdyn-theme="dark"] .wy-nav-content-wrap,
+html[data-varmdyn-theme="dark"] .wy-nav-content {
+  background: var(--vm-bg);
+}
+
+.wy-nav-content {
+  max-width: 1100px;
+}
+
+html[data-varmdyn-theme="dark"] .rst-content,
+html[data-varmdyn-theme="dark"] .rst-content p,
+html[data-varmdyn-theme="dark"] .rst-content li,
+html[data-varmdyn-theme="dark"] .rst-content dl,
+html[data-varmdyn-theme="dark"] .rst-content table.docutils td,
+html[data-varmdyn-theme="dark"] .rst-content table.field-list td {
+  color: var(--vm-text);
+}
+
+html[data-varmdyn-theme="dark"] .rst-content h1,
+html[data-varmdyn-theme="dark"] .rst-content h2,
+html[data-varmdyn-theme="dark"] .rst-content h3,
+html[data-varmdyn-theme="dark"] .rst-content h4,
+html[data-varmdyn-theme="dark"] .rst-content h5,
+html[data-varmdyn-theme="dark"] .rst-content h6 {
+  color: var(--vm-heading);
+}
+
+html[data-varmdyn-theme="dark"] .wy-nav-side {
+  background: var(--vm-sidebar);
+  border-right: 1px solid var(--vm-border);
+}
+
+html[data-varmdyn-theme="dark"] .wy-side-nav-search {
+  background: var(--vm-sidebar-top);
+  border-bottom: 1px solid var(--vm-border);
+}
+
+html[data-varmdyn-theme="dark"] .wy-side-nav-search > a,
+html[data-varmdyn-theme="dark"] .wy-side-nav-search .wy-dropdown > a {
+  color: #ffffff;
+}
+
+html[data-varmdyn-theme="dark"] .wy-side-nav-search input[type="text"] {
+  background: var(--vm-panel);
+  border: 1px solid var(--vm-border);
+  box-shadow: none;
+  color: var(--vm-text);
+}
+
+html[data-varmdyn-theme="dark"] .wy-menu-vertical a,
+html[data-varmdyn-theme="dark"] .wy-menu-vertical li.current a {
+  color: var(--vm-muted);
+}
+
+html[data-varmdyn-theme="dark"] .wy-menu-vertical a:hover,
+html[data-varmdyn-theme="dark"] .wy-menu-vertical li.current > a,
+html[data-varmdyn-theme="dark"] .wy-menu-vertical li.on a {
+  background: var(--vm-panel-soft);
+  color: #ffffff;
+}
+
+html[data-varmdyn-theme="dark"] .wy-menu-vertical li.current,
+html[data-varmdyn-theme="dark"] .wy-menu-vertical li.current > a,
+html[data-varmdyn-theme="dark"] .wy-menu-vertical li.current a {
+  background: #181e26;
+}
+
+html[data-varmdyn-theme="dark"] .wy-menu-vertical p.caption {
+  color: var(--vm-accent);
+}
+
+html[data-varmdyn-theme="dark"] .rst-content a,
+html[data-varmdyn-theme="dark"] .rst-content a:visited,
+html[data-varmdyn-theme="dark"] .wy-breadcrumbs a,
+html[data-varmdyn-theme="dark"] .wy-breadcrumbs a:visited {
+  color: var(--vm-link);
+}
+
+html[data-varmdyn-theme="dark"] .rst-content a:hover,
+html[data-varmdyn-theme="dark"] .wy-breadcrumbs a:hover {
+  color: var(--vm-link-hover);
+}
+
+html[data-varmdyn-theme="dark"] .rst-content code,
+html[data-varmdyn-theme="dark"] .rst-content tt,
+html[data-varmdyn-theme="dark"] code {
+  background: var(--vm-code-bg);
+  border: 1px solid var(--vm-border);
+  color: var(--vm-code-text);
+}
+
+html[data-varmdyn-theme="dark"] .rst-content pre,
+html[data-varmdyn-theme="dark"] .rst-content div[class^="highlight"],
+html[data-varmdyn-theme="dark"] .rst-content div[class^="highlight"] pre,
+html[data-varmdyn-theme="dark"] .highlight {
+  background: var(--vm-code-bg);
+  border-color: var(--vm-border);
+  color: var(--vm-code-text);
+}
+
+html[data-varmdyn-theme="dark"] .rst-content table,
+html[data-varmdyn-theme="dark"] .rst-content table.docutils,
+html[data-varmdyn-theme="dark"] .rst-content table.field-list {
+  border-color: var(--vm-border);
+  color: var(--vm-text);
+}
+
+html[data-varmdyn-theme="dark"] .rst-content table thead,
+html[data-varmdyn-theme="dark"] .rst-content table.docutils thead,
+html[data-varmdyn-theme="dark"] .rst-content table.field-list thead {
+  background: var(--vm-panel-soft);
+}
+
+html[data-varmdyn-theme="dark"] .rst-content table tr,
+html[data-varmdyn-theme="dark"] .rst-content table tbody tr,
+html[data-varmdyn-theme="dark"] .rst-content table tbody tr:nth-child(odd),
+html[data-varmdyn-theme="dark"] .rst-content table tbody tr:nth-child(even) {
+  background-color: var(--vm-panel) !important;
+}
+
+html[data-varmdyn-theme="dark"] .rst-content table thead tr,
+html[data-varmdyn-theme="dark"] .rst-content table tr:nth-child(2n-1) td,
+html[data-varmdyn-theme="dark"] .rst-content table tr:nth-child(2n-1) th {
+  background-color: var(--vm-panel-soft) !important;
+}
+
+html[data-varmdyn-theme="dark"] .rst-content table td,
+html[data-varmdyn-theme="dark"] .rst-content table th,
+html[data-varmdyn-theme="dark"] .rst-content table.docutils td,
+html[data-varmdyn-theme="dark"] .rst-content table.docutils th,
+html[data-varmdyn-theme="dark"] .rst-content table.field-list td,
+html[data-varmdyn-theme="dark"] .rst-content table.field-list th {
+  background-color: var(--vm-panel) !important;
+  border-color: var(--vm-border);
+  color: var(--vm-text);
+}
+
+html[data-varmdyn-theme="dark"] .rst-content table.docutils:not(.field-list) tr:nth-child(2n-1) td,
+html[data-varmdyn-theme="dark"] .rst-content table tr:nth-child(2n-1) td,
+html[data-varmdyn-theme="dark"] .rst-content table tr:nth-child(2n-1) th,
+html[data-varmdyn-theme="dark"] .wy-table-backed,
+html[data-varmdyn-theme="dark"] .wy-table-odd td,
+html[data-varmdyn-theme="dark"] .wy-table-striped tr:nth-child(2n-1) td {
+  background-color: var(--vm-panel-soft) !important;
+  color: var(--vm-text) !important;
+}
+
+html[data-varmdyn-theme="dark"] .rst-content table thead td,
+html[data-varmdyn-theme="dark"] .rst-content table thead th {
+  background-color: #252c36 !important;
+  color: var(--vm-heading) !important;
+}
+
+html[data-varmdyn-theme="dark"] .rst-content table th {
+  color: var(--vm-heading);
+}
+
+html[data-varmdyn-theme="dark"] .rst-content table code,
+html[data-varmdyn-theme="dark"] .rst-content table tt {
+  background: #0b1016;
+  color: #f4f8ff;
+}
+
+html[data-varmdyn-theme="dark"] .rst-content blockquote,
+html[data-varmdyn-theme="dark"] .admonition,
+html[data-varmdyn-theme="dark"] .note,
+html[data-varmdyn-theme="dark"] .warning,
+html[data-varmdyn-theme="dark"] .hint,
+html[data-varmdyn-theme="dark"] .tip,
+html[data-varmdyn-theme="dark"] .important {
+  background: var(--vm-panel);
+  border-color: var(--vm-border);
+  color: var(--vm-text);
+}
+
+html[data-varmdyn-theme="dark"] .admonition-title {
+  background: var(--vm-panel-soft) !important;
+  color: #ffffff !important;
+}
+
+html[data-varmdyn-theme="dark"] hr {
+  border-color: var(--vm-border);
+}
+
+html[data-varmdyn-theme="dark"] .rst-footer-buttons .btn,
+html[data-varmdyn-theme="dark"] .btn {
+  background: var(--vm-panel-soft);
+  border-color: var(--vm-border);
+  color: var(--vm-text);
+}
+
+html[data-varmdyn-theme="dark"] .rst-footer-buttons .btn:hover,
+html[data-varmdyn-theme="dark"] .btn:hover {
+  background: #2b3442;
+  color: #ffffff;
+}
+
+html[data-varmdyn-theme="dark"] footer,
+html[data-varmdyn-theme="dark"] .rst-footer-buttons,
+html[data-varmdyn-theme="dark"] .wy-breadcrumbs,
+html[data-varmdyn-theme="dark"] .wy-breadcrumbs-aside {
+  color: var(--vm-muted);
+}
+
+html[data-varmdyn-theme="dark"] .vm-theme-toggle {
+  background: var(--vm-panel);
+  border-color: var(--vm-border);
+  color: var(--vm-text);
+}
+
+html[data-varmdyn-theme="dark"] .vm-theme-toggle:hover,
+html[data-varmdyn-theme="dark"] .vm-theme-toggle:focus {
+  background: var(--vm-panel-soft);
+  border-color: #526070;
+}

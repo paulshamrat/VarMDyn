@@ -11,7 +11,7 @@ refreshing packages:
 Run on: local workstation.
 
 ```bash
-bash scripts/create_varmdyn_env.sh
+bash scripts/env/create_varmdyn_env.sh
 conda activate varmdyn_env
 ```
 
@@ -34,7 +34,7 @@ This is optional until you run PyMOL-specific rendering or holo ATP/Mg transfer:
 Run on: local workstation.
 
 ```bash
-bash scripts/ensure_pymol_env.sh
+bash scripts/env/ensure_pymol_env.sh
 ```
 
 The helper checks whether `varmdyn_pymol` already exists. If it exists, it
@@ -55,7 +55,7 @@ MODELLER:
 Run on: local workstation. Environment created/updated: `varmdyn_modeller`.
 
 ```bash
-bash scripts/ensure_modeller_env.sh
+bash scripts/env/ensure_modeller_env.sh
 ```
 
 The helper checks whether `varmdyn_modeller` already exists. If it exists, it
@@ -72,7 +72,7 @@ For non-interactive setup, pass the key in the shell:
 Run on: local workstation. Environment created/updated: `varmdyn_modeller`.
 
 ```bash
-KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' bash scripts/ensure_modeller_env.sh
+KEY_MODELLER='YOUR_MODELLER_LICENSE_KEY' bash scripts/env/ensure_modeller_env.sh
 ```
 ## 4. Remote HPC Control Environment
 
@@ -104,8 +104,8 @@ environment with:
 Run on: local workstation.
 
 ```bash
-bash scripts/create_varmdyn_env.sh
-python scripts/check_readiness.py
+bash scripts/env/create_varmdyn_env.sh
+python scripts/checks/check_readiness.py
 ```
 
 On HPC systems, avoid running Python workflow scripts from the base/default

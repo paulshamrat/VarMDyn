@@ -10,4 +10,4 @@ varmdyn_load_amber_modules
 
 echo "[INFO] apo restart propagation root: ${STATE_ROOT}"
 test -d "${RUN_DIR}" || { echo "[ERROR] missing ${RUN_DIR}; run equilibration first"; exit 2; }
-python workflows/md/restart.py --run-root "${RUN_DIR}" "${@}"
+python workflows/md/stages/restart.py --run-root "${RUN_DIR}" "${@}"

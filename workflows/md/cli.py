@@ -167,7 +167,7 @@ def validate(args: argparse.Namespace) -> int:
         "--execute",
         "--",
         "python",
-        "workflows/md/validate.py",
+        "workflows/md/stages/validate.py",
         "--state",
         args.state,
         "--variants",
@@ -193,7 +193,7 @@ def plan(args: argparse.Namespace) -> int:
             "--execute",
             "--",
             "python",
-            "workflows/md/trajectory.py",
+            "workflows/md/stages/trajectory.py",
             "--state",
             args.state,
             "--action",
@@ -212,7 +212,7 @@ def cleanup(args: argparse.Namespace) -> int:
         "--execute",
         "--",
         "python",
-        "workflows/md/cleanup.py",
+        "workflows/md/stages/cleanup.py",
         "--state",
         args.state,
         "--from-ns",
@@ -225,6 +225,68 @@ def cleanup(args: argparse.Namespace) -> int:
     if args.run:
         remote.append("--execute")
     return run(remote)
+
+
+def postprocess(args: argparse.Namespace) -> int:
+    remote = [
+        python_cmd(),
+        "workflows/md/bridge.py",
+        "exec",
+        "--execute",
+        "--",
+        "python",
+        "workflows/md/stages/postprocess.py",
+        "--state",
+        args.state,
+        "--variants",
+        args.variants,
+        "--action",
+        args.action,
+        "--start",
+        str(args.start),
+        "--end",
+        str(args.end),
+        "--stride",
+        str(args.stride),
+    ]
+    if args.md_root:
+        remote += ["--md-root", args.md_root]
+    if args.force:
+        remote.append("--force")
+    if args.run:
+        remote.append("--execute")
+    return run(remote)
+
+
+def storage(args: argparse.Namespace) -> int:
+    remote = [
+        python_cmd(),
+        "workflows/md/bridge.py",
+        "exec",
+        "--execute",
+        "--",
+        "python",
+        "workflows/md/stages/storage.py",
+        "--state",
+        args.state,
+        "--variants",
+        args.variants,
+        "--action",
+        args.action,
+    ]
+    if args.verify:
+        remote.append("--verify")
+    if args.checksum:
+        remote.append("--checksum")
+    if args.delete:
+        remote.append("--delete")
+    if args.run:
+        remote.append("--execute")
+    return run(remote)
+
+
+def fetch(args: argparse.Namespace) -> int:
+    return bridge_cmd(args, ["fetch", "--state", args.state])
 
 
 def chunk_window(from_ns: int, target_ns: int, chunk_ns: int = 100) -> tuple[int, int]:
@@ -259,6 +321,8 @@ def submit_campaign(args: argparse.Namespace) -> int:
     env = os.environ.copy()
     env["VARMDYN_MD_PROD_START"] = str(start)
     env["VARMDYN_MD_PROD_END"] = str(end)
+    if args.force:
+        env["VARMDYN_MD_FORCE_SUBMIT"] = "1"
     print(f"target_ns={args.target_ns}")
     print(f"from_ns={args.from_ns}")
     print(f"production_chunks={start}-{end}")
@@ -345,7 +409,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("plan", help="Plan/check production chunk targets")
     p.add_argument("--state", choices=["apo", "holo"], required=True)
     p.add_argument("--target-ns", type=int, default=500)
-    p.add_argument("--action", choices=["plan", "check-prod", "prepared-plan"], default="plan")
+    p.add_argument("--action", choices=["plan", "status", "check-prod", "prepared-plan"], default="plan")
     p.set_defaults(func=plan)
 
     p = sub.add_parser("cleanup", help="Cancel and clean interrupted production extension chunks")
@@ -355,6 +419,37 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--cancel-jobs", action="store_true", help="Cancel matching production-array jobs first")
     p.add_argument("--run", action="store_true", help="Actually cancel/delete; omit for dry-run")
     p.set_defaults(func=cleanup)
+
+    p = sub.add_parser("postprocess", help="Plan/submit/check cpptraj post-processing")
+    p.add_argument("--state", choices=["apo", "holo"], required=True)
+    p.add_argument("--variants", default="all")
+    p.add_argument("--action", choices=["plan", "submit", "check"], default="plan")
+    p.add_argument("--start", type=int, default=25, help="First production chunk to post-process")
+    p.add_argument("--end", type=int, default=29, help="Last production chunk to post-process")
+    p.add_argument("--stride", type=int, default=20, help="Frame stride for the concatenated network trajectory")
+    p.add_argument(
+        "--md-root",
+        default=None,
+        help="Remote MD root containing apo/ and holo/ folders; omit to use bridge-configured scratch",
+    )
+    p.add_argument("--force", action="store_true", help="Regenerate post-processing outputs even if they already exist")
+    p.add_argument("--run", action="store_true", help="Actually submit post-processing jobs")
+    p.set_defaults(func=postprocess)
+
+    p = sub.add_parser("storage", help="Sync/check MD simulation trees between scratch and project storage")
+    p.add_argument("--state", choices=["apo", "holo", "all"], default="all")
+    p.add_argument("--variants", default="all")
+    p.add_argument("--action", choices=["sync-project", "restore-scratch", "check-project"], required=True)
+    p.add_argument("--verify", action="store_true", help="Compare file sizes after copy/check")
+    p.add_argument("--checksum", action="store_true", help="Use rsync checksums; slower for trajectories")
+    p.add_argument("--delete", action="store_true", help="Mirror destination exactly; use carefully")
+    p.add_argument("--run", action="store_true", help="Actually copy; omit for dry-run")
+    p.set_defaults(func=storage)
+
+    p = sub.add_parser("fetch", help="Fetch compact project outputs to local data/")
+    p.add_argument("--state", choices=["apo", "holo"], required=True)
+    p.add_argument("--execute", action="store_true")
+    p.set_defaults(func=fetch)
 
     p = sub.add_parser("submit", help="Submit a production campaign by target ns")
     p.add_argument("--state", choices=["apo", "holo", "all"], required=True)
@@ -371,6 +466,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="auto",
         help="Use full_submit for fresh campaigns and prod for extensions by default",
     )
+    p.add_argument("--force", action="store_true", help="Allow resubmitting chunks that already exist")
     p.add_argument("--run", action="store_true", help="Actually execute the remote submit stage")
     p.set_defaults(func=submit_campaign)
 

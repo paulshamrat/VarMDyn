@@ -1,7 +1,7 @@
 .PHONY: check clustering-smoke varmodel-dry-run dynamics-local env-check checksums docs-build docs-serve
 
 check:
-	python scripts/check_repo_ready.py
+	python scripts/checks/check_repo_ready.py
 
 clustering-smoke:
 	bash scripts/run_clustering.sh
@@ -16,7 +16,7 @@ env-check:
 	python -c "import matplotlib, numpy, pandas, scipy, sklearn, PIL; print('env ok')"
 
 checksums:
-	bash scripts/checksums.sh
+	bash scripts/data/checksums.sh
 
 docs-build:
 	mkdocs build --strict

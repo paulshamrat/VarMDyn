@@ -31,7 +31,7 @@ apo:
     reuse_rule: "prepare once in project partition; analysis reads prepared outputs"
 
   stages:
-    handoff: "python workflows/md/handoff.py --state apo"
+    handoff: "python workflows/md/stages/handoff.py --state apo"
     prep: "bash workflows/md/apo/scripts/prep.sh"
     leap: "bash workflows/md/apo/scripts/leap.sh"
     leap_submit: "bash workflows/md/apo/scripts/leap.sh --submit"
@@ -39,12 +39,12 @@ apo:
     copy_restart: "bash workflows/md/apo/scripts/restart.sh"
     restart: "bash workflows/md/apo/scripts/restart.sh"
     prod: "bash workflows/md/apo/scripts/prod.sh"
-    full_submit: "python workflows/md/submit.py --mode full --array --run-root ${VARMDYN_MD_GENERATION_ROOT:-/scratch/$USER/VarMDyn/data/md}/apo --start ${VARMDYN_MD_PROD_START:-25} --end ${VARMDYN_MD_PROD_END:-29}"
-    validate_short: "python workflows/md/validate.py --state apo --variants ${VARMDYN_MD_VALIDATE_VARIANTS:-WT}"
-    prod_plan: "python workflows/md/trajectory.py --state apo --action plan"
-    prepared_plan: "python workflows/md/trajectory.py --state apo --action prepared-plan"
-    sync_project: "python workflows/md/storage.py --state apo --variants all --action sync-project --verify"
-    restore_scratch: "python workflows/md/storage.py --state apo --variants all --action restore-scratch --verify"
+    full_submit: "python workflows/md/stages/submit.py --mode full --array --run-root ${VARMDYN_MD_GENERATION_ROOT:-/scratch/$USER/VarMDyn/data/md}/apo --start ${VARMDYN_MD_PROD_START:-25} --end ${VARMDYN_MD_PROD_END:-29}"
+    validate_short: "python workflows/md/stages/validate.py --state apo --variants ${VARMDYN_MD_VALIDATE_VARIANTS:-WT}"
+    prod_plan: "python workflows/md/stages/trajectory.py --state apo --action plan"
+    prepared_plan: "python workflows/md/stages/trajectory.py --state apo --action prepared-plan"
+    sync_project: "python workflows/md/stages/storage.py --state apo --variants all --action sync-project --verify"
+    restore_scratch: "python workflows/md/stages/storage.py --state apo --variants all --action restore-scratch --verify"
 
   stage_aliases:
     prepare: prep

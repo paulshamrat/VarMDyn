@@ -15,7 +15,7 @@ SUPPORT_DIRS = {"variants", "logs", "all", "*"}
 
 
 def load_default_env_files() -> None:
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[3]
     for path in [root / "data/varmdyn_data.env", root / ".local_docs/paths.env"]:
         if not path.is_file():
             continue
@@ -119,7 +119,10 @@ def sync_project(args: argparse.Namespace) -> int:
             print(f"[SCRATCH_TO_PROJECT] {state}/{variant}")
             rsync_tree(src, dst, args.execute, args.delete, args.checksum)
             if args.verify:
-                failures += verify_pair(src, dst)
+                if args.execute:
+                    failures += verify_pair(src, dst)
+                else:
+                    print("[DRYRUN_VERIFY_SKIPPED] add --run to copy and verify")
     return failures
 
 
@@ -139,7 +142,10 @@ def restore_scratch(args: argparse.Namespace) -> int:
             print(f"[PROJECT_TO_SCRATCH] {state}/{variant}")
             rsync_tree(src, dst, args.execute, args.delete, args.checksum)
             if args.verify:
-                failures += verify_pair(src, dst)
+                if args.execute:
+                    failures += verify_pair(src, dst)
+                else:
+                    print("[DRYRUN_VERIFY_SKIPPED] add --run to copy and verify")
     return failures
 
 

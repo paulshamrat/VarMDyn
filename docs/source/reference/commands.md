@@ -5,7 +5,7 @@
 Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
-python scripts/check_repo_ready.py
+python scripts/checks/check_repo_ready.py
 ```
 
 ## 2. Public Smoke Tests
@@ -50,7 +50,7 @@ Run on: local workstation. Environment: create/update `varmdyn_modeller`, then
 run variant-model commands in `varmdyn_modeller`.
 
 ```bash
-bash scripts/ensure_modeller_env.sh
+bash scripts/env/ensure_modeller_env.sh
 conda activate varmdyn_modeller
 bash scripts/run_varmodel.sh --dry-run
 bash scripts/run_varmodel.sh
@@ -63,11 +63,11 @@ use the HPC environment named by `VARMDYN_CONDA_ENV`, usually
 `varmdyn_dynetan`.
 
 ```bash
-python scripts/init_data_layout.py
+python scripts/data/init_data_layout.py
 source data/varmdyn_data.env
-python scripts/check_data_inputs.py --module network --profile tables
-python scripts/check_data_inputs.py --module network --profile render
-python scripts/check_data_inputs.py --module network --profile remote --remote --timeout-seconds 60
+python scripts/checks/check_data_inputs.py --module network --profile tables
+python scripts/checks/check_data_inputs.py --module network --profile render
+python scripts/checks/check_data_inputs.py --module network --profile remote --remote --timeout-seconds 60
 python workflows/mdan/network/network.py hpc-stage
 python workflows/mdan/network/network.py hpc-submit
 python workflows/mdan/network/network.py hpc-status
@@ -77,7 +77,21 @@ bash workflows/mdan/network/remodel.sh
 bash workflows/mdan/network/shared/check_shared_packet.sh
 ```
 
-## 6. Molecular Dynamics
+## 6. RMSD/RMSF From MD Outputs
+
+Run on: local workstation. Environment: local `varmdyn_env`; remote cpptraj
+jobs use HPC AMBER modules through Slurm.
+
+```bash
+bash scripts/run_analysis.sh rms plan --state apo --start 25 --end 29
+bash scripts/run_analysis.sh rms submit --state apo --start 25 --end 29 --run
+bash scripts/run_md.sh slurm --execute
+bash scripts/run_analysis.sh rms check --state apo --start 25 --end 29
+```
+
+Repeat with `--state holo` for ATP/Mg-bound systems.
+
+## 7. Molecular Dynamics
 
 Local-to-HPC bridge:
 
@@ -86,15 +100,19 @@ commands use the HPC `varmdyn_env` control environment.
 
 ```bash
 python workflows/md/bridge.py check --execute
-bash scripts/run_md.sh sync-code --execute
+python workflows/md/bridge.py sync-code --execute
 python workflows/md/bridge.py init --execute
 bash scripts/run_md.sh slurm --execute
 ```
 
+`sync-code` is a code sync only. It updates the durable HPC project checkout
+with the current VarMDyn scripts, configs, and docs; it does not copy MD
+simulation data.
+
 Local holo ATP/Mg transfer, then feed prepared inputs to HPC:
 
 Run on: local workstation. Environment: local `varmdyn_env`. Requires the
-local `varmdyn_pymol` environment from `bash scripts/ensure_pymol_env.sh`.
+local `varmdyn_pymol` environment from `bash scripts/env/ensure_pymol_env.sh`.
 
 ```bash
 bash scripts/run_md.sh local-holo-transfer --sync-inputs --execute
@@ -123,7 +141,89 @@ Run on: local workstation. Environment: `varmdyn_env`.
 ```bash
 bash scripts/run_md.sh protocol --state apo --kind premd
 bash scripts/run_md.sh protocol --state holo --kind prod
-bash scripts/run_md.sh plan --state apo --target-ns 500
+bash scripts/run_md.sh plan --state apo --action status --target-ns 500
+```
+
+MD post-processing before analysis:
+
+Run on: local workstation. Environment: local `varmdyn_env`; remote cpptraj
+jobs use HPC AMBER modules through Slurm. Omit `--md-root` to use the
+bridge-configured scratch MD root. Add
+`--md-root /path/to/hpc_visible/VarMDyn/data/md` only when the completed
+simulation tree is already in project storage or another HPC-visible storage
+location.
+
+```bash
+bash scripts/run_md.sh postprocess --state apo --action plan --start 25 --end 29
+bash scripts/run_md.sh postprocess --state apo --action submit --start 25 --end 29 --run
+bash scripts/run_md.sh slurm --execute
+bash scripts/run_md.sh postprocess --state apo --action check --start 25 --end 29
+
+bash scripts/run_md.sh postprocess --state holo --action plan --start 25 --end 29
+bash scripts/run_md.sh postprocess --state holo --action submit --start 25 --end 29 --run
+bash scripts/run_md.sh slurm --execute
+bash scripts/run_md.sh postprocess --state holo --action check --start 25 --end 29
+```
+
+Post-processing submit is guarded: it queues only variants with missing outputs
+and submits nothing when the selected window is already complete. Add `--force`
+only when you intentionally want to regenerate existing post-processing outputs.
+When submit prints that no Slurm job was submitted, skip `bash scripts/run_md.sh
+slurm --execute` for that post-processing step and run the `check` command.
+For chunks `25-29`, post-processing check expects 25,000 frames in each
+per-replica stripped trajectory and 3,750 frames in the concatenated stride-20
+trajectory. `BADFRAMES` means the file exists but must be regenerated before
+analysis.
+
+Example with an explicit source root:
+
+Run on: local workstation. Environment: local `varmdyn_env`; remote cpptraj
+jobs use HPC AMBER modules through Slurm. Path: explicit HPC-visible MD root.
+
+```bash
+bash scripts/run_md.sh postprocess --state apo --action plan --md-root /path/to/hpc_visible/VarMDyn/data/md --start 25 --end 29
+```
+
+MD storage and compact local fetch:
+
+Run on: local workstation. Environment: local `varmdyn_env`; storage commands
+copy/check data on HPC through the bridge.
+
+```bash
+# Keep working from scratch for now; use this only when ready to copy to project.
+bash scripts/run_md.sh storage --state all --variants all --action sync-project --verify
+bash scripts/run_md.sh storage --state all --variants all --action sync-project --verify --run
+
+# Restore project data to scratch before extending a campaign.
+bash scripts/run_md.sh storage --state all --variants all --action restore-scratch --verify
+bash scripts/run_md.sh storage --state all --variants all --action restore-scratch --verify --run
+
+# Fetch compact outputs locally after project storage is ready.
+bash scripts/run_md.sh fetch --state apo --execute
+bash scripts/run_md.sh fetch --state holo --execute
+```
+
+Network analysis from prepared 500 ns MD post-processing outputs:
+
+Run on: HPC system from the synced VarMDyn project checkout. Environment:
+Slurm activates `varmdyn_dynetan`; paths are HPC-visible MD and network roots.
+
+```bash
+export VARMDYN_APO_ROOT=/path/to/md/apo
+export VARMDYN_HOLO_ROOT=/path/to/md/holo
+export VARMDYN_NETWORK_DATA_ROOT=/path/to/VarMDyn/data/mdan/network/full
+export VARMDYN_NETWORK_RUN_ROOT=/path/to/VarMDyn/data/mdan/network/runs
+export VARMDYN_TOPOLOGY_SUFFIX=02.leap/com/cdl.com.striped_v2.prmtop
+export VARMDYN_TRAJ_TEMPLATE=04.ptraj/com/concatenated/production-25-to-29-concatenated-750frames.striped_v2.mdcrd.nc
+export VARMDYN_REPLICAS=combined
+export VARMDYN_CHUNKS=25
+export VARMDYN_VARIANTS=WT,MUT1
+export VARMDYN_WT=WT
+export VARMDYN_DYNETAN_STAGE_TAG=varmdyn_500ns
+
+mkdir -p data/mdan/network/runs/logs
+jobid=$(sbatch --parsable --array=0-1 workflows/mdan/network/run_network_array.slurm apo variant)
+sbatch --dependency=afterok:${jobid} workflows/mdan/network/run_network_array.slurm apo compare
 ```
 
 ## 7. Documentation
@@ -143,8 +243,8 @@ environment:
 Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
-python scripts/build_local_docs.py --strict
-python scripts/build_local_docs.py --serve
+python scripts/docs/build_local_docs.py --strict
+python scripts/docs/build_local_docs.py --serve
 ```
 
 `--serve` starts at `127.0.0.1:8001`; if that port is busy, it prints the next

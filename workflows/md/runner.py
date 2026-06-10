@@ -137,7 +137,7 @@ def run_stage(cfg: dict[str, Any], name: str, execute: bool, execute_flag_stages
             command_text += " --execute"
         if execute and stage_name in execute_flag_stages:
             command_text += " --execute"
-        if execute and "workflows/md/submit.py" in command_text:
+        if execute and "workflows/md/stages/submit.py" in command_text:
             command_text += " --execute"
         run_shell(command_text, cwd=cwd, execute=execute)
 

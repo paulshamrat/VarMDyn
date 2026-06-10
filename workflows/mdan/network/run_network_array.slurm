@@ -5,8 +5,8 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --time=08:00:00
-#SBATCH --output=runs/mdan/network_full/logs/network_array_%A_%a.out
-#SBATCH --error=runs/mdan/network_full/logs/network_array_%A_%a.err
+#SBATCH --output=data/mdan/network/runs/logs/network_array_%A_%a.out
+#SBATCH --error=data/mdan/network/runs/logs/network_array_%A_%a.err
 
 set -euo pipefail
 
@@ -16,7 +16,7 @@ NCORES="${VARMDYN_NCORES:-${SLURM_CPUS_PER_TASK:-8}}"
 export VARMDYN_NCORES="${NCORES}"
 export PYTHONNOUSERSITE=1
 
-mkdir -p runs/mdan/network_full/logs
+mkdir -p data/mdan/network/runs/logs
 
 if command -v module >/dev/null 2>&1; then
   module purge || true
@@ -43,6 +43,15 @@ else
 fi
 
 TOPOLOGY_SUFFIX="${VARMDYN_TOPOLOGY_SUFFIX:-02.leap/com/cdl.com.wat.leap.prmtop}"
+if [[ -n "${VARMDYN_TRAJ_TEMPLATE:-}" ]]; then
+  TRAJ_TEMPLATE="${VARMDYN_TRAJ_TEMPLATE}"
+else
+  TRAJ_TEMPLATE='03.pmemd/com/{replica}/{chunk}md.mdcrd.nc'
+fi
+REPLICAS="${VARMDYN_REPLICAS:-cr1,cr2,cr3}"
+CHUNKS="${VARMDYN_CHUNKS:-25,26,27,28,29}"
+STRIDE="${VARMDYN_STRIDE:-20}"
+WT="${VARMDYN_WT:-WT}"
 STAGE_ARGS=()
 if [[ -n "${VARMDYN_DYNETAN_STAGE_TAG:-}" ]]; then
   STAGE_ARGS+=(--stage-tag "${VARMDYN_DYNETAN_STAGE_TAG}")
@@ -53,7 +62,7 @@ if [[ -n "${VARMDYN_VARIANTS:-}" ]]; then
 else
   mapfile -t VARIANTS < <(
     find "${ROOT}" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
-      | grep -E '^[0-9]{2}_[A-Za-z0-9]+$' \
+      | grep -Ev '^(variants|logs|all|\*)$' \
       | sort \
       | while read -r variant; do
           if [[ -f "${ROOT}/${variant}/${TOPOLOGY_SUFFIX}" ]]; then
@@ -84,10 +93,16 @@ case "${MODE}" in
       --state "${STATE}" \
       --root "${ROOT}" \
       --topology-suffix "${TOPOLOGY_SUFFIX}" \
+      --traj-template "${TRAJ_TEMPLATE}" \
+      --replicas "${REPLICAS}" \
+      --chunks "${CHUNKS}" \
+      --stride "${STRIDE}" \
+      --wt "${WT}" \
       --variants "${VARIANT}"
     python workflows/mdan/network/network.py run \
       --state "${STATE}" \
       --root "${ROOT}" \
+      --wt "${WT}" \
       --variants "${VARIANT}" \
       "${STAGE_ARGS[@]}"
     ;;
@@ -97,6 +112,7 @@ case "${MODE}" in
     python workflows/mdan/network/network.py compare \
       --state "${STATE}" \
       --root "${ROOT}" \
+      --wt "${WT}" \
       --variants "${JOINED_VARIANTS}" \
       "${STAGE_ARGS[@]}"
     ;;
@@ -105,6 +121,7 @@ case "${MODE}" in
     echo "[INFO] rendering state=${STATE} variant=${VARIANT}"
     python workflows/mdan/network/network.py render \
       --state "${STATE}" \
+      --wt "${WT}" \
       --variant "${VARIANT}"
     ;;
   *)

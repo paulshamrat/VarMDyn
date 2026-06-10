@@ -9,8 +9,46 @@ checks, and generated data outside git.
 Current scope: orchestration, path layout, varmodel handoff, bridge commands,
 Slurm dependency submission, production-chunk planning, and completion checks.
 Full AMBER prep/LEaP/equilibration templates are intentionally module-owned
-under `workflows/md/`; legacy script folders are compatibility/provenance
+under `workflows/md/`; source protocol folders are compatibility/provenance
 inputs, not the VarMDyn interface.
+
+## Module Layout
+
+The MD module keeps only the stable interfaces and shared helpers at the top
+level. Implementation scripts are grouped by responsibility so apo and holo stay
+easy to compare.
+
+| Path | Boundary |
+|---|---|
+| `cli.py` | User-facing dispatcher behind `bash scripts/run_md.sh ...`. |
+| `bridge.py` | Local-to-HPC bridge, code sync, remote command execution, and compact fetches. |
+| `lib.py`, `runner.py`, `protocol.py` | Shared config, state-runner, and protocol inspection helpers. |
+| `apo/` | Apo config plus apo-owned shell stages. |
+| `holo/` | Holo config plus holo-only ATP/Mg transfer and shell stages. |
+| `stages/` | Internal Python operations for handoff, Slurm submit, restart, storage, cleanup, validation, and post-processing. |
+| `leap/` | LEaP neutralization, ion report, and LEaP output checks. |
+| `templates/` | AMBER protocol inputs and templates preserved for reproducible simulation setup. |
+
+Normal users should call `bash scripts/run_md.sh ...`. Direct calls into
+`workflows/md/stages/` and `workflows/md/leap/` are mainly for debugging or for
+bridge-launched remote execution.
+
+After local MD code changes or after pulling a new VarMDyn version, resync the
+durable HPC checkout before testing remote commands:
+
+Run on: local workstation. Environment: local `varmdyn_env`.
+
+```bash
+bash scripts/run_md.sh sync-code --execute
+bash scripts/run_md.sh status --state all
+bash scripts/run_md.sh protocol --state apo --kind premd
+bash scripts/run_md.sh protocol --state holo --kind premd
+bash scripts/run_md.sh postprocess --state apo --action plan --start 25 --end 29
+```
+
+These commands do not launch new simulation chunks. They verify that the local
+wrapper, synced HPC checkout, apo/holo state configs, protocol templates, and
+post-processing planner still agree.
 
 ## 1. MD Environments
 
@@ -28,10 +66,10 @@ runner still runs from `varmdyn_env`, but `VARMDYN_PYMOL_CMD` points to the
 PyMOL interpreter:
 
 ```bash
-bash scripts/ensure_pymol_env.sh
+bash scripts/env/ensure_pymol_env.sh
 ```
 
-On Palmetto/HPC, bridge-launched Python control tasks use the lightweight
+On HPC, bridge-launched Python control tasks use the lightweight
 remote `varmdyn_env` control environment. LEaP, PMEMD, and cpptraj stages use
 AMBER modules through Slurm. Avoid the HPC base/default Python for workflow
 scripts because it may miss required packages such as PyYAML.
@@ -41,7 +79,7 @@ scripts because it may miss required packages such as PyYAML.
 | MD controller, bridge, status, planning, submit dry-runs | local workstation | `varmdyn_env` |
 | Holo ATP/Mg transfer/rendering | local workstation | `varmdyn_pymol` via `VARMDYN_PYMOL_CMD` |
 | Remote bridge orchestration | HPC project checkout through bridge | HPC `varmdyn_env` control env |
-| LEaP, PMEMD, cpptraj | Palmetto compute jobs | AMBER modules plus Slurm |
+| LEaP, PMEMD, cpptraj | HPC compute jobs | AMBER modules plus Slurm |
 
 ## 2. Storage Rule
 
@@ -90,7 +128,7 @@ export VARMDYN_DATA_ROOT=$PWD/data
 
 ## 3. Folder Architecture
 
-The VarMDyn state wrapper mirrors the legacy state roots. Each state keeps the
+The VarMDyn state wrapper mirrors the validated state roots. Each state keeps the
 variant folders directly under `apo/` or `holo/`, while `variants/` is only a
 staging area for varmodel handoff inputs.
 
@@ -101,7 +139,7 @@ data/md/holo/<variant>/{ligprep,01.prep,02.leap,03.pmemd,04.ptraj,protocol}
 
 By default, MD consumes WT plus every successful variant in the varmodel
 manifest (`variants: all`) and uses plain folder names such as `WT`, `R59X`, or
-`A123T`. Legacy source comparisons map names privately when needed; VarMDyn
+`A123T`. Private source comparisons map names privately when needed; VarMDyn
 does not require numeric variant prefixes.
 
 ## 4. Apo
@@ -117,7 +155,7 @@ bash scripts/run_md.sh stage --state apo --name handoff
 ```
 
 The second command prints the planned remote handoff action. Add
-`--remote-execute` only when you intentionally want the remote stage to run.
+`--run` only when you intentionally want the remote stage to run.
 
 If you already ran `python workflows/md/bridge.py init --execute` from Getting
 Started or the MD docs, do not repeat it. Create the run layout through the
@@ -162,11 +200,12 @@ bash scripts/run_md.sh slurm --execute
 
 Check all generated apo LEaP outputs with:
 
-Run on: local workstation through bridge for HPC roots, or directly in the HPC
-checkout. Environment: HPC `varmdyn_env` plus AMBER tools when run remotely.
+Run on: local workstation through bridge for HPC roots. Environment: local
+`varmdyn_env`; remote command uses the HPC `varmdyn_env` control environment
+plus AMBER tools.
 
 ```bash
-python workflows/md/bridge.py exec --execute -- python workflows/md/leap_check.py --state apo
+bash scripts/run_md.sh check --state apo --name leap
 ```
 
 Apo protocol and production controls:
@@ -175,6 +214,9 @@ Apo protocol and production controls:
 # Inspect apo preMD stages 01-24 and production chunk lengths.
 bash scripts/run_md.sh protocol --state apo --kind premd
 bash scripts/run_md.sh protocol --state apo --kind prod
+
+# Ask scratch how far apo has already completed for this target window.
+bash scripts/run_md.sh plan --state apo --action status --target-ns 500
 
 # Fresh apo start: run preMD 01-24, copy cr1/24md restart to cr2/cr3,
 # then run 100 ns production chunk 25.
@@ -203,6 +245,13 @@ Apo restart/resume rule:
   it starts from each replica's existing `25md.restrt` and submits chunks 26-29
   as chained Slurm arrays: 27 waits for 26, 28 waits for 27, and 29 waits for
   28.
+- `bash scripts/run_md.sh plan --state apo --action status --target-ns 500`
+  reports the common completed ns across all apo variants/replicas and the
+  completed chunks found for each replica in the target scratch/project root.
+- The submitter checks requested target chunks before queuing jobs. If any
+  requested production chunks already exist, it prints the detected completed ns
+  and refuses to submit. Use a later extension window instead. Use `--force`
+  only when you intentionally want to resubmit existing chunks.
 - Check completed outputs before extending:
   `bash scripts/run_md.sh plan --state apo --action check-prod --target-ns 100`.
 - Do not rerun the same extension command while those chunks are queued or
@@ -258,22 +307,22 @@ workstation, inspecting the local QA outputs, then syncing only the prepared
 Run on: local workstation. Environment: `varmdyn_pymol`.
 
 ```bash
-bash scripts/ensure_pymol_env.sh
+bash scripts/env/ensure_pymol_env.sh
 ```
 
 Keep the validated ATP/Mg template source in VarMDyn-owned local data before
 running transfer. The default location is
 `$VARMDYN_MD_PROJECT_ROOT/templates/atpmg` for the active local run root; set
 `VARMDYN_MD_ATPMG_TEMPLATE_ROOT` only to override that local template source.
-Do not point routine runs at the legacy simulation tree; keep legacy as
-read-only provenance for creating or auditing the copied template.
+Do not point routine runs at an external source simulation tree. Keep source
+trees read-only and copy the validated template into VarMDyn-owned data.
 
 Local transfer and handoff to HPC scratch:
 
 Run on: local workstation. Use `varmdyn_env` for the workflow runner.
 `local-holo-transfer` defaults to an absolute conda command, so no manual PyMOL
 path is needed after
-`bash scripts/ensure_pymol_env.sh` succeeds.
+`bash scripts/env/ensure_pymol_env.sh` succeeds.
 
 ```bash
 bash scripts/run_md.sh local-holo-transfer --sync-inputs --execute
@@ -324,6 +373,9 @@ Holo protocol and production controls:
 bash scripts/run_md.sh protocol --state holo --kind premd
 bash scripts/run_md.sh protocol --state holo --kind prod
 
+# Ask scratch how far holo has already completed for this target window.
+bash scripts/run_md.sh plan --state holo --action status --target-ns 500
+
 # Fresh holo start: run preMD 01-24, copy cr1/24md restart to cr2/cr3,
 # then run 100 ns production chunk 25.
 bash scripts/run_md.sh submit --state holo --target-ns 100
@@ -351,6 +403,13 @@ Holo restart/resume rule:
   it starts from each replica's existing `25md.restrt` and submits chunks 26-29
   as chained Slurm arrays: 27 waits for 26, 28 waits for 27, and 29 waits for
   28.
+- `bash scripts/run_md.sh plan --state holo --action status --target-ns 500`
+  reports the common completed ns across all holo variants/replicas and the
+  completed chunks found for each replica in the target scratch/project root.
+- The submitter checks requested target chunks before queuing jobs. If any
+  requested production chunks already exist, it prints the detected completed ns
+  and refuses to submit. Use a later extension window instead. Use `--force`
+  only when you intentionally want to resubmit existing chunks.
 - Check completed outputs before extending:
   `bash scripts/run_md.sh plan --state holo --action check-prod --target-ns 100`.
 - Do not rerun the same extension command while those chunks are queued or
@@ -372,7 +431,7 @@ Holo restart/resume rule:
 ## 6. Short Validation And Dependencies
 
 Production is planned as chained 100 ns chunks. Variant folders stay plain
-(`WT`, `L119R`, ...), but production chunks keep their legacy restart-chain
+(`WT`, `L119R`, ...), but production chunks keep their validated restart-chain
 numbers. Use the apo/holo sections above for state-specific fresh-run and
 extension commands. The submit command rejects targets that are not divisible
 by 100 ns.
@@ -386,10 +445,10 @@ existing completed target and submit only the missing production chunks.
 Before queuing equilibration, the submitter refreshes
 `job-1-24-equilibration.sh` from the VarMDyn template in the HPC project
 checkout. This updates Slurm/path plumbing only; AMBER method inputs such as
-`01mi.in` through `24md.in` and `25md.in` stay legacy matched.
-The preMD/equilibration Slurm wrapper follows the legacy `eq1-24` resource
+`01mi.in` through `24md.in` and `25md.in` stay validated.
+The preMD/equilibration Slurm wrapper follows the validated `eq1-24` resource
 request by default: one node, 32 tasks on that node, 1 CPU per task, 64G memory,
-and 48 hours. Production chunk arrays follow the legacy 100 ns chunk request by
+and 48 hours. Production chunk arrays follow the validated 100 ns chunk request by
 default: 1 GPU, 2 CPUs, 16G memory, and 48 hours. Override `EQ_TIME`,
 `EQ_MEM`, `EQ_NTASKS`, `EQ_TASKS_PER_NODE`, `TIME`, `MEM`, or `CPUS` only when
 the queue policy or benchmark timing requires it.
@@ -425,7 +484,103 @@ The final gates should print `OK` for each variant at
 
 For a smaller layout test, pass `--variants WT`.
 
-## 7. HPC Bridge
+## 7. MD Post-Processing Before Analysis
+
+After production completes, run cpptraj post-processing before network-style
+prepared trajectory replay and aggregate RMSF sanity checks. This creates the
+first canonical `04.ptraj` files expected by those workflows.
+
+Post-processing is window-based. Choose the production chunks with `--start`
+and `--end`: `25-26` prepares 200 ns, `25-29` prepares 500 ns, and `30-34`
+prepares a later 500 ns extension window. This lets simulation continue toward
+1000 ns while you inspect an earlier window.
+
+Post-processing reads completed `03.pmemd` chunks, writes cpptraj inputs under
+`04.ptraj`, and submits one Slurm array task per variant. It creates a
+protein-only `striped_v2` topology, strips each replica trajectory, concatenates
+and subsamples `cr1`, `cr2`, and `cr3`, and writes aggregate backbone RMSF by
+residue. The validated 25-29, stride-20 window keeps the historical
+`750frames` concatenated filename; other windows use a `stride<value>` filename
+label. Apo strips `:WAT,Na+,Cl-`; holo strips `:WAT,Na+,Cl-,ATP,MG` for the
+default protein-only analysis products.
+For chunks `25-29`, strict checks expect 25,000 frames in each per-replica
+stripped trajectory and 3,750 frames in the concatenated stride-20 trajectory.
+`BADFRAMES` means the file exists but must be regenerated before downstream
+analysis.
+
+This modularizes the validated analysis-prep behavior. The default route is
+the final protein-only `striped_v2` path used by prepared network/RMSF analysis.
+Ligand-retaining `keepATPmg` trajectories are a separate source flavor for
+holo ligand-aware inspection and are not the default residue-network input.
+The validated RMSD/RMSF route uses per-replica protein-only stripped
+trajectories for apo and holo/ATP-Mg, then averages `cr1`, `cr2`, and `cr3`;
+those tables are not calculated from the three-replica concatenated trajectory.
+Clean aligned trajectories, RMSD CSVs, RMSF CSVs, ROI displacement CSVs, and
+kept displacement TSVs are downstream dynamics-analysis products and are not
+generated by this current post-processing command.
+
+Run on: local workstation. Environment: local `varmdyn_env`; remote cpptraj
+jobs use HPC AMBER modules through Slurm. By default the bridge reads completed
+simulations from HPC scratch. If you have already copied the completed
+simulation tree to project storage or another HPC-visible location, pass
+`--md-root /path/to/hpc_visible/VarMDyn/data/md`. That root must contain the
+`apo/` and `holo/` folders, and the same value should be used for `plan`,
+`submit`, and `check`. Do not pass a local workstation path unless that exact
+path is also mounted on the HPC system.
+
+```bash
+bash scripts/run_md.sh postprocess --state apo --action plan --start 25 --end 26
+bash scripts/run_md.sh postprocess --state apo --action plan --start 25 --end 29
+bash scripts/run_md.sh postprocess --state apo --action submit --start 25 --end 29 --run
+bash scripts/run_md.sh slurm --execute
+bash scripts/run_md.sh postprocess --state apo --action check --start 25 --end 29
+
+bash scripts/run_md.sh postprocess --state holo --action plan --start 25 --end 29
+bash scripts/run_md.sh postprocess --state holo --action submit --start 25 --end 29 --run
+bash scripts/run_md.sh slurm --execute
+bash scripts/run_md.sh postprocess --state holo --action check --start 25 --end 29
+```
+
+`submit --run` submits only variants with missing post-processing outputs. If
+the selected window is already complete for every variant, it prints a skip
+message and submits no Slurm job. Use `--force` only when you intentionally
+want to regenerate existing outputs.
+
+Explicit source-root example:
+
+```bash
+bash scripts/run_md.sh postprocess --state apo --action plan --md-root /path/to/hpc_visible/VarMDyn/data/md --start 25 --end 29
+```
+
+Expected products include `02.leap/com/cdl.com.striped_v2.prmtop`,
+per-replica `production-<start>-to-<end>-<ns>.*.striped_v2.mdcrd.nc`, the
+window-specific concatenated trajectory, and
+`04.ptraj/com/rmsf/rmsf.byresidue.agr`.
+
+## 8. Storage And Fetch
+
+Keep active generation and current post-processing in scratch. Copy the full
+simulation tree to project storage when you need durable storage, a long pause,
+or project-partition analysis. Fetch only compact outputs locally.
+
+Run on: local workstation. Environment: local `varmdyn_env`; remote copies run
+through the bridge.
+
+```bash
+bash scripts/run_md.sh storage --state all --variants all --action sync-project --verify
+bash scripts/run_md.sh storage --state all --variants all --action sync-project --verify --run
+
+bash scripts/run_md.sh storage --state all --variants all --action restore-scratch --verify
+bash scripts/run_md.sh storage --state all --variants all --action restore-scratch --verify --run
+
+bash scripts/run_md.sh fetch --state apo --execute
+bash scripts/run_md.sh fetch --state holo --execute
+```
+
+Storage sync is for durable remote copies. Fetch is optional and should bring
+back only compact local outputs for inspection, not full raw trajectories.
+
+## 9. HPC Bridge
 
 The bridge is the local control plane for HPC work:
 
@@ -436,41 +591,25 @@ use the HPC `varmdyn_env` control environment.
 python workflows/md/bridge.py check --execute
 python workflows/md/bridge.py sync-code --execute
 python workflows/md/bridge.py setup-env --env hpc --execute
-python scripts/check_readiness.py --hpc
+python scripts/checks/check_readiness.py --hpc
 python workflows/md/bridge.py init --execute
-python workflows/md/bridge.py run --state apo --status --execute
+bash scripts/run_md.sh status --state apo
 ```
+
+`sync-code` updates only the durable HPC project checkout with the current
+VarMDyn code, configs, and docs. It does not copy simulation data from scratch
+or project storage.
 
 Add `--execute` only after dry-run output looks correct.
 
-## 8. One-Nanosecond Smoke Test
+## 10. Developer Smoke Tests
 
-The smoke runner stages apo or holo ATP/Mg continuations from a user-supplied
-validated source tree, writes active data in scratch, and can sync completed
-smoke products to the HPC project partition. By default it tests `cr1`. Pass
-`--replicas all` to test `cr1`, `cr2`, and `cr3` as array elements together
-with WT and all configured variants.
+`workflows/md/stages/smoke.py` is a developer/HPC plumbing helper for tiny
+continuation checks from an already validated source tree. It is not part of
+the normal public MD runbook. Normal users should follow handoff, prep, LEaP,
+equilibration, production, post-processing, and analysis instead.
 
-This is a continuation smoke, not a substitute for full prep, LEaP,
-equilibration, and production validation.
-
-Run on: local workstation. Environment: local `varmdyn_env`; remote command
-runs in the HPC `varmdyn_env` control environment plus AMBER modules.
-
-```bash
-export VARMDYN_MD_SMOKE_SOURCE_ROOT=/path/to/validated_md_source
-
-python workflows/md/bridge.py exec --execute -- python workflows/md/smoke.py --state all --variants all --replicas all --action prepare
-python workflows/md/bridge.py exec --execute -- python workflows/md/smoke.py --state apo --variants all --replicas all --action submit --execute
-python workflows/md/bridge.py exec --execute -- python workflows/md/smoke.py --state holo --variants all --replicas all --action submit --execute
-python workflows/md/bridge.py exec --execute -- python workflows/md/smoke.py --state all --variants all --replicas all --action check
-python workflows/md/bridge.py exec --execute -- python workflows/md/smoke.py --state all --variants all --replicas all --action sync-project --execute
-```
-
-For a smaller test, pass `--variants WT`; omit `--replicas all` to test the
-default `cr1` replica only.
-
-## 9. Public Boundary
+## 11. Public Boundary
 
 Public docs describe the reusable VarMDyn workflow. Internal parity checks
 against local validation roots are not public user requirements.

@@ -24,10 +24,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_ROOT = Path(
-    os.environ.get("VARMDYN_NETWORK_DATA_ROOT", REPO_ROOT / "data" / "network" / "full")
+    os.environ.get("VARMDYN_NETWORK_DATA_ROOT", REPO_ROOT / "data" / "mdan" / "network" / "full")
 ).expanduser()
 RUN_ROOT = Path(
-    os.environ.get("VARMDYN_NETWORK_RUN_ROOT", REPO_ROOT / "runs" / "mdan" / "network_full")
+    os.environ.get("VARMDYN_NETWORK_RUN_ROOT", REPO_ROOT / "data" / "mdan" / "network" / "runs")
 ).expanduser()
 SCRIPT_DIR = Path(__file__).resolve().parent
 LEGACY_REPLAY_SBATCH = SCRIPT_DIR / "dynetan_replay_validation_apo.sh"
@@ -89,10 +89,11 @@ def split_variants(value: str) -> list[str]:
 
 
 def discover_variants(root: Path, wt: str) -> list[str]:
+    skip = {"variants", "logs", "all", "*"}
     variants = sorted(
         path.name
         for path in root.iterdir()
-        if path.is_dir() and re.match(r"^\d{2}_[A-Za-z0-9]+$", path.name)
+        if path.is_dir() and path.name not in skip and not any(ch in path.name for ch in "*?[]")
     )
     if wt in variants:
         variants = [wt] + [variant for variant in variants if variant != wt]
@@ -208,6 +209,7 @@ def selection_label(node: int, nodes_atm_sel) -> str:
 def run_dynetan_variant(args: argparse.Namespace, variant: str) -> None:
     try:
         import dynetan as dna
+        import MDAnalysis as mda
         import networkx as nx
     except ImportError as exc:
         raise SystemExit(f"Missing dynetan. Activate varmdyn_dynetan first. Original error: {exc}") from exc
@@ -218,6 +220,13 @@ def run_dynetan_variant(args: argparse.Namespace, variant: str) -> None:
     dcd = prepared / f"{variant}.dcd"
     if not psf.exists() or not dcd.exists():
         raise SystemExit(f"missing prepared inputs for {args.state}/{variant}: {prepared}")
+    frame_count = len(mda.Universe(str(psf), str(dcd)).trajectory)
+    sampled_frames = min(args.num_sampled_frames, max(1, frame_count - 1))
+    if sampled_frames != args.num_sampled_frames:
+        print(
+            f"[WARN] requested {args.num_sampled_frames} sampled frames but {dcd} has "
+            f"{frame_count}; using {sampled_frames} to avoid a zero DyNetAn slice step."
+        )
 
     out = DATA_ROOT / "dynetan" / args.state / variant
     done = out / f"bottleneck_nodes_top{args.top_nodes}_{stage_tag}.csv"
@@ -228,7 +237,7 @@ def run_dynetan_variant(args: argparse.Namespace, variant: str) -> None:
 
     dnap = dna.proctraj.DNAproc()
     dnap.setNumWinds(args.num_winds)
-    dnap.setNumSampledFrames(args.num_sampled_frames)
+    dnap.setNumSampledFrames(sampled_frames)
     dnap.setCutoffDist(args.cutoff)
     dnap.setContactPersistence(args.contact_persistence)
     dnap.setSegIDs(["PROT"])

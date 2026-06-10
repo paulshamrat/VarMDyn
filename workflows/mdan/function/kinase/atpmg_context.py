@@ -27,9 +27,6 @@ def default_source_root() -> Path | None:
     value = os.environ.get("VARMDYN_SOURCE_ROOT")
     if value:
         return Path(value).expanduser()
-    sibling = Path.cwd().parent / "cdkl5-activation"
-    if sibling.exists():
-        return sibling
     return None
 
 

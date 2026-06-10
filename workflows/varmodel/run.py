@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Refactored wrapper for CDKL5 variant model generation (mutate-only).
-
-This stage intentionally reuses legacy `varmodel/modeller/modeller6.py`
-without editing it.
-"""
+"""Wrapper for variant model generation in mutate-only MODELLER mode."""
 
 from __future__ import annotations
 
@@ -129,7 +125,7 @@ def _ensure_modeller_ready(
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
-        description="Run refactored variant modeling stage using legacy modeller6 mutate-only mode."
+        description="Run variant modeling with the configured MODELLER mutate-only script."
     )
     ap.add_argument(
         "--config",
@@ -177,7 +173,8 @@ def main(argv: list[str] | None = None) -> int:
     # 2) running from inside varmodel/ with --config config.yaml
     project_root = cfg_path.parent.parent.resolve()
 
-    legacy_script = (project_root / cfg.get("legacy_script", "")).resolve()
+    source_script_cfg = str(cfg.get("source_script") or cfg.get("legacy_script", "")).strip()
+    source_script = (project_root / source_script_cfg).resolve()
     python_exe_cfg = str(cfg.get("python_exe", "")).strip()
     wt_pdb = (project_root / cfg.get("wt_pdb", "")).resolve()
     mut_list = (project_root / cfg.get("mutations_list", "")).resolve()
@@ -189,7 +186,7 @@ def main(argv: list[str] | None = None) -> int:
     seed = str(cfg.get("seed", -49837))
     python_exe = Path(python_exe_cfg).resolve() if python_exe_cfg else Path(sys.executable)
 
-    _assert_exists(legacy_script, "legacy_script")
+    _assert_exists(source_script, "source_script")
     _assert_exists(wt_pdb, "wt_pdb")
     _assert_exists(mut_list, "mutations_list")
     _assert_exists(python_exe, "python_exe")
@@ -223,7 +220,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"[INFO] Config: {cfg_path}")
     print(f"[INFO] Project root: {project_root}")
-    print(f"[INFO] Legacy script: {legacy_script}")
+    print(f"[INFO] Source script: {source_script}")
     print(f"[INFO] Python executable: {python_exe}")
     print(f"[INFO] WT PDB: {wt_pdb}")
     print(f"[INFO] Mutations: {len(muts)} -> {', '.join(muts)}")
@@ -239,7 +236,7 @@ def main(argv: list[str] | None = None) -> int:
 
     cmd = [
         str(python_exe),
-        str(legacy_script),
+        str(source_script),
         "--pdb-in",
         str(staged_wt),
         "--chain",
@@ -257,7 +254,7 @@ def main(argv: list[str] | None = None) -> int:
         _run(cmd, cwd=project_root, dry_run=args.dry_run)
     except subprocess.CalledProcessError as exc:
         raise RuntimeError(
-            "Legacy modeller run failed. Ensure the selected python has `modeller` installed "
+            "MODELLER variant run failed. Ensure the selected python has `modeller` installed "
             f"(python_exe={python_exe})."
         ) from exc
 

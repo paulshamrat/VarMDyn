@@ -41,6 +41,8 @@ desktop.ini
 /CHECKPOINT.md
 /docs/CHECKPOINT.md
 /docs/private_notes/
+.agents/
+.codex/
 .local_notes/
 .local_docs/
 mkdocs.local.yml

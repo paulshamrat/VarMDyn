@@ -3,12 +3,17 @@ site_description: Reproducible protocols for variant clustering, variant modelin
 docs_dir: docs/source
 theme:
   name: readthedocs
+extra_css:
+  - assets/css/theme-toggle.css
+extra_javascript:
+  - assets/js/theme-toggle.js
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Project Map: project-map.md
   - Setup:
       - Installation: setup/installation.md
+      - Google Colab: setup/colab.md
       - Environments: setup/environments.md
       - Runtime Paths: setup/runtime-paths.md
       - HPC Bridge: setup/hpc.md

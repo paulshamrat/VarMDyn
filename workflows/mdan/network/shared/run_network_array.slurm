@@ -5,8 +5,8 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --time=08:00:00
-#SBATCH --output=runs/mdan/network_full/logs/network_array_%A_%a.out
-#SBATCH --error=runs/mdan/network_full/logs/network_array_%A_%a.err
+#SBATCH --output=data/mdan/network/runs/logs/network_array_%A_%a.out
+#SBATCH --error=data/mdan/network/runs/logs/network_array_%A_%a.err
 
 set -euo pipefail
 
@@ -20,7 +20,7 @@ PACKET_DIR="${SLURM_SUBMIT_DIR:-$PWD}"
 cd "${PACKET_DIR}"
 export NUMBA_CACHE_DIR="${NUMBA_CACHE_DIR:-${PACKET_DIR}/runs/numba_cache}"
 
-mkdir -p runs/mdan/network_full/logs "${NUMBA_CACHE_DIR}"
+mkdir -p data/mdan/network/runs/logs "${NUMBA_CACHE_DIR}"
 
 if command -v module >/dev/null 2>&1; then
   module purge || true
