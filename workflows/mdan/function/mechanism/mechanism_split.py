@@ -11,16 +11,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[4]
 DATA_ROOT = Path(os.environ.get("VARMDYN_DATA_ROOT", ROOT / "data"))
 RUN_ROOT = Path(os.environ.get("VARMDYN_RUN_ROOT", ROOT / "runs"))
-OUT_DIR = RUN_ROOT / "mdan" / "function" / "mechanism"
+OUT_DIR = Path(os.environ.get("VARMDYN_MECHANISM_OUT_DIR", DATA_ROOT / "function/mechanism"))
 
-PANEL_A = DATA_ROOT / "function/source_panels/cdkl5_full_length_schematic_review_v1.png"
-PANEL_B = DATA_ROOT / "function/source_panels/cdkl5_annotated_mod.png"
-PANEL_C = DATA_ROOT / "function/source_panels/251110_atpbinding.png"
-PANEL_D = DATA_ROOT / "rmsf/rmsf_variant_means_overlay_range.png"
-PANEL_E = DATA_ROOT / "rmsf/rmsf_variant_means_overlay_range_atpmg.png"
+PANEL_A = Path(os.environ.get("VARMDYN_MECHANISM_PANEL_A", DATA_ROOT / "function/source_panels/cdkl5_full_length_schematic_review_v1.png"))
+PANEL_B = Path(os.environ.get("VARMDYN_MECHANISM_PANEL_B", DATA_ROOT / "function/source_panels/cdkl5_annotated_mod.png"))
+PANEL_C = Path(os.environ.get("VARMDYN_MECHANISM_PANEL_C", DATA_ROOT / "function/source_panels/atp_binding.png"))
+PANEL_D = Path(os.environ.get("VARMDYN_MECHANISM_PANEL_D", DATA_ROOT / "mdan/rms/rmsf/plots/rmsf_variant_means_overlay_range.png"))
+PANEL_E = Path(os.environ.get("VARMDYN_MECHANISM_PANEL_E", DATA_ROOT / "mdan/rms/rmsf/plots/rmsf_variant_means_overlay_range_holo.png"))
 
-ABC_OUT = OUT_DIR / "structural_mechanism_context_abc_v1.png"
-RMSF_OUT = OUT_DIR / "rmsf_apo_atpmg_overview_ab_v1.png"
+ABC_OUT = OUT_DIR / "mechanism_context.png"
+RMSF_OUT = OUT_DIR / "rmsf_overview.png"
 
 
 def image_size(path: Path) -> tuple[int, int]:
@@ -84,12 +84,18 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--rmsf-legend-font-size", type=int, default=30, help="RMSF shared legend font size.")
     p.add_argument("--rmsf-legend-swatch-w", type=int, default=58, help="RMSF shared legend color swatch width.")
     p.add_argument("--rmsf-legend-swatch-h", type=int, default=7, help="RMSF shared legend color swatch height.")
+    p.add_argument("--only", choices=["all", "abc", "rmsf"], default="all", help="Build all outputs, only structural ABC, or only RMSF overview.")
     return p.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    for path in (args.panel_a, args.panel_b, args.panel_c, args.panel_d, args.panel_e):
+    required = []
+    if args.only in {"all", "abc"}:
+        required.extend([args.panel_a, args.panel_b, args.panel_c])
+    if args.only in {"all", "rmsf"}:
+        required.extend([args.panel_d, args.panel_e])
+    for path in required:
         if not path.is_file():
             raise FileNotFoundError(f"Missing source panel: {path}")
 
@@ -99,7 +105,12 @@ def main() -> None:
 
     args.abc_out.parent.mkdir(parents=True, exist_ok=True)
     args.rmsf_out.parent.mkdir(parents=True, exist_ok=True)
-    for path in (args.abc_out, args.rmsf_out):
+    outputs = []
+    if args.only in {"all", "abc"}:
+        outputs.append(args.abc_out)
+    if args.only in {"all", "rmsf"}:
+        outputs.append(args.rmsf_out)
+    for path in outputs:
         if path.exists():
             path.unlink()
 
@@ -109,13 +120,6 @@ def main() -> None:
             f"fontsize={args.panel_font_size}:fontcolor={args.panel_font_color}"
         )
 
-    b_height = scaled_height(args.panel_b, args.b_width, crop_right_px=args.b_right_crop_px)
-    c_height = scaled_height(args.panel_c, args.c_width, crop_left_px=args.c_left_crop_px)
-    bc_row_height = max(b_height, c_height) + args.label_band_px
-    bc_content_height = bc_row_height - args.label_band_px
-    b_pad_y = args.label_band_px + max(0, (bc_content_height - b_height) // 2)
-    c_pad_y = args.label_band_px + max(0, (bc_content_height - c_height) // 2)
-    bc_content_width = args.b_width + args.bc_gap_px + args.c_width
     rmsf_legend_items = [
         ("#1f77b4", "WT"),
         ("#ff7f0e", "L119R"),
@@ -125,41 +129,52 @@ def main() -> None:
         ("#8c564b", "C291Y"),
     ]
 
-    abc_filter = (
-        f"[0:v]scale={args.full_width}:-1,{panel_mark('A')}[a_marked];"
-        f"[a_marked]pad={args.full_width}:ih+{args.abc_gap_px}:0:0:color={args.bg_color}[a_gap];"
-        f"[1:v]crop=iw-{args.b_right_crop_px}:ih:0:0,scale={args.b_width}:-1[b_scaled];"
-        f"[b_scaled]pad={args.b_width}:{bc_row_height}:0:{b_pad_y}:color={args.bg_color}[b_padded];"
-        f"[b_padded]{panel_mark('B')}[b_marked];"
-        f"[2:v]crop=iw-{args.c_left_crop_px}:ih:{args.c_left_crop_px}:0,scale={args.c_width}:-1[c_scaled];"
-        f"[c_scaled]pad={args.c_width}:{bc_row_height}:0:{c_pad_y}:color={args.bg_color}[c_padded];"
-        f"[c_padded]{panel_mark('C')}[c_marked];"
-        f"[b_marked]pad=iw+{args.bc_gap_px}:ih:0:0:color={args.bg_color}[b_gap];"
-        f"[b_gap][c_marked]hstack=inputs=2[bc_joined];"
-        f"[bc_joined]pad={args.full_width}:{bc_row_height}:(ow-{bc_content_width})/2:0:color={args.bg_color}[bc_row];"
-        "[a_gap][bc_row]vstack=inputs=2[abc_out]"
-    )
+    if args.only in {"all", "abc"}:
+        b_height = scaled_height(args.panel_b, args.b_width, crop_right_px=args.b_right_crop_px)
+        c_height = scaled_height(args.panel_c, args.c_width, crop_left_px=args.c_left_crop_px)
+        bc_row_height = max(b_height, c_height) + args.label_band_px
+        bc_content_height = bc_row_height - args.label_band_px
+        b_pad_y = args.label_band_px + max(0, (bc_content_height - b_height) // 2)
+        c_pad_y = args.label_band_px + max(0, (bc_content_height - c_height) // 2)
+        bc_content_width = args.b_width + args.bc_gap_px + args.c_width
+        abc_filter = (
+            f"[0:v]scale={args.full_width}:-1,{panel_mark('A')}[a_marked];"
+            f"[a_marked]pad={args.full_width}:ih+{args.abc_gap_px}:0:0:color={args.bg_color}[a_gap];"
+            f"[1:v]crop=iw-{args.b_right_crop_px}:ih:0:0,scale={args.b_width}:-1[b_scaled];"
+            f"[b_scaled]pad={args.b_width}:{bc_row_height}:0:{b_pad_y}:color={args.bg_color}[b_padded];"
+            f"[b_padded]{panel_mark('B')}[b_marked];"
+            f"[2:v]crop=iw-{args.c_left_crop_px}:ih:{args.c_left_crop_px}:0,scale={args.c_width}:-1[c_scaled];"
+            f"[c_scaled]pad={args.c_width}:{bc_row_height}:0:{c_pad_y}:color={args.bg_color}[c_padded];"
+            f"[c_padded]{panel_mark('C')}[c_marked];"
+            f"[b_marked]pad=iw+{args.bc_gap_px}:ih:0:0:color={args.bg_color}[b_gap];"
+            f"[b_gap][c_marked]hstack=inputs=2[bc_joined];"
+            f"[bc_joined]pad={args.full_width}:{bc_row_height}:(ow-{bc_content_width})/2:0:color={args.bg_color}[bc_row];"
+            "[a_gap][bc_row]vstack=inputs=2[abc_out]"
+        )
 
-    abc_cmd = [
-        ffmpeg,
-        "-y",
-        "-i",
-        str(args.panel_a),
-        "-i",
-        str(args.panel_b),
-        "-i",
-        str(args.panel_c),
-        "-filter_complex",
-        abc_filter,
-        "-map",
-        "[abc_out]",
-        "-frames:v",
-        "1",
-        "-update",
-        "1",
-        str(args.abc_out),
-    ]
-    subprocess.run(abc_cmd, check=True)
+        abc_cmd = [
+            ffmpeg,
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-i",
+            str(args.panel_a),
+            "-i",
+            str(args.panel_b),
+            "-i",
+            str(args.panel_c),
+            "-filter_complex",
+            abc_filter,
+            "-map",
+            "[abc_out]",
+            "-frames:v",
+            "1",
+            "-update",
+            "1",
+            str(args.abc_out),
+        ]
+        subprocess.run(abc_cmd, check=True)
 
     legend_y = max(0, args.rmsf_legend_band_px // 2 - args.rmsf_legend_swatch_h // 2)
     text_y = max(0, args.rmsf_legend_band_px // 2 - args.rmsf_legend_font_size // 2)
@@ -188,31 +203,37 @@ def main() -> None:
         f"[e_cropped]{panel_mark('B')}[e_marked];"
         "[rmsf_legend][d_gap][e_marked]vstack=inputs=3[rmsf_out]"
     )
-    rmsf_cmd = [
-        ffmpeg,
-        "-y",
-        "-i",
-        str(args.panel_d),
-        "-i",
-        str(args.panel_e),
-        "-f",
-        "lavfi",
-        "-i",
-        f"color=c={args.bg_color}:s={args.rmsf_width}x{args.rmsf_legend_band_px}",
-        "-filter_complex",
-        rmsf_filter,
-        "-map",
-        "[rmsf_out]",
-        "-frames:v",
-        "1",
-        "-update",
-        "1",
-        str(args.rmsf_out),
-    ]
-    subprocess.run(rmsf_cmd, check=True)
+    if args.only in {"all", "rmsf"}:
+        rmsf_cmd = [
+            ffmpeg,
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-i",
+            str(args.panel_d),
+            "-i",
+            str(args.panel_e),
+            "-f",
+            "lavfi",
+            "-i",
+            f"color=c={args.bg_color}:s={args.rmsf_width}x{args.rmsf_legend_band_px}",
+            "-filter_complex",
+            rmsf_filter,
+            "-map",
+            "[rmsf_out]",
+            "-frames:v",
+            "1",
+            "-update",
+            "1",
+            str(args.rmsf_out),
+        ]
+        subprocess.run(rmsf_cmd, check=True)
 
-    print(f"Wrote {args.abc_out}")
-    print(f"Wrote {args.rmsf_out}")
+    if args.only in {"all", "abc"}:
+        print(f"Wrote {args.abc_out}")
+    if args.only in {"all", "rmsf"}:
+        print(f"Wrote {args.rmsf_out}")
 
 
 if __name__ == "__main__":

@@ -65,16 +65,16 @@ use the HPC environment named by `VARMDYN_CONDA_ENV`, usually
 ```bash
 python scripts/data/init_data_layout.py
 source data/varmdyn_data.env
-python scripts/checks/check_data_inputs.py --module network --profile tables
-python scripts/checks/check_data_inputs.py --module network --profile render
-python scripts/checks/check_data_inputs.py --module network --profile remote --remote --timeout-seconds 60
-python workflows/mdan/network/network.py hpc-stage
-python workflows/mdan/network/network.py hpc-submit
-python workflows/mdan/network/network.py hpc-status
-python workflows/mdan/network/network.py hpc-compare
-python workflows/mdan/network/network.py hpc-fetch
-bash workflows/mdan/network/remodel.sh
-bash workflows/mdan/network/shared/check_shared_packet.sh
+source data/varmdyn_analysis_roots.env
+bash scripts/run_analysis.sh network plan --state apo --variants all
+bash scripts/run_analysis.sh network submit --state apo --variants all
+bash scripts/run_analysis.sh network submit --state apo --variants all --run
+bash scripts/run_analysis.sh network plan --state holo --variants all
+bash scripts/run_analysis.sh network submit --state holo --variants all
+bash scripts/run_analysis.sh network submit --state holo --variants all --run
+bash scripts/run_analysis.sh network status
+bash scripts/run_analysis.sh network fetch --from scratch --run
+python workflows/mdan/network/validate_outputs.py --help
 ```
 
 ## 6. RMSD/RMSF From MD Outputs
@@ -87,9 +87,12 @@ bash scripts/run_analysis.sh rms plan --state apo --start 25 --end 29
 bash scripts/run_analysis.sh rms submit --state apo --start 25 --end 29 --run
 bash scripts/run_md.sh slurm --execute
 bash scripts/run_analysis.sh rms check --state apo --start 25 --end 29
+bash scripts/run_analysis.sh rms fetch --from scratch --run
+bash scripts/run_analysis.sh rmsd all
 ```
 
-Repeat with `--state holo` for ATP/Mg-bound systems.
+Repeat with `--state holo` for ATP/Mg-bound systems. Use `--from project`
+instead of `--from scratch` only when the RMS `out_root` is in project storage.
 
 ## 7. Molecular Dynamics
 
@@ -205,25 +208,16 @@ bash scripts/run_md.sh fetch --state holo --execute
 
 Network analysis from prepared 500 ns MD post-processing outputs:
 
-Run on: HPC system from the synced VarMDyn project checkout. Environment:
-Slurm activates `varmdyn_dynetan`; paths are HPC-visible MD and network roots.
+Run on: local workstation from the repository root. Environment:
+`varmdyn_env`; remote Slurm jobs activate `varmdyn_dynetan`.
 
 ```bash
-export VARMDYN_APO_ROOT=/path/to/md/apo
-export VARMDYN_HOLO_ROOT=/path/to/md/holo
-export VARMDYN_NETWORK_DATA_ROOT=/path/to/VarMDyn/data/mdan/network/full
-export VARMDYN_NETWORK_RUN_ROOT=/path/to/VarMDyn/data/mdan/network/runs
-export VARMDYN_TOPOLOGY_SUFFIX=02.leap/com/cdl.com.striped_v2.prmtop
-export VARMDYN_TRAJ_TEMPLATE=04.ptraj/com/concatenated/production-25-to-29-concatenated-750frames.striped_v2.mdcrd.nc
-export VARMDYN_REPLICAS=combined
-export VARMDYN_CHUNKS=25
-export VARMDYN_VARIANTS=WT,MUT1
-export VARMDYN_WT=WT
-export VARMDYN_DYNETAN_STAGE_TAG=varmdyn_500ns
-
-mkdir -p data/mdan/network/runs/logs
-jobid=$(sbatch --parsable --array=0-1 workflows/mdan/network/run_network_array.slurm apo variant)
-sbatch --dependency=afterok:${jobid} workflows/mdan/network/run_network_array.slurm apo compare
+bash scripts/run_analysis.sh network plan --state apo --variants all
+bash scripts/run_analysis.sh network submit --state apo --variants all --run
+bash scripts/run_analysis.sh network plan --state holo --variants all
+bash scripts/run_analysis.sh network submit --state holo --variants all --run
+bash scripts/run_analysis.sh network status
+bash scripts/run_analysis.sh network fetch --from scratch --run
 ```
 
 ## 7. Documentation

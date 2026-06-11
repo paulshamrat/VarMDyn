@@ -17,9 +17,14 @@ some upstream trajectory products for those modules.
 For the current scratch-first workflow, analysis commands that read MD
 trajectories should read from the HPC scratch MD tree unless you intentionally
 pass another root. The active MD root is the folder containing `apo/` and
-`holo/`, usually `/scratch/$USER/VarMDyn/data/md`. RMS and network outputs
-created on HPC should stay beside that tree under `/scratch/$USER/VarMDyn/data/mdan/`
-until you intentionally sync them to project storage.
+`holo/`, usually `/scratch/$USER/VarMDyn/data/md`. Analysis products created
+from that root should stay beside it under the same storage parent, for example
+`/scratch/$USER/VarMDyn/data/mdan/`.
+
+If you copy completed simulations from scratch to project storage, switch the
+analysis source root to the project copy before analysis starts. With an MD root
+such as `/path/to/project/VarMDyn/data/md`, VarMDyn should write analysis
+products beside it under `/path/to/project/VarMDyn/data/mdan/`.
 
 Use the MD post-processing step when the downstream analysis needs
 `cdl.com.striped_v2.prmtop`, per-replica stripped trajectories, the
@@ -35,11 +40,12 @@ source tables or `.agr` inputs described below.
 
 | Analysis module | Existing VarMDyn location | Main input expectation |
 |---|---|---|
-| RMSD summaries and plots | `workflows/mdan/rmsd/` | RMSD by-system summary tables such as `rmsd_bb_mean_sd.csv`. |
-| RMSF plots and overlays | `workflows/mdan/rmsf/` | `.agr` source files or the local RMSF source manifest. |
-| N-lobe/Y171 dynamics | `workflows/mdan/dynamics/` | kept displacement TSVs and RMSF source bundles under `data/dynamics/`. |
+| Structure/function panels | `workflows/mdan/function/` | source structures, sequence/domain tables, and rendered assets under `data/function/`. |
+| Shared RMS table generation | `workflows/mdan/rms/` | post-processed per-replica MD trajectories; writes RMSD/RMSF tables and shared RMS logs. |
+| RMSD summaries and plots | `workflows/mdan/rms/rmsd/` | RMSD by-system summary tables such as `rmsd_bb_mean_sd.csv`. |
+| RMSF plots and overlays | `workflows/mdan/rms/rmsf/` | `.agr` source files or the local RMSF source manifest. |
+| N-lobe/Y171 dynamics | `workflows/mdan/dynamics/` | kept displacement TSVs and RMSF source bundles under `data/mdan/dynamics/inputs/`. |
 | Network replay and figures | `workflows/mdan/network/` | prepared protein-only topology plus the stride-20 concatenated trajectory, or fetched replay tables. |
-| Structure/function panels | `workflows/mdan/function/` | source structures, sequence/domain tables, and rendered assets under `data/function/` or related `data/` folders. |
 
 ## 1.1. Analysis Environments
 
@@ -76,26 +82,71 @@ Run on: local workstation from the repository root. Environment:
 ```bash
 export VARMDYN_RUN_ROOT=$PWD/data
 export VARMDYN_DATA_ROOT=$PWD/data
+mkdir -p "$VARMDYN_DATA_ROOT/.cache/matplotlib"
+export MPLCONFIGDIR="$VARMDYN_DATA_ROOT/.cache/matplotlib"
 export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
 export VARMDYN_HPC_HOST=user@login.example.edu
+```
+
+Before running any remote planning or analysis commands, ensure that your local
+code changes are synchronized to the durable HPC project checkout. This copies
+code only; it does not copy MD trajectories or analysis products:
+
+```bash
+python workflows/md/bridge.py sync-code --execute
 ```
 
 For Google Colab analysis, use the dedicated [Google Colab](../setup/colab.md)
 page first. Keep Colab paths and HPC paths in separate runs.
 
-For scratch-based MD analysis, first confirm the source root instead of guessing:
+### 1.2.1. Choose The MD Source And MDAN Output Root (HPC Path Handshake)
 
-Run on: local workstation from the repository root. Environment:
-`varmdyn_env`. Remote command prints the HPC-visible MD source and output roots.
+Before starting any HPC-related analysis, you must define where the completed MD folders live and where the MDAN analysis outputs should be saved.
+
+To make this seamless, VarMDyn incorporates an **HPC Path Handshake** prompt. Whenever you run a command that triggers an HPC analysis action (such as plotting RMS tables, staging/submitting dynamics jobs, or running network arrays), VarMDyn will verify if your terminal is interactive.
+
+If it is interactive, it prompts:
+1. **HPC MD data location**: Scratch (`/scratch/$USER/VarMDyn/data/md`), Project (`/project/project_name/VarMDyn/data/md`), or a custom path.
+2. **HPC MDAN output location**: Scratch (`/scratch/$USER/VarMDyn/data/mdan`) or Project (`/project/project_name/VarMDyn/data/mdan`).
+
+These selections are automatically written to a local ignored file:
+```text
+data/varmdyn_analysis_roots.env
+```
+
+On subsequent runs, you will be prompted to confirm if you want to keep the current configuration:
+```text
+======================================================================
+HPC Analysis Path Handshake
+======================================================================
+Current configuration:
+  MD Source Root  : /scratch/$USER/VarMDyn/data/md
+  MDAN Output Root: /scratch/$USER/VarMDyn/data/mdan
+======================================================================
+Keep these settings? [Y/n]:
+```
+Simply press **Enter** to accept and continue, or type **`n`** to reconfigure the paths.
+
+This environment is automatically loaded by the bridge and forwarded to the HPC, ensuring that:
+- RMS workflows read from and write to the correct directories.
+- Dynamics HPC sbatch runs write to the correct stage partition.
+- Network array Slurm tasks automatically locate state/variant trajectories.
+
+For scratch-based MD analysis, first confirm the selected source and output roots instead of guessing:
+
+Run on: local workstation from the repository root. Environment: `varmdyn_env`. Remote command prints the HPC-visible MD source and output roots.
 
 ```bash
 bash scripts/run_analysis.sh rms plan --state apo --start 25 --end 29
 ```
 
-The printed `md_root` is the trajectory source. The printed `out_root` is where
-RMSD/RMSF tables will be written. If you omit `--md-root`, VarMDyn uses the
-bridge-configured scratch MD root. Use `--md-root` only when the same completed
-simulation tree has been copied to project storage or another HPC-visible path.
+The printed `md_root` is the trajectory source. The printed `out_root` is where RMSD/RMSF tables will be written. If you omit `--md-root`, VarMDyn uses the handshake/bridge-configured MD root and writes `mdan/rms/rmsd` and `mdan/rms/rmsf` beside it.
+
+Use `--md-root` only when you want to override the handshake-configured simulation tree path:
+
+```bash
+bash scripts/run_analysis.sh rms plan --state apo --md-root /path/to/project_or_external/VarMDyn/data/md --start 25 --end 29
+```
 
 ## 1.3. Function And Structural Annotations
 
@@ -111,7 +162,104 @@ workflows/mdan/function/mechanism/  mechanism composites
 ```
 
 They read user-supplied source panels and sequence inputs from `data/` and write
-generated outputs under `data/mdan/function/`.
+generated outputs under `data/function/`. These are lightweight local
+figure workflows. They do not read raw MD trajectories unless a specific
+subcommand says so.
+
+### Full-Length Domain Schematic
+
+Run on: local workstation from the repository root. Environment:
+`varmdyn_env`. Path: writes to `data/function/full/`.
+
+```bash
+python workflows/mdan/function/full/schematic.py
+```
+
+Expected outputs:
+
+```text
+data/function/full/cdkl5_full_length_schematic_review_v1.svg
+data/function/full/cdkl5_full_length_schematic_review_v1.png  (when Inkscape export is available)
+```
+
+### Kinase Structure Annotation
+
+Run on: local workstation from the repository root. Environment:
+`varmdyn_env`. Requires the rendered kinase PNG in
+`data/function/kinase/` or an explicit `VARMDYN_STRUCTURE_ANNOTATION_DIR`.
+
+```bash
+export VARMDYN_STRUCTURE_ANNOTATION_DIR=$VARMDYN_DATA_ROOT/function/kinase
+python workflows/mdan/function/kinase/annotation.py
+```
+
+Expected output:
+
+```text
+data/function/kinase/cdkl5_annotated.svg
+```
+
+### Multiple Sequence Alignment
+
+The MSA workflow builds kinase-domain alignments for CDKL-family and reference
+kinases. It is a lightweight local workflow, but it needs either internet
+access for UniProt download or a pre-supplied FASTA file.
+
+Run on: local workstation from the repository root. Environment:
+`varmdyn_env`. Path: writes to `data/function/msa/`.
+
+```bash
+python workflows/mdan/function/msa/fetch_sequences.py
+python workflows/mdan/function/msa/make_family_msa.py
+```
+
+`fetch_sequences.py` writes `cdkl_kinase_family.fasta`. The family MSA builder
+uses `muscle`, so make sure `muscle` is available in the active environment or
+set `MUSCLE_BIN` to its executable path.
+
+Expected outputs:
+
+```text
+data/function/msa/cdkl_family_msa_only.png
+data/function/msa/cdkl_family_msa_only.svg
+data/function/msa/cdkl_family_msa_all.png
+data/function/msa/cdkl_family_msa_all.svg
+```
+
+### Mechanism Composites
+
+Mechanism composites combine source panels and generated RMSF figures. Run this
+only after the required source panels and RMSF plots exist locally.
+
+Run on: local workstation from the repository root. Environment:
+`varmdyn_env`; requires `ffmpeg`/`ffprobe` on `PATH`.
+
+```bash
+# Build the publication-style Apo/Holo RMSF overview from generated RMSF panels.
+bash scripts/run_analysis.sh function rmsf
+
+# Inspect lower-level mechanism options only when composing custom panels.
+bash scripts/run_analysis.sh function
+```
+
+Default outputs are under:
+
+```text
+data/function/mechanism/
+```
+
+The RMSF overview command expects these source panels to exist first:
+
+```text
+data/mdan/rms/rmsf/plots/rmsf_variant_means_overlay_range.png
+data/mdan/rms/rmsf/plots/rmsf_variant_means_overlay_range_holo.png
+```
+
+It writes:
+
+```text
+data/function/mechanism/rmsf_overview.png
+```
 
 ### Ligand-Transfer Context
 
@@ -130,12 +278,12 @@ the local `varmdyn_pymol` environment.
 
 ```bash
 python workflows/mdan/function/kinase/atpmg_context.py \
-  --homology data/function/atpmg_context/homology.pdb \
-  --ref4bgq data/function/atpmg_context/4BGQ.pdb \
-  --ref8fp5 data/function/atpmg_context/8FP5.pdb \
-  --atp-on-hm data/function/atpmg_context/ATP_on_hm.mol2 \
-  --r38-on-hm data/function/atpmg_context/38R_on_hm.mol2 \
-  --out data/md/figures/atpmg_context_panel.png
+  --homology data/varmodel/target.B99990001_with_cryst.pdb \
+  --ref4bgq data/function/source_panels/4BGQ.pdb \
+  --ref8fp5 data/function/source_panels/8FP5.pdb \
+  --atp-on-hm data/function/source_panels/ATP_on_hm.mol2 \
+  --r38-on-hm data/function/source_panels/38R_on_hm.mol2 \
+  --out data/function/kinase/atpmg_context_panel.png
 ```
 
 For public/generic use, keep this as a project-specific optional figure and
@@ -156,7 +304,7 @@ network trajectory.
 Run on: local workstation. Environment: local `varmdyn_env`; remote cpptraj
 jobs use HPC AMBER modules through Slurm. Omit `--md-root` to use the
 bridge-configured scratch MD root. The default output root is the sibling
-analysis folder, for example `/scratch/$USER/VarMDyn/data/mdan/rms` when the MD
+analysis folder, for example `/scratch/$USER/VarMDyn/data/mdan` when the MD
 root is `/scratch/$USER/VarMDyn/data/md`.
 
 ```bash
@@ -169,8 +317,13 @@ bash scripts/run_analysis.sh rms submit --state apo --start 25 --end 29 --run
 bash scripts/run_analysis.sh rms submit --state holo --start 25 --end 29 --run
 
 # If submit says all selected variants are already complete, no Slurm job was
-# submitted for that state. Otherwise monitor until the arrays finish.
+# submitted for that state. Otherwise monitor until the RMS arrays disappear
+# from the queue or show COMPLETED in sacct.
 bash scripts/run_md.sh slurm --execute
+
+# Run these only after the RMS arrays have finished. If the arrays are still
+# pending/running, these checks will correctly print MISSING for unfinished
+# variants.
 bash scripts/run_analysis.sh rms check --state apo --start 25 --end 29
 bash scripts/run_analysis.sh rms check --state holo --start 25 --end 29
 ```
@@ -179,13 +332,28 @@ RMS submit is guarded. It queues only variants with missing RMSD/RMSF outputs
 and submits nothing when the selected state/window is already complete. Use
 `--force` only when intentionally regenerating existing RMS tables.
 
+When a state is already complete, submit prints `SKIP` for each completed
+variant followed by:
+
+```text
+[OK] all selected variants already have RMSD/RMSF outputs; no Slurm job submitted
+```
+
 Expected outputs:
 
 ```text
-data/mdan/rms/rmsd/by_system/apo/<variant>/rmsd_bb_mean_sd.csv
-data/mdan/rms/rmsd/by_system/atpmg/<variant>/rmsd_bb_mean_sd.csv
-data/mdan/rms/rmsf/by_system/apo/<variant>/rmsf_mean_sd.csv
-data/mdan/rms/rmsf/by_system/atpmg/<variant>/rmsf_mean_sd.csv
+data/mdan/rms/rmsd/apo/<variant>/rmsd_bb_mean_sd.csv
+data/mdan/rms/rmsd/holo/<variant>/rmsd_bb_mean_sd.csv
+data/mdan/rms/rmsf/apo/<variant>/rmsf_mean_sd.csv
+data/mdan/rms/rmsf/holo/<variant>/rmsf_mean_sd.csv
+```
+
+RMSD and RMSF tables are generated by the same Slurm array, so their manifests
+and job logs are shared under:
+
+```text
+data/mdan/rms/logs/apo/
+data/mdan/rms/logs/holo/
 ```
 
 For the standard chunks `25-29` window, a completed RMSD table should contain
@@ -198,22 +366,64 @@ exists but is not valid for RMS averaging yet.
 
 Use `--variants WT,MUT1` for a small test before running all systems.
 
-### 1.4.2. Plot Existing RMSD Source Tables
+### 1.4.2. Sync RMS Tables to Local Workstation
 
-Inspect available options:
+After generating and validating RMS tables on the cluster, fetch only the
+lightweight analysis products back to your local workstation.
 
-Run on: local workstation. Environment: `varmdyn_env`.
+Run on: local workstation from the repository root. Environment: `varmdyn_env`
+or any terminal that can run the configured SSH bridge. Paths: remote
+`data/mdan/` to local `data/mdan/`.
 
 ```bash
-python workflows/mdan/rmsd/summarize.py --help
-python workflows/mdan/rmsd/plot.py --help
+# Check what rms plan printed for out_root, then run the matching command.
+
+# If out_root was under /scratch/...:
+bash scripts/run_analysis.sh rms fetch --from scratch --run
+
+# If out_root was under /project/...:
+bash scripts/run_analysis.sh rms fetch --from project --run
 ```
 
-The plotting scripts consume existing RMSD source tables and write outputs
-under:
+> [!WARNING]
+> Run **only one** of the two commands above — the one matching the `out_root`
+> shown by `rms plan`. Running the other will fail with a broken pipe if that
+> directory does not exist on the HPC. For the standard VarMDyn setup,
+> `out_root` is under scratch, so use `--from scratch`.
+
+When the analysis products live in a custom HPC-visible `data/mdan` root, pass
+that root explicitly:
+
+```bash
+bash scripts/run_analysis.sh rms fetch --remote-mdan-root /path/to/hpc_visible/VarMDyn/data/mdan --run
+```
+
+### 1.4.3. Plot Existing RMSD Source Tables
+
+After fetching RMSD/RMSF tables locally, build the RMSD summary and plots from
+the local `data/mdan/rms/rmsd/` tables.
+
+Run on: local workstation. Environment: `varmdyn_env`. Paths: reads
+`data/mdan/rms/rmsd/<state>/<variant>/rmsd_bb_mean_sd.csv` and writes summary/plots
+under `data/mdan/rms/rmsd/`.
+
+```bash
+# Inspect wrapper options:
+bash scripts/run_analysis.sh rmsd
+
+# Build summary CSV and plots:
+bash scripts/run_analysis.sh rmsd all
+
+# Or run one step at a time:
+bash scripts/run_analysis.sh rmsd summarize
+bash scripts/run_analysis.sh rmsd plot
+```
+
+Expected local outputs:
 
 ```text
-data/mdan/rmsd/
+data/mdan/rms/rmsd/rmsd_wt_vs_mutants_from_plotted_source.csv
+data/mdan/rms/rmsd/plots/
 ```
 
 ## 1.5. RMSF And Dynamics
@@ -222,51 +432,218 @@ This section covers residue fluctuation (RMSF) overlay plotting and local dynami
 
 ### 1.5.1. RMSF Figures
 
-RMSF figure scripts use `.agr` files or generated RMSF summaries:
+RMSF figure commands use the local CSV tables fetched or generated by the RMS
+workflow under `data/mdan/rms/rmsf/<state>/<variant>/rmsf_mean_sd.csv`.
+Each table keeps `cr1`, `cr2`, `cr3`, `mean`, and `sd` columns. The plotting
+commands rebuild publication-style RMSF products from those VarMDyn tables:
+one per-state replica grid and one compact per-state overlay where the WT mean
+is drawn thicker than the variants.
 
 Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
-python workflows/mdan/rmsf/overlay.py --help
-python workflows/mdan/rmsf/supplementary.py --help
+# Inspect options:
+bash scripts/run_analysis.sh rmsf
+
+# Rebuild the Apo RMSF replica grid and compact overlay:
+bash scripts/run_analysis.sh rmsf apo
+
+# Rebuild the Holo RMSF replica grid and compact overlay:
+bash scripts/run_analysis.sh rmsf holo
+
+# Compose the Apo and Holo overlays into a stacked panel:
+bash scripts/run_analysis.sh rmsf overlay
+
+# Build the publication-style RMSF overview with shared legend and A/B labels:
+bash scripts/run_analysis.sh function rmsf
+
+# Build the two-row apo/holo RMSF grid:
+bash scripts/run_analysis.sh rmsf grid
 ```
 
-Common variables:
+The wrapper delegates to the reusable RMSF Python modules under
+`workflows/mdan/rms/rmsf/`. Normal users should start with
+`bash scripts/run_analysis.sh rmsf ...` rather than calling those internal
+files directly. The plotting outputs are written under:
 
-Run on: local workstation from the repository root. Environment:
-`varmdyn_env`. Paths: ignored local RMSF source bundle under `data/`.
-
-```bash
-export VARMDYN_RMSF_SOURCE_INPUT_ROOT=$VARMDYN_DATA_ROOT/rmsf_source_inputs
-export VARMDYN_RMSF_SOURCE_MANIFEST=$VARMDYN_DATA_ROOT/rmsf_source_input_manifest.tsv
+```text
+data/mdan/rms/rmsf/plots/
 ```
+
+Expected state-level files include:
+
+```text
+data/mdan/rms/rmsf/plots/rmsf_all_variants_range_mean.png
+data/mdan/rms/rmsf/plots/rmsf_variant_means_overlay_range.png
+data/mdan/rms/rmsf/plots/rmsf_all_variants_range_mean_holo.png
+data/mdan/rms/rmsf/plots/rmsf_variant_means_overlay_range_holo.png
+data/mdan/rms/rmsf/plots/rmsf_grid.png
+```
+
+> [!NOTE]
+> If these commands report missing RMSF tables, fetch the lightweight RMS
+> outputs first with `bash scripts/run_analysis.sh rms fetch --from scratch --run`
+> or point that fetch command at the project/external `data/mdan` root that
+> contains the completed tables.
 
 ### 1.5.2. N-Lobe/Y171 RMSF And Displacement
 
-Local plotting from kept displacement/RMSF tables:
+This workflow has two layers:
 
-Run on: local workstation. Environment: `varmdyn_env`.
+- HPC trajectory extraction through a Slurm job array, producing RMSF and displacement TSVs and panel images;
+- local rendering and assembly (panels A-D structural rendering, final composite figure).
+
+> [!NOTE]
+> Load the local data roots and the HPC analysis roots before every session:
+> ```bash
+> source data/varmdyn_data.env
+> source data/varmdyn_analysis_roots.env
+> ```
+
+#### Step 1 — HPC Trajectory Extraction (Panels E-H and I-L)
+
+**Do this first** — it takes the longest. While the job runs, proceed to Step 2.
+
+**1a — Sync code and stage:**
 
 ```bash
-export DYNAMICS_NLOBE_Y171_INPUT_ROOT=$VARMDYN_DATA_ROOT/dynamics
+python workflows/md/bridge.py sync-code --execute
+source data/varmdyn_data.env
+source data/varmdyn_analysis_roots.env
+python workflows/mdan/dynamics/scripts/submit_hpc.py stage
+```
+
+**1b — Submit the Slurm Job Array:**
+
+```bash
+source data/varmdyn_data.env
+source data/varmdyn_analysis_roots.env
+python workflows/mdan/dynamics/scripts/submit_hpc.py submit
+```
+
+This submits one Slurm array task per discovered variant, plus a dependent plot
+job that runs only after every variant task succeeds. Both IDs are stored in
+`.last_hpc_job_id` as `array_job:plot_job`.
+
+**1c — Fetch the structure PDB** from the VarMDyn MD tree (while the job runs):
+
+```bash
+source data/varmdyn_data.env
+source data/varmdyn_analysis_roots.env
+python workflows/mdan/dynamics/scripts/submit_hpc.py fetch-structure
+```
+
+This retrieves an ATP/Mg-containing `cdl.com.wat.leap.pdb` from
+`VARMDYN_MD_SOURCE_ROOT/holo/WT/02.leap/` when available, falling back to other
+holo systems only if needed. The A-D renderer uses this one structure for all
+four panels: apo panels hide ligand/cofactor, while holo panels show ATP/Mg.
+The file is saved locally under the VarMDyn analysis input tree.
+
+**1d — Monitor:**
+
+```bash
+source data/varmdyn_data.env
+source data/varmdyn_analysis_roots.env
+python workflows/mdan/dynamics/scripts/submit_hpc.py status
+```
+
+**1e — Fetch job outputs** after both jobs complete (`COMPLETED|0:0`).
+If `.last_hpc_job_id` is present, the fetch command uses the recorded array job
+ID automatically:
+
+```bash
+source data/varmdyn_data.env
+source data/varmdyn_analysis_roots.env
+python workflows/mdan/dynamics/scripts/submit_hpc.py fetch
+```
+
+Outputs land in `data/mdan/dynamics/hpc_fetch/job_<array_job_id>/`.
+
+**1f — Promote** kept TSVs and panel images into the active directories:
+
+```bash
+source data/varmdyn_data.env
+JOBID=$(cut -d: -f1 .last_hpc_job_id)
+for sub in nlobe_apo nlobe_holo y171_apo y171_holo; do
+  mkdir -p data/mdan/dynamics/inputs/kept_tsvs/$sub
+  cp data/mdan/dynamics/hpc_fetch/job_${JOBID}/panels_ijkl/kept_tsvs/$sub/*.kept.tsv \
+     data/mdan/dynamics/inputs/kept_tsvs/$sub/
+done
+mkdir -p data/mdan/dynamics/panels_efgh data/mdan/dynamics/panels_ijkl
+cp data/mdan/dynamics/hpc_fetch/job_${JOBID}/panels_efgh/panels_efgh_rmsf.png \
+   data/mdan/dynamics/panels_efgh/panels_efgh_rmsf.png
+cp data/mdan/dynamics/hpc_fetch/job_${JOBID}/panels_ijkl/panels_ijkl_displacement.png \
+   data/mdan/dynamics/panels_ijkl/panels_ijkl_displacement.png
+```
+
+#### Step 2 — Structural Annotations and Rendering (Panels A-D)
+
+Run on: local workstation. Environment: `varmdyn_env`. Requires PyMOL and
+CairoSVG from the VarMDyn environment; Inkscape is only a fallback exporter.
+**Run this in parallel with the HPC job** after Step 1c (fetch-structure) completes.
+
+```bash
+source data/varmdyn_data.env
+echo "$VARMDYN_DATA_ROOT"
+test -f "$VARMDYN_DATA_ROOT/mdan/dynamics/inputs/structures/cdl.com.wat.leap.pdb"
+export DYNAMICS_NLOBE_Y171_OUT_DIR=$VARMDYN_DATA_ROOT/mdan/dynamics
+python workflows/mdan/dynamics/scripts/panels_abcd_local.py
+```
+
+The `echo` command must print your local VarMDyn data folder before you run the
+panel script. If it prints nothing, stop and rerun `source
+data/varmdyn_data.env`; otherwise the script will look for inputs under
+`/mdan/...`, which is wrong.
+
+The `test -f` command must finish silently. If it prints an error or exits
+non-zero, run Step 1c (`fetch-structure`) first.
+
+The script resolves `cdl.com.wat.leap.pdb` from the canonical local path set by
+`fetch-structure`. Outputs land in `data/mdan/dynamics/panels_abcd/`.
+
+#### Step 3 — Local Displacement Plot from Kept TSVs (Panels I-L)
+
+Run after Step 1f (promote) is complete. Environment: `varmdyn_env`.
+
+```bash
+source data/varmdyn_data.env
+echo "$VARMDYN_DATA_ROOT"
+export DYNAMICS_NLOBE_Y171_INPUT_ROOT=$VARMDYN_DATA_ROOT/mdan/dynamics/inputs
 bash scripts/run_dynamics_local.sh
 ```
+
+Again, the `echo` command must print your local VarMDyn data folder before you
+run the plotting command.
 
 Expected input layout:
 
 ```text
 $DYNAMICS_NLOBE_Y171_INPUT_ROOT/
   kept_tsvs/
-    nlobe_apo/
-    nlobe_holo/
-    y171_apo/
-    y171_holo/
+    nlobe_apo/   nlobe_holo/   y171_apo/   y171_holo/
 ```
+
+#### Step 4 — Composite Figure Assembly (All Panels A-L)
+
+Once Steps 1–3 are complete:
+
+```bash
+source data/varmdyn_data.env
+python workflows/mdan/dynamics/scripts/assemble.py
+```
+
+This writes `dynamics.svg` and `dynamics.png` under `$VARMDYN_DATA_ROOT/mdan/dynamics/`.
+
+
 
 ## 1.6. Network Analysis
 
-This workflow validates and replays the DyNetAn residue-communication analysis
-used for the network tables and the network-remodeling figure.
+This workflow handles the DyNetAn residue-communication network analysis (referred to as the **DyNetAn replay** or **trajectory-level replay**).
+
+> [!NOTE]
+> **Do you need to run the replay?**
+> * **If you are only plotting/rendering the network figures**: No. You can bypass the replay steps and use pre-computed tables supplied under `data/mdan/network/tables/`.
+> * **If you are analyzing new simulations or verifying reproducibility**: Yes. In this context, "replay" means processing the raw trajectory coordinate frames frame-by-frame to reconstruct the residue contact network and calculate contact frequency tables.
 
 ### 1.6.1. Folder Logic
 
@@ -312,138 +689,7 @@ The replay protocol uses:
 - top-25 bottleneck residues by edge-betweenness-derived score;
 - WT-referenced lost/gained residue comparisons across the configured variants.
 
-### 1.6.3. Put Data In The VarMDyn Layout
-
-For table validation and rendering, place or link files here. This is a folder
-map, not a shell command block:
-
-```text
-data/network/tables/network_residue_transition_frequency.csv
-data/network/tables/network_overlap_apo_vs_atpmg.csv
-data/structures/apo/WT.apo.pdb
-data/structures/holo_atpmg/WT.keepATPmg.pdb
-```
-
-Fetched DyNetAn replay outputs use this layout. This is also a folder map:
-
-```text
-data/network/replay/apo/$VARMDYN_DYNETAN_STAGE_TAG/
-  TutorialResults_<SYSTEM>/
-  _comparisons_concatenated/
-
-data/network/replay/holo/$VARMDYN_DYNETAN_STAGE_TAG/
-  TutorialResults_<SYSTEM>/
-  _comparisons_concatenated/
-```
-
-For full trajectory-level replay from simulation roots, VarMDyn uses one
-consolidated CLI:
-
-Run on: machine with trajectory inputs. Environment: `varmdyn_dynetan` for
-trajectory-level replay.
-
-```bash
-python workflows/mdan/network/network.py full --state apo
-python workflows/mdan/network/network.py full --state holo
-python workflows/mdan/network/network.py full --state all
-```
-
-It discovers system folders from the selected state root, keeps WT first when a
-WT folder is present, writes trajectory-derived outputs under ignored
-`data/mdan/network/full/`, writes run logs under `data/mdan/network/runs/`, and
-skips completed DyNetAn outputs unless `--force` is used.
-
-Residue renders from this workflow use the prepared PDB for the same state and
-variant by default:
-
-```text
-data/mdan/network/full/prepared/<state>/<variant>/<variant>.pdb
-```
-
-
-If you have a local read-only source tree containing reference tables and replay
-CSVs, copy only the lightweight inputs into `data/`:
-
-Run on: local workstation. Environment: `varmdyn_env`.
-
-```bash
-export VARMDYN_SOURCE_ROOT=/path/to/source/tree
-python scripts/data/sync_data_from_sources.py --module network
-source data/varmdyn_data.env
-```
-
-This does not modify the source tree and does not place copied data under git
-tracking, because `data/` is ignored.
-
-Check the local data layout:
-
-Run on: local workstation. Environment: `varmdyn_env`.
-
-```bash
-python scripts/checks/check_data_inputs.py --module network --profile tables
-python scripts/checks/check_data_inputs.py --module network --profile render
-python scripts/checks/check_data_inputs.py --module network --profile apo-replay
-```
-
-Run the holo replay check only after you have copied or fetched a matching holo
-DyNetAn replay directory:
-
-Run on: local workstation. Environment: `varmdyn_env`.
-
-```bash
-python scripts/checks/check_data_inputs.py --module network --profile holo-replay
-```
-
-### 1.6.4. Configure The DyNetAn Replay Environment
-
-Local table validation and figure rendering use `varmdyn_env`. The trajectory-level network replay also needs DyNetAn. Create the optional replay environment on the machine where the replay job will run:
-
-Run on: local workstation or HPC system that will execute DyNetAn replay.
-Environment: create or activate `varmdyn_dynetan`.
-
-```bash
-conda env create -f envs/varmdyn_dynetan.yml
-conda activate varmdyn_dynetan
-python -c "import dynetan, traitlets, ipywidgets, networkx, MDAnalysis; import importlib.metadata as md; print('DyNetAn environment OK:', md.version('dynetan'))"
-```
-
-If your HPC system already has an equivalent environment, set `VARMDYN_CONDA_ENV` to that environment name. The tested replay stack uses DyNetAn 2.2.2 with MDAnalysis 2.9.
-
-### 1.6.5. Configure HPC Replay Paths
-
-Set these for HPC replay work:
-
-Run on: local workstation before bridge/HPC replay commands, or inside the HPC
-checkout for manual repair. Environment: `varmdyn_env` for local orchestration;
-remote replay uses `VARMDYN_CONDA_ENV`.
-
-```bash
-export VARMDYN_HPC_HOST=user@login.example.edu
-export VARMDYN_HPC_USER=user
-export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
-export VARMDYN_DYNETAN_WORK=/path/to/dynetan_work
-export VARMDYN_CONDA_ENV=varmdyn_dynetan
-export VARMDYN_DYNETAN_STAGE_TAG=concat750_w1_s750_apo_validation_YYYYMMDD
-```
-
-Verify that SSH can run a real command:
-
-Run on: local workstation. Environment: `varmdyn_env`.
-
-```bash
-ssh "$VARMDYN_HPC_HOST" "hostname"
-```
-
-Check the remote DyNetAn work directory:
-
-Run on: local workstation. Environment: `varmdyn_env`; remote replay jobs use
-the conda environment named by `VARMDYN_CONDA_ENV`.
-
-```bash
-python scripts/checks/check_data_inputs.py --module network --profile remote --remote --timeout-seconds 60
-```
-
-### 1.6.6. Validate Existing Tables
+### 1.6.3. Validate Existing Tables
 
 With `source data/varmdyn_data.env` loaded, the validator uses the standard
 `data/` paths automatically:
@@ -451,8 +697,8 @@ With `source data/varmdyn_data.env` loaded, the validator uses the standard
 Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
-python workflows/mdan/network/validate_network_manuscript_outputs.py \
-  --outdir data/mdan/network_validation/manuscript_tables
+python workflows/mdan/network/validate_outputs.py \
+  --outdir data/mdan/network/validation/source_tables
 ```
 
 Expected table validation:
@@ -462,243 +708,89 @@ OK frequency: 25 rows, 5 columns
 OK overlap: 5 rows, 9 columns
 ```
 
-### 1.6.7. Run Full Network Analysis From Simulation Roots
+### 1.6.4. Plan Network Analysis From VarMDyn MD Outputs
 
-Set the apo and/or holo roots. Each root should contain one WT folder and any
-variant folders you want to analyze:
+Run this after MD post-processing has created the prepared network inputs. The
+default bridge path reads MD data from HPC scratch and writes network outputs
+to the sibling `data/mdan/network/` tree on the same storage side.
 
-Run on: machine with trajectory inputs. Environment: `varmdyn_dynetan`. Paths:
-state roots containing prepared or raw simulation folders.
-
-```bash
-export VARMDYN_APO_ROOT=/path/to/apo/root
-export VARMDYN_HOLO_ROOT=/path/to/holo/root
-```
-
-Run all discovered apo systems:
-
-Run on: machine with trajectory inputs. Environment: `varmdyn_dynetan`.
+Run on: local workstation from the repository root. Environment:
+`varmdyn_env`; remote planning runs in the HPC control environment through the
+bridge. Paths: default scratch `data/md` input and scratch `data/mdan/network`
+output unless `VARMDYN_MD_SOURCE_ROOT` or `VARMDYN_MDAN_OUTPUT_ROOT` is set.
 
 ```bash
-python workflows/mdan/network/network.py full --state apo
+bash scripts/run_analysis.sh network plan --state apo --variants all
+bash scripts/run_analysis.sh network plan --state holo --variants all
 ```
 
-Run all discovered holo/ATP-Mg systems:
-
-Run on: machine with trajectory inputs. Environment: `varmdyn_dynetan`.
-
-```bash
-python workflows/mdan/network/network.py full --state holo
-```
-
-Run both states:
-
-Run on: machine with trajectory inputs. Environment: `varmdyn_dynetan`.
-
-```bash
-python workflows/mdan/network/network.py full --state all
-```
-
-To test only a subset:
-
-Run on: machine with trajectory inputs. Environment: `varmdyn_dynetan`.
-
-```bash
-python workflows/mdan/network/network.py full \
-  --state apo \
-  --variants WT,MUT1
-```
-
-For Slurm:
-
-Run on: HPC system. Environment: Slurm job activates the configured DyNetAn
-environment, usually `varmdyn_dynetan`.
-
-```bash
-mkdir -p data/mdan/network/runs/logs
-sbatch workflows/mdan/network/run_full_network.slurm apo
-sbatch workflows/mdan/network/run_full_network.slurm holo
-sbatch workflows/mdan/network/run_full_network.slurm all
-```
-
-For production-sized runs, prefer the array wrapper. Each variant runs in a
-separate Slurm task, then one dependent compare job builds the WT-referenced
-lost/gained tables:
-
-Run on: HPC system. Environment: Slurm job activates the configured DyNetAn
-environment, usually `varmdyn_dynetan`.
-
-```bash
-export VARMDYN_APO_ROOT=/path/to/apo/root
-export VARMDYN_HOLO_ROOT=/path/to/holo/root
-export VARMDYN_DYNETAN_STAGE_TAG=varmdyn_full_holo
-
-mkdir -p data/mdan/network/runs/logs
-jobid=$(sbatch --parsable --array=0-5 workflows/mdan/network/run_network_array.slurm holo variant)
-sbatch --dependency=afterok:${jobid} workflows/mdan/network/run_network_array.slurm holo compare
-```
-
-For VarMDyn MD outputs that have already completed the 500 ns post-processing
-step, point the array wrapper at the prepared topology and concatenated
-trajectory files. This route supports plain variant folders such as `WT` and
-`L119R`; it does not require numeric variant prefixes.
-
-Run on: HPC system from the synced VarMDyn project checkout. Environment:
-Slurm job activates `varmdyn_dynetan`; AMBER-compatible tools provide
-`cpptraj` during preparation.
-
-```bash
-export VARMDYN_APO_ROOT=/path/to/md/apo
-export VARMDYN_HOLO_ROOT=/path/to/md/holo
-export VARMDYN_NETWORK_DATA_ROOT=/path/to/VarMDyn/data/mdan/network/full
-export VARMDYN_NETWORK_RUN_ROOT=/path/to/VarMDyn/data/mdan/network/runs
-export VARMDYN_TOPOLOGY_SUFFIX=02.leap/com/cdl.com.striped_v2.prmtop
-export VARMDYN_TRAJ_TEMPLATE=04.ptraj/com/concatenated/production-25-to-29-concatenated-750frames.striped_v2.mdcrd.nc
-export VARMDYN_REPLICAS=combined
-export VARMDYN_CHUNKS=25
-export VARMDYN_VARIANTS=WT,MUT1
-export VARMDYN_WT=WT
-export VARMDYN_DYNETAN_STAGE_TAG=varmdyn_500ns
-
-mkdir -p data/mdan/network/runs/logs
-jobid=$(sbatch --parsable --array=0-1 workflows/mdan/network/run_network_array.slurm apo variant)
-sbatch --dependency=afterok:${jobid} workflows/mdan/network/run_network_array.slurm apo compare
-```
-
-For active scratch analysis, keep this alongside the MD scratch tree:
-
-```bash
-export VARMDYN_APO_ROOT=/scratch/$USER/VarMDyn/data/md/apo
-export VARMDYN_HOLO_ROOT=/scratch/$USER/VarMDyn/data/md/holo
-export VARMDYN_NETWORK_DATA_ROOT=/scratch/$USER/VarMDyn/data/mdan/network/full
-export VARMDYN_NETWORK_RUN_ROOT=/scratch/$USER/VarMDyn/data/mdan/network/runs
-```
-
-This keeps generated simulation data in `data/md/` and generated MD-analysis
-products in `data/mdan/`, matching the repository module layout.
-
-For a two-system test, set the variant list and shrink the array:
-
-Run on: HPC system. Environment: Slurm job activates the configured DyNetAn
-environment, usually `varmdyn_dynetan`.
-
-```bash
-export VARMDYN_VARIANTS=WT,MUT1
-mkdir -p data/mdan/network/runs/logs
-jobid=$(sbatch --parsable --array=0-1 workflows/mdan/network/run_network_array.slurm apo variant)
-sbatch --dependency=afterok:${jobid} workflows/mdan/network/run_network_array.slurm apo compare
-```
-
-A standalone shared packet for collaborators is available in:
+The plan prints the state root, network output root, selected variants, Slurm
+array range, and whether each variant has both required prepared inputs:
 
 ```text
-workflows/mdan/network/shared/
+<md-root>/<state>/<variant>/02.leap/com/cdl.com.striped_v2.prmtop
+<md-root>/<state>/<variant>/04.ptraj/com/concatenated/production-25-to-29-concatenated-750frames.striped_v2.mdcrd.nc
 ```
 
-It can be downloaded by itself and contains its own network runner, DyNetAn
-environment builder, Slurm array script, and helpers for syncing code to HPC,
-submitting array jobs, and fetching only lightweight CSV/TXT/PDB outputs back to
-the local checkout.
+Use `--variants all` to auto-discover every runnable variant folder in the
+selected state root. Use a comma-separated list only when intentionally running
+a subset.
 
-The shared packet has two input routes:
+### 1.6.5. Submit And Monitor Network Arrays
 
-- `VARMDYN_INPUT_MODE=prepared`: use a pre-stripped topology and a
-  pre-concatenated stride-20 trajectory. Use this for validated replay.
-- `VARMDYN_INPUT_MODE=raw`: build protein-only inputs from raw trajectory
-  chunks. Use this for a new project that does not already have prepared
-  network files.
+The submit command is guarded by `--run`; without `--run`, it prints the
+bridge command instead of submitting Slurm jobs. For the normal analysis route,
+run apo and holo explicitly:
 
-The default is `auto`, which prefers prepared inputs when both files are present:
-
-Path map only.
-
-```text
-<simulation_root>/<variant>/02.leap/com/cdl.com.striped_v2.prmtop
-<simulation_root>/<variant>/04.ptraj/com/concatenated/production-25-to-29-concatenated-750frames.striped_v2.mdcrd.nc
-```
-
-Raw mode still supports chunked inputs such as:
-
-Path map only.
-
-```text
-<simulation_root>/<variant>/02.leap/com/cdl.com.wat.leap.prmtop
-<simulation_root>/<variant>/03.pmemd/com/cr1/25md.mdcrd.nc
-```
-
-For a strict replay, point the state root to the folder that already contains
-the prepared files, then run the array wrapper from inside the shared packet:
-
-Run on: HPC system inside `workflows/mdan/network/shared/`. Environment:
-the shared wrapper uses its own configured DyNetAn environment.
+Run on: local workstation from the repository root. Environment:
+`varmdyn_env`; remote Slurm jobs activate the independent `varmdyn_dynetan`
+environment and load AMBER-compatible tools for `cpptraj`.
 
 ```bash
-source env.sh.example
-export VARMDYN_INPUT_MODE=prepared
-export VARMDYN_APO_ROOT=/path/to/apo/prepared/root
-export VARMDYN_VARIANTS=WT,MUT1
-bash submit_network_array.sh apo 0-1
+# Full apo network analysis.
+bash scripts/run_analysis.sh network plan --state apo --variants all
+bash scripts/run_analysis.sh network submit --state apo --variants all
+bash scripts/run_analysis.sh network submit --state apo --variants all --run
+bash scripts/run_analysis.sh network status
+
+# Full holo network analysis.
+bash scripts/run_analysis.sh network plan --state holo --variants all
+bash scripts/run_analysis.sh network submit --state holo --variants all
+bash scripts/run_analysis.sh network submit --state holo --variants all --run
+bash scripts/run_analysis.sh network status
 ```
 
-### 1.6.8. Replay Apo Network Analysis From An Existing DyNetAn Work Directory
+`network status` reports the most recently submitted variant array and its
+dependent compare job. The compare job is submitted with `afterok:<array-job>`,
+so it stays `PENDING (Dependency)` until every variant array task completes.
+If a variant array is cancelled or fails, the dependent compare job may appear
+as `CANCELLED` or dependency-cancelled in Slurm accounting; that means the
+compare step did not run because its required variant outputs were not all
+successful. `COMPLETED` on both the array tasks and compare job is the success
+state.
 
-Stage the sbatch script:
+### 1.6.6. Fetch Network Outputs
 
-Run on: local workstation. Environment: `varmdyn_env`; remote job execution
-uses the environment named by `VARMDYN_CONDA_ENV`.
+Fetch only lightweight network outputs into local ignored `data/mdan/network/`.
+Use the source side that matches the `network data` root printed by the plan.
 
 ```bash
-python workflows/mdan/network/network.py hpc-stage
+bash scripts/run_analysis.sh network fetch --from scratch --run
 ```
 
-Submit a new replay job:
-
-Run on: local workstation. Environment: `varmdyn_env`; remote job execution
-uses `VARMDYN_CONDA_ENV`.
+If the network outputs are in project storage or another mounted HPC path,
+point to that exact `data/mdan` root:
 
 ```bash
-python workflows/mdan/network/network.py hpc-submit
+bash scripts/run_analysis.sh network fetch --remote-mdan-root /path/to/hpc_visible/VarMDyn/data/mdan --run
 ```
 
-Check status:
+### 1.6.7. Validate Fetched Network Outputs
 
 Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
-python workflows/mdan/network/network.py hpc-status
-```
-
-Wait for a known job id:
-
-Run on: local workstation. Environment: `varmdyn_env`.
-
-```bash
-python workflows/mdan/network/network.py hpc-wait --job-id JOBID
-```
-
-After the array job completes, rebuild comparison tables on HPC:
-
-Run on: local workstation. Environment: `varmdyn_env`; remote comparison uses
-`VARMDYN_CONDA_ENV`.
-
-```bash
-python workflows/mdan/network/network.py hpc-compare
-```
-
-Fetch lightweight CSV outputs into the standard local data layout:
-
-Run on: local workstation. Environment: `varmdyn_env`.
-
-```bash
-python workflows/mdan/network/network.py hpc-fetch
-```
-
-### 1.6.9. Validate Fetched Apo Replay Outputs
-
-Run on: local workstation. Environment: `varmdyn_env`.
-
-```bash
-python workflows/mdan/network/validate_network_manuscript_outputs.py \
+python workflows/mdan/network/validate_outputs.py \
   --stage-tag $VARMDYN_DYNETAN_STAGE_TAG \
   --outdir data/mdan/network_validation/$VARMDYN_DYNETAN_STAGE_TAG
 ```
@@ -712,10 +804,11 @@ OK apo frequency replay: 12 rows compared
 OK apo overlap replay: 20 fields compared
 ```
 
-### 1.6.10. Build The Associated Network Figure
+### 1.6.8. Build The Associated Network Figure
 
-The network-remodel figure reads apo and holo/ATP-Mg structure files from
-`data/structures/` by default and writes rendered outputs to `data/`:
+The network-remodel figure reads apo and holo structure files from
+`data/mdan/network/structures/` by default and writes rendered outputs under
+`data/mdan/network/`:
 
 Run on: local workstation. Environment: `varmdyn_env`; PyMOL is delegated
 through `VARMDYN_PYMOL_CMD`, while ChimeraX and Inkscape must be available on
@@ -735,3 +828,7 @@ data/mdan/network/network_remodel_final_preview.png
 
 The build uses PyMOL for residue-coloring cartoon panels, ChimeraX for surface
 context panels, and Inkscape for SVG-to-PNG previews.
+
+The lower-level standalone packet in `workflows/mdan/network/shared/` is for
+collaborator handoff and debugging. Use `bash scripts/run_analysis.sh network
+...` for normal VarMDyn work.

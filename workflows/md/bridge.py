@@ -90,6 +90,12 @@ def remote_python() -> str:
 
 
 def remote_workflow_env() -> str:
+    # Ensure default values are populated in the environment if not set
+    if "VARMDYN_MD_SOURCE_ROOT" not in os.environ:
+        os.environ["VARMDYN_MD_SOURCE_ROOT"] = f"{scratch_root().rstrip('/')}/data/md"
+    if "VARMDYN_MDAN_OUTPUT_ROOT" not in os.environ:
+        os.environ["VARMDYN_MDAN_OUTPUT_ROOT"] = f"{scratch_root().rstrip('/')}/data/mdan"
+
     allowed = [
         "VARMDYN_AMBER_MODULES",
         "VARMDYN_MD_ATPMG_TEMPLATE_ROOT",
@@ -97,6 +103,10 @@ def remote_workflow_env() -> str:
         "VARMDYN_MD_PROD_END",
         "VARMDYN_MD_SMOKE_SOURCE_ROOT",
         "VARMDYN_MD_VARIANTS_SOURCE",
+        "VARMDYN_MD_SOURCE_ROOT",
+        "VARMDYN_MDAN_OUTPUT_ROOT",
+        "VARMDYN_NETWORK_DATA_ROOT",
+        "VARMDYN_NETWORK_RUN_ROOT",
     ]
     parts = []
     for name in allowed:
@@ -156,10 +166,10 @@ def sync_code(args: argparse.Namespace) -> None:
         "_archive/",
         "--exclude",
         "site/",
-        "--exclude",
-        ".pytest_cache/",
-        "--exclude",
-        "__pycache__/",
+        "--filter",
+        "-p .pytest_cache/",
+        "--filter",
+        "-p __pycache__/",
         "--exclude",
         "tests/",
         "--exclude",
@@ -289,6 +299,12 @@ def remote_exec(args: argparse.Namespace) -> None:
         remote_command = remote_command[1:]
     if not remote_command:
         raise SystemExit("provide a command after --")
+
+    is_analysis = any("workflows/mdan/" in part for part in remote_command)
+    if is_analysis:
+        from lib import confirm_hpc_roots_interactive
+        confirm_hpc_roots_interactive()
+
     if remote_command[0] in {"python", "python3"}:
         remote_command[0] = remote_python()
     extra_env = remote_workflow_env()
@@ -324,6 +340,50 @@ def fetch(args: argparse.Namespace) -> None:
     local_root = Path(os.environ.get("VARMDYN_DATA_ROOT", REPO_ROOT / "data"))
     local = local_root / "md" / args.state
     remote = f"{remote_host()}:{project_root().rstrip('/')}/data/md/{args.state}/"
+    cmd = ["rsync", "-a", "--prune-empty-dirs"]
+    for pattern in LIGHT_INCLUDES:
+        cmd += ["--include", pattern]
+    cmd += ["--exclude", "*", "-e", rsync_ssh_command(), remote, str(local)]
+    run(cmd, args.execute)
+
+
+def analysis_data_root(args: argparse.Namespace) -> str:
+    if args.remote_mdan_root:
+        return args.remote_mdan_root.rstrip("/")
+    env_val = os.environ.get("VARMDYN_MDAN_OUTPUT_ROOT")
+    if env_val:
+        return env_val.rstrip("/")
+    if args.source == "scratch":
+        return f"{scratch_root().rstrip('/')}/data/mdan"
+    if args.source == "project":
+        return f"{project_root().rstrip('/')}/data/mdan"
+    raise SystemExit("--source must be scratch or project")
+
+
+def fetch_analysis(args: argparse.Namespace) -> None:
+    local_root = Path(os.environ.get("VARMDYN_DATA_ROOT", REPO_ROOT / "data"))
+    remote_root = analysis_data_root(args)
+    if args.module in {"rmsd", "rmsf"}:
+        local = local_root / "mdan" / "rms" / args.module
+        remote_subdir = f"rms/{args.module}"
+    else:
+        local = local_root / "mdan" / args.module
+        remote_subdir = args.module
+    if args.execute and args.module in {"rmsd", "rmsf"}:
+        primary = f"{remote_root}/rms/{args.module}"
+        legacy = f"{remote_root}/{args.module}"
+        test_cmd = ssh_base() + [
+            remote_host(),
+            "test -d "
+            + shlex.quote(primary)
+            + " || test ! -d "
+            + shlex.quote(legacy),
+        ]
+        if subprocess.run(test_cmd, check=False).returncode != 0:
+            local = local_root / "mdan" / "rms" / args.module
+            remote_subdir = args.module
+            print(f"[INFO] fetching older remote RMS layout into local rms folder: {remote_root}/{remote_subdir}")
+    remote = f"{remote_host()}:{remote_root}/{remote_subdir}/"
     cmd = ["rsync", "-a", "--prune-empty-dirs"]
     for pattern in LIGHT_INCLUDES:
         cmd += ["--include", pattern]
@@ -413,6 +473,24 @@ def build_parser() -> argparse.ArgumentParser:
     add_execute(fetch_parser)
     fetch_parser.add_argument("--state", required=True, choices=["apo", "holo"])
 
+    fetch_analysis_parser = sub.add_parser(
+        "fetch-analysis",
+        help="Fetch lightweight MD-analysis outputs from HPC scratch or project storage",
+    )
+    add_execute(fetch_analysis_parser)
+    fetch_analysis_parser.add_argument("--module", default="rms", help="Subfolder under data/mdan to fetch")
+    fetch_analysis_parser.add_argument(
+        "--source",
+        choices=["scratch", "project"],
+        default="scratch",
+        help="Fetch from the matching HPC data/mdan root",
+    )
+    fetch_analysis_parser.add_argument(
+        "--remote-mdan-root",
+        default=None,
+        help="Exact HPC-visible data/mdan root to fetch from; overrides --source",
+    )
+
     sync_inputs_parser = sub.add_parser(
         "sync-inputs",
         help="Sync locally prepared MD inputs to HPC scratch without touching outputs",
@@ -435,6 +513,7 @@ def main(argv: list[str] | None = None) -> int:
         "exec": remote_exec,
         "slurm": slurm,
         "fetch": fetch,
+        "fetch-analysis": fetch_analysis,
         "sync-inputs": sync_inputs,
     }
     actions[args.command](args)

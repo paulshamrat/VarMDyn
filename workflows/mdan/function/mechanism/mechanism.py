@@ -10,13 +10,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[4]
 DATA_ROOT = Path(os.environ.get("VARMDYN_DATA_ROOT", ROOT / "data"))
 RUN_ROOT = Path(os.environ.get("VARMDYN_RUN_ROOT", ROOT / "runs"))
-OUT_DIR = RUN_ROOT / "mdan" / "function" / "mechanism"
+OUT_DIR = Path(os.environ.get("VARMDYN_MECHANISM_OUT_DIR", DATA_ROOT / "function/mechanism"))
 
-PANEL_A = DATA_ROOT / "function/source_panels/cdkl5_full_length_schematic_review_v1.png"
-PANEL_B = DATA_ROOT / "function/source_panels/cdkl5_annotated_mod.png"
-PANEL_C = DATA_ROOT / "function/source_panels/251110_atpbinding.png"
-PANEL_D = DATA_ROOT / "rmsf/rmsf_variant_means_overlay_range.png"
-PANEL_E = DATA_ROOT / "rmsf/rmsf_variant_means_overlay_range_atpmg.png"
+PANEL_A = Path(os.environ.get("VARMDYN_MECHANISM_PANEL_A", DATA_ROOT / "function/source_panels/cdkl5_full_length_schematic_review_v1.png"))
+PANEL_B = Path(os.environ.get("VARMDYN_MECHANISM_PANEL_B", DATA_ROOT / "function/source_panels/cdkl5_annotated_mod.png"))
+PANEL_C = Path(os.environ.get("VARMDYN_MECHANISM_PANEL_C", DATA_ROOT / "function/source_panels/atp_binding.png"))
+PANEL_D = Path(os.environ.get("VARMDYN_MECHANISM_PANEL_D", DATA_ROOT / "mdan/rms/rmsf/plots/rmsf_variant_means_overlay_range.png"))
+PANEL_E = Path(os.environ.get("VARMDYN_MECHANISM_PANEL_E", DATA_ROOT / "mdan/rms/rmsf/plots/rmsf_variant_means_overlay_range_holo.png"))
 
 PNG_OUT = OUT_DIR / "mechanism_rmsf_combined_review_v1.png"
 

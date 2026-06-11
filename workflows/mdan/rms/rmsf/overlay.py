@@ -9,14 +9,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
 DATA_ROOT = Path(os.environ.get("VARMDYN_DATA_ROOT", ROOT / "data"))
-RUN_ROOT = Path(os.environ.get("VARMDYN_RUN_ROOT", ROOT / "runs"))
-OUT_DIR = RUN_ROOT / "mdan" / "rmsf"
+OUT_DIR = DATA_ROOT / "mdan" / "rms" / "rmsf" / "plots"
 
-APO = DATA_ROOT / "rmsf/rmsf_variant_means_overlay_range.png"
-HOLO = DATA_ROOT / "rmsf/rmsf_variant_means_overlay_range_atpmg.png"
+APO = OUT_DIR / "rmsf_variant_means_overlay_range.png"
+HOLO = OUT_DIR / "rmsf_variant_means_overlay_range_holo.png"
 
 PNG_OUT = OUT_DIR / "rmsf_overlay_apo_holo_panelAB_preview_v2.png"
-PDF_OUT = OUT_DIR / "rmsf_overlay_apo_holo_panelAB_preview_v2.pdf"
 GAP_PX = 8
 
 
@@ -27,7 +25,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--apo", type=Path, default=APO, help="Path to the apo panel PNG.")
     p.add_argument("--holo", type=Path, default=HOLO, help="Path to the holo panel PNG.")
     p.add_argument("--png-out", type=Path, default=PNG_OUT, help="Output PNG path.")
-    p.add_argument("--pdf-out", type=Path, default=PDF_OUT, help="Output PDF path.")
+    p.add_argument("--pdf-out", type=Path, default=None, help="Optional output PDF path.")
     p.add_argument("--gap-px", type=int, default=GAP_PX, help="Vertical white gap between stacked panels in pixels.")
     p.add_argument("--bg-color", type=str, default="white", help="Background color used for the panel gap.")
     p.add_argument("--apo-bottom-crop-px", type=int, default=48,
@@ -62,7 +60,7 @@ def main() -> None:
 
     if args.png_out.exists():
         args.png_out.unlink()
-    if args.pdf_out.exists():
+    if args.pdf_out and args.pdf_out.exists():
         args.pdf_out.unlink()
 
     safe_left_label = args.left_label.replace(":", r"\:").replace("'", r"\'")
@@ -108,6 +106,9 @@ def main() -> None:
         )
     cmd = [
         ffmpeg,
+        "-hide_banner",
+        "-loglevel",
+        "error",
         "-y",
         "-i",
         str(args.apo),
@@ -125,26 +126,22 @@ def main() -> None:
     ]
     subprocess.run(cmd, check=True)
 
-    pdf_cmd = [
-        ffmpeg,
-        "-y",
-        "-i",
-        str(args.png_out),
-        "-frames:v",
-        "1",
-        str(args.pdf_out),
-    ]
-    pdf_ok = True
-    try:
-        subprocess.run(pdf_cmd, check=True, capture_output=True, text=True)
-    except subprocess.CalledProcessError:
-        pdf_ok = False
-
     print(f"Wrote {args.png_out}")
-    if pdf_ok:
+    if args.pdf_out:
+        pdf_cmd = [
+            ffmpeg,
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-i",
+            str(args.png_out),
+            "-frames:v",
+            "1",
+            str(args.pdf_out),
+        ]
+        subprocess.run(pdf_cmd, check=True, capture_output=True, text=True)
         print(f"Wrote {args.pdf_out}")
-    else:
-        print("Skipped PDF export: ffmpeg PDF output is not available in this environment.")
 
 
 if __name__ == "__main__":

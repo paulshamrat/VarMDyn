@@ -45,11 +45,12 @@ folder.
 | `varmodel` | `bash scripts/run_varmodel.sh --dry-run` | `varmdyn_modeller` | `data/varmodel/` |
 | `md/apo` | `bash scripts/run_md.sh status --state apo` | local `varmdyn_env`; remote HPC control env | `data/md/apo/` |
 | `md/holo` | `bash scripts/run_md.sh status --state holo` | local `varmdyn_env`; `varmdyn_pymol` for transfer | `data/md/holo/` |
-| `mdan/rmsd` | `python workflows/mdan/rmsd/summarize.py --help` | `varmdyn_env` | `data/mdan/rmsd/` |
-| `mdan/rmsf` | `python workflows/mdan/rmsf/overlay.py --help` | `varmdyn_env` | `data/mdan/rmsf/` |
+| `mdan/rms` | `bash scripts/run_analysis.sh rms plan --state apo --start 25 --end 29` | local `varmdyn_env`; remote AMBER modules | `data/mdan/rms/` |
+| `mdan/rms/rmsd` | `bash scripts/run_analysis.sh rmsd all` | `varmdyn_env` | `data/mdan/rms/rmsd/` |
+| `mdan/rms/rmsf` | `bash scripts/run_analysis.sh rmsf all` | `varmdyn_env` | `data/mdan/rms/rmsf/` |
 | `mdan/dynamics` | `bash scripts/run_dynamics_local.sh` | `varmdyn_env` | `data/mdan/dynamics/` |
 | `mdan/network` | `python workflows/mdan/network/network.py --help` | `varmdyn_env`; `varmdyn_dynetan` for replay | `data/mdan/network/` |
-| `mdan/function/full` | `python workflows/mdan/function/full/schematic.py` | `varmdyn_env` | `data/mdan/function/full/` |
-| `mdan/function/kinase` | `python workflows/mdan/function/kinase/annotation.py` | `varmdyn_env`; `varmdyn_pymol` for PyMOL renders | `data/mdan/function/kinase/` |
-| `mdan/function/msa` | `python workflows/mdan/function/msa/msa.py` | `varmdyn_env` | `data/mdan/function/msa/` |
-| `mdan/function/mechanism` | `python workflows/mdan/function/mechanism/mechanism_split.py --help` | `varmdyn_env` | `data/mdan/function/mechanism/` |
+| `mdan/function/full` | `python workflows/mdan/function/full/schematic.py` | `varmdyn_env` | `data/function/full/` |
+| `mdan/function/kinase` | `python workflows/mdan/function/kinase/annotation.py` | `varmdyn_env`; `varmdyn_pymol` for PyMOL renders | `data/function/kinase/` |
+| `mdan/function/msa` | `python workflows/mdan/function/msa/msa.py` | `varmdyn_env` | `data/function/msa/` |
+| `mdan/function/mechanism` | `python workflows/mdan/function/mechanism/mechanism_split.py --help` | `varmdyn_env` | `data/function/mechanism/` |
