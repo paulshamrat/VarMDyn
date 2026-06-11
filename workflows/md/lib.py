@@ -17,6 +17,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SUPPORT_VARIANT_DIRS = {"variants", "logs", "all", "*"}
 DEFAULT_ENV_FILES = [
     REPO_ROOT / "data/varmdyn_data.env",
+    REPO_ROOT / "data/varmdyn_analysis_roots.env",
     REPO_ROOT / ".local_docs/paths.env",
 ]
 
@@ -212,3 +213,138 @@ def stage_script(command: str) -> str | None:
     if len(parts) >= 2 and parts[0] in {"bash", "sh"}:
         return parts[1]
     return None
+
+
+def confirm_hpc_roots_interactive() -> None:
+    """Prompt the user to confirm/select HPC MD source root and MDAN output root.
+
+    If the terminal is interactive and not bypassed, prompts for:
+      - HPC MD source root path (Scratch, Project, or Custom)
+      - HPC MDAN output root path (Scratch or Project)
+    Saves the choices to os.environ and appends them to data/varmdyn_analysis_roots.env.
+    """
+    if not sys.stdin.isatty():
+        return
+    if os.environ.get("VARMDYN_BYPASS_PROMPT"):
+        return
+
+    # To avoid prompt spamming in a single process execution, track if we already prompted
+    if hasattr(confirm_hpc_roots_interactive, "_prompted"):
+        return
+    setattr(confirm_hpc_roots_interactive, "_prompted", True)
+
+    hpc_host = os.environ.get("VARMDYN_HPC_HOST", "")
+    host_user = hpc_host.split("@", 1)[0] if "@" in hpc_host else ""
+    hpc_user = os.environ.get("VARMDYN_HPC_USER") or host_user or os.environ.get("USER", "user")
+    project = os.environ.get("VARMDYN_HPC_PROJECT")
+    if not project:
+        project = f"/project/{hpc_user}/VarMDyn"
+
+    scratch = os.environ.get("VARMDYN_HPC_SCRATCH", f"/scratch/{hpc_user}/VarMDyn")
+
+    # Clean paths
+    project = project.rstrip("/")
+    scratch = scratch.rstrip("/")
+
+    curr_md = os.environ.get("VARMDYN_MD_SOURCE_ROOT")
+    curr_mdan = os.environ.get("VARMDYN_MDAN_OUTPUT_ROOT")
+
+    if curr_md and curr_mdan:
+        print("\n" + "=" * 70)
+        print("HPC Analysis Path Handshake")
+        print("=" * 70)
+        print("Current configuration:")
+        print(f"  MD Source Root  : {curr_md}")
+        print(f"  MDAN Output Root: {curr_mdan}")
+        print("=" * 70)
+        try:
+            ans = input("Keep these settings? [Y/n]: ").strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            print("\nUsing current settings.")
+            return
+        if ans in ("", "y", "yes"):
+            return
+
+    # Choose MD source root
+    print("\n" + "=" * 70)
+    print("Configure HPC Analysis Roots")
+    print("=" * 70)
+    print("Where is the MD data located on the HPC?")
+    print(f"  [1] Scratch ({scratch}/data/md)")
+    print(f"  [2] Project ({project}/data/md)")
+    print("  [3] Custom path")
+
+    md_choice = "1"
+    try:
+        md_choice = input("Choose [1/2/3] (default 1): ").strip()
+    except (KeyboardInterrupt, EOFError):
+        pass
+    if not md_choice:
+        md_choice = "1"
+
+    md_root = ""
+    mdan_root = ""
+
+    if md_choice == "1":
+        md_root = f"{scratch}/data/md"
+        print(f"\nConfirm where MDAN should be saved on the HPC side:")
+        print(f"  [1] Scratch ({scratch}/data/mdan)  [Recommended for scratch MD]")
+        print(f"  [2] Project ({project}/data/mdan)")
+        mdan_choice = "1"
+        try:
+            mdan_choice = input("Choose [1/2] (default 1): ").strip()
+        except (KeyboardInterrupt, EOFError):
+            pass
+        if not mdan_choice:
+            mdan_choice = "1"
+        if mdan_choice == "2":
+            mdan_root = f"{project}/data/mdan"
+        else:
+            mdan_root = f"{scratch}/data/mdan"
+    elif md_choice == "2":
+        md_root = f"{project}/data/md"
+        print(f"\nConfirm where MDAN should be saved on the HPC side:")
+        print(f"  [1] Project ({project}/data/mdan)  [Recommended for project MD]")
+        print(f"  [2] Scratch ({scratch}/data/mdan)")
+        mdan_choice = "1"
+        try:
+            mdan_choice = input("Choose [1/2] (default 1): ").strip()
+        except (KeyboardInterrupt, EOFError):
+            pass
+        if not mdan_choice:
+            mdan_choice = "1"
+        if mdan_choice == "2":
+            mdan_root = f"{scratch}/data/mdan"
+        else:
+            mdan_root = f"{project}/data/mdan"
+    else:
+        try:
+            md_root = input("Enter custom HPC MD source root: ").strip()
+            mdan_root = input("Enter custom HPC MDAN output root: ").strip()
+        except (KeyboardInterrupt, EOFError):
+            md_root = f"{scratch}/data/md"
+            mdan_root = f"{scratch}/data/mdan"
+
+    if not md_root:
+        md_root = f"{scratch}/data/md"
+    if not mdan_root:
+        mdan_root = f"{scratch}/data/mdan"
+
+    # Save to os.environ
+    os.environ["VARMDYN_MD_SOURCE_ROOT"] = md_root
+    os.environ["VARMDYN_MDAN_OUTPUT_ROOT"] = mdan_root
+
+    # Write to data/varmdyn_analysis_roots.env
+    env_file = REPO_ROOT / "data" / "varmdyn_analysis_roots.env"
+    try:
+        env_file.parent.mkdir(parents=True, exist_ok=True)
+        env_file.write_text(
+            f"# HPC Analysis Roots configured interactively\n"
+            f"export VARMDYN_MD_SOURCE_ROOT='{md_root}'\n"
+            f"export VARMDYN_MDAN_OUTPUT_ROOT='{mdan_root}'\n",
+            encoding="utf-8"
+        )
+        print(f"[OK] Saved HPC roots to {env_file.relative_to(REPO_ROOT)}")
+    except OSError as exc:
+        print(f"[WARN] Could not save roots to file: {exc}")
+    print("=" * 70 + "\n")

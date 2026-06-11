@@ -40,13 +40,54 @@ from PIL import Image
 
 ROOT = Path(os.environ.get("VARMDYN_ROOT", Path(__file__).resolve().parents[4]))
 SCRIPT_DIR = Path(__file__).resolve().parent
-FIGURE_DIR = Path(os.environ.get("DYNAMICS_NLOBE_Y171_OUT_DIR", str(SCRIPT_DIR.parent)))
+FIGURE_DIR = Path(os.environ.get(
+    "DYNAMICS_NLOBE_Y171_OUT_DIR",
+    str(Path(os.environ.get("VARMDYN_DATA_ROOT", str(ROOT / "data"))) / "mdan" / "dynamics")
+))
+if FIGURE_DIR == Path("/mdan/dynamics"):
+    raise SystemExit(
+        "DYNAMICS_NLOBE_Y171_OUT_DIR resolved to /mdan/dynamics, which usually "
+        "means VARMDYN_DATA_ROOT was not loaded. Run from the repository root:\n"
+        "  source data/varmdyn_data.env\n"
+        "  echo \"$VARMDYN_DATA_ROOT\"\n"
+        "then set DYNAMICS_NLOBE_Y171_OUT_DIR again."
+    )
 INPUT_DIR = FIGURE_DIR / "inputs" / "structures"
 OUT_DIR = FIGURE_DIR / "panels_abcd"
 SOURCE_PANEL_DIR = OUT_DIR / "source_panels"
 WORK_DIR = SOURCE_PANEL_DIR / "raw_renders"
 
-STRUCTURE_PDB = INPUT_DIR / "cdl.com.wat.leap.pdb"
+
+def _resolve_structure_pdb() -> Path:
+    """Return path to cdl.com.wat.leap.pdb.
+
+    Resolution order:
+    1. Already present at the canonical local input path.
+    2. Found under VARMDYN_MD_SOURCE_ROOT (VarMDyn MD tree, apo branch).
+    If found via option 2, copy it to the canonical local path so subsequent
+    runs do not need to search again.
+    """
+    canonical = INPUT_DIR / "cdl.com.wat.leap.pdb"
+    if canonical.exists():
+        return canonical
+    md_root = os.environ.get("VARMDYN_MD_SOURCE_ROOT")
+    if md_root:
+        md_root_path = Path(md_root)
+        candidates = list(md_root_path.glob("apo/*/02.leap/cdl.com.wat.leap.pdb"))
+        if not candidates:
+            # also check without the 02.leap/com/ subdirectory
+            candidates = list(md_root_path.glob("apo/*/02.leap/com/cdl.com.wat.leap.pdb"))
+        if candidates:
+            src = candidates[0]
+            canonical.parent.mkdir(parents=True, exist_ok=True)
+            import shutil
+            shutil.copy2(src, canonical)
+            print(f"[info] copied structure PDB from MD tree: {src}")
+            return canonical
+    return canonical  # caller will check existence and raise
+
+
+STRUCTURE_PDB = _resolve_structure_pdb()
 SVG_OUT = OUT_DIR / "panels_abcd_structures_editable.svg"
 PNG_OUT = OUT_DIR / "panels_abcd_structures.png"
 PDF_OUT = OUT_DIR / "panels_abcd_structures.pdf"
@@ -64,6 +105,7 @@ RAW_PNGS = {
 }
 
 VIEW_FIG2B = "(-0.394461602, 0.858315945, 0.328150243, -0.892887235, -0.273651093, -0.357560992, -0.217103228, -0.434047014, 0.874333918, 0.001162887, -0.000127543, -248.050521851, 53.121170044, 44.538627625, 39.781784058, 195.558013916, 300.525512695, -20.000000000)"
+REFERENCE_NONWATER_CENTER = np.array([47.8249079, 46.02340024, 42.92293197], dtype=float)
 
 FIG2B_BASE_STYLE = """
 bg_color white
@@ -205,6 +247,21 @@ def run(cmd: list[str], *, cwd: Path = FIGURE_DIR) -> None:
     subprocess.run(cmd, cwd=cwd, check=True)
 
 
+def run_inkscape(cmd: list[str], *, cwd: Path = FIGURE_DIR) -> None:
+    """Run Inkscape with writable runtime/cache dirs for headless Snap installs."""
+    env = os.environ.copy()
+    runtime = Path(env.get("VARMDYN_INKSCAPE_RUNTIME_DIR", "/tmp/varmdyn-inkscape-runtime"))
+    config = Path(env.get("VARMDYN_INKSCAPE_CONFIG_DIR", "/tmp/varmdyn-inkscape-config"))
+    cache = Path(env.get("VARMDYN_INKSCAPE_CACHE_DIR", "/tmp/varmdyn-inkscape-cache"))
+    for path in (runtime, config, cache):
+        path.mkdir(parents=True, exist_ok=True)
+    env["XDG_RUNTIME_DIR"] = str(runtime)
+    env["XDG_CONFIG_HOME"] = str(config)
+    env["XDG_CACHE_HOME"] = str(cache)
+    print("[run]", " ".join(cmd))
+    subprocess.run(cmd, cwd=cwd, check=True, env=env)
+
+
 def find_pymol() -> str:
     candidates = [
         os.environ.get("PYMOL_BIN"),
@@ -218,11 +275,23 @@ def find_pymol() -> str:
 
 
 def find_inkscape() -> str:
-    candidates = [shutil.which("inkscape"), "/snap/bin/inkscape", "/usr/bin/inkscape"]
+    candidates = ["/usr/bin/inkscape", shutil.which("inkscape"), "/snap/bin/inkscape"]
     for candidate in candidates:
         if candidate and Path(candidate).exists():
             return str(candidate)
     raise SystemExit("Inkscape not found; required to export A-D SVG to PNG/PDF")
+
+
+def export_with_cairosvg() -> bool:
+    try:
+        import cairosvg  # type: ignore
+    except Exception:
+        return False
+    cairosvg.svg2png(url=str(SVG_OUT), write_to=str(PNG_OUT), dpi=300)
+    cairosvg.svg2pdf(url=str(SVG_OUT), write_to=str(PDF_OUT))
+    print(f"PNG written: {PNG_OUT}")
+    print(f"PDF written: {PDF_OUT}")
+    return True
 
 
 def ligand_block(obj: str, state: str) -> str:
@@ -250,6 +319,32 @@ def variant_style_block(obj: str) -> str:
     return "\n".join(lines)
 
 
+def nonwater_center(pdb: Path) -> np.ndarray:
+    coords: list[list[float]] = []
+    for line in pdb.read_text(errors="ignore").splitlines():
+        if not line.startswith(("ATOM", "HETATM")):
+            continue
+        resn = line[17:20].strip()
+        if resn in {"WAT", "HOH"}:
+            continue
+        try:
+            coords.append([float(line[30:38]), float(line[38:46]), float(line[46:54])])
+        except ValueError:
+            continue
+    if not coords:
+        raise SystemExit(f"no non-water coordinates found in {pdb}")
+    return np.array(coords, dtype=float).mean(axis=0)
+
+
+def structure_frame_block(pdb: Path, obj: str) -> str:
+    """Translate current structures into the reference frame expected by VIEW_FIG2B."""
+    delta = REFERENCE_NONWATER_CENTER - nonwater_center(pdb)
+    if np.linalg.norm(delta) < 0.01:
+        return ""
+    dx, dy, dz = delta
+    return f"translate [{dx:.6f}, {dy:.6f}, {dz:.6f}], {obj}"
+
+
 def base_scene_pml(obj: str, pdb: Path, *, state: str, region: str, raw_png: Path) -> str:
     if region == "nlobe":
         region_color = "magenta"
@@ -265,6 +360,7 @@ viewport 2000, 2000
 
 load {pdb}, {obj}
 remove resn WAT or resn HOH
+{structure_frame_block(pdb, obj)}
 
 hide everything, all
 show cartoon, {obj} and polymer.protein
@@ -422,15 +518,17 @@ def assemble_svg() -> None:
 def export_svg() -> None:
     if not SVG_OUT.exists():
         raise SystemExit(f"missing SVG: {SVG_OUT}")
+    if export_with_cairosvg():
+        return
     inkscape = find_inkscape()
-    run([
+    run_inkscape([
         inkscape,
         str(SVG_OUT),
         "--export-type=png",
         f"--export-filename={PNG_OUT}",
         "--export-dpi=300",
     ])
-    run([
+    run_inkscape([
         inkscape,
         str(SVG_OUT),
         "--export-type=pdf",

@@ -38,27 +38,48 @@ WORKFLOW_DIR = Path(__file__).resolve().parents[1]
 ROOT = Path(os.environ.get("VARMDYN_ROOT", WORKFLOW_DIR.parents[2]))
 OUT_DIR = Path(os.environ.get(
     "DYNAMICS_NLOBE_Y171_OUT_DIR",
-    Path(os.environ.get("VARMDYN_RUN_ROOT", ROOT / "runs")) / "dynamics" / "panels_efgh",
+    Path(os.environ.get("VARMDYN_DATA_ROOT", ROOT / "data")) / "mdan" / "dynamics" / "panels_efgh",
 ))
 
-legacy_env = os.environ.get("VARMDYN_MD_LEGACY_ROOT") or os.environ.get("LEGACY_BASE")
-if not legacy_env:
-    raise SystemExit("Set VARMDYN_MD_LEGACY_ROOT to the MD input root before building RMSF panels.")
-LEGACY_BASE = Path(legacy_env)
+source_env = os.environ.get("VARMDYN_MD_SOURCE_ROOT")
+SOURCE_BASE = Path(source_env) if source_env else None
 
-VARIANTS = ["01_WT", "02_L119R", "03_D193H", "04_G202E", "05_Q219K", "06_C291Y"]
+DEFAULT_VARIANTS = ["WT", "L119R", "D193H", "G202E", "Q219K", "C291Y"]
+COMPAT_VARIANTS = {
+    "WT": "01_WT",
+    "L119R": "02_L119R",
+    "D193H": "03_D193H",
+    "G202E": "04_G202E",
+    "Q219K": "05_Q219K",
+    "C291Y": "06_C291Y",
+}
 COLORS = {
-    "01_WT": "#1f77b4",
-    "02_L119R": "#ff7f0e",
-    "03_D193H": "#2ca02c",
-    "04_G202E": "#d62728",
-    "05_Q219K": "#9467bd",
-    "06_C291Y": "#8c564b",
+    "WT": "#1f77b4",
+    "L119R": "#ff7f0e",
+    "D193H": "#2ca02c",
+    "G202E": "#d62728",
+    "Q219K": "#9467bd",
+    "C291Y": "#8c564b",
 }
 
 
+def selected_variants() -> list[str]:
+    raw = os.environ.get("VARMDYN_VARIANTS", "").strip()
+    if raw:
+        return [item.strip() for item in raw.split(",") if item.strip()]
+    return DEFAULT_VARIANTS
+
+
+VARIANTS = selected_variants()
+
+
 def short_variant(variant: str) -> str:
-    return variant.split("_", 1)[1]
+    return variant.split("_", 1)[1] if "_" in variant else variant
+
+
+def variant_aliases(variant: str) -> list[str]:
+    compat = COMPAT_VARIANTS.get(variant)
+    return [variant, compat] if compat else [variant]
 
 
 def read_agr(path: Path) -> tuple[np.ndarray, np.ndarray]:
@@ -97,33 +118,49 @@ def mean_series(paths: list[Path], start: int, end: int) -> tuple[np.ndarray, np
 
 
 def find_tree_replica_paths(root: Path, variant: str) -> list[Path]:
-    return sorted((root / variant / "04.ptraj" / "com").glob("cr*/rmsf/rmsf.byresidue.agr"))
+    for alias in variant_aliases(variant):
+        ptraj = root / alias / "04.ptraj" / "com"
+        paths = sorted(ptraj.glob("analysis2/cr*/rmsf_byres.dat"))
+        if paths:
+            return paths
+        paths = sorted(ptraj.glob("analysis2/cr*/rmsf.byresidue.agr"))
+        if paths:
+            return paths
+        paths = sorted(ptraj.glob("cr*/rmsf/rmsf.byresidue.agr"))
+        if paths:
+            return paths
+    return []
 
 
 def find_aggregate_path(root: Path, variant: str) -> list[Path]:
-    aggregate = root / variant / "04.ptraj" / "com" / "rmsf" / "rmsf.byresidue.agr"
-    return [aggregate] if aggregate.exists() else []
+    for alias in variant_aliases(variant):
+        aggregate = root / alias / "04.ptraj" / "com" / "rmsf" / "rmsf.byresidue.agr"
+        if aggregate.exists():
+            return [aggregate]
+    return []
 
 
 def find_flat_paths(root: Path, variant: str) -> list[Path]:
-    return sorted(root.glob(f"{variant}_cr*_rmsf.byresidue.agr"))
+    for alias in variant_aliases(variant):
+        paths = sorted(root.glob(f"{alias}_cr*_rmsf.byresidue.agr"))
+        if paths:
+            return paths
+    return []
 
 
 def candidate_paths_for_root(root: Path, state: str, variant: str) -> list[Path]:
-    if state == "holo":
-        paths = find_flat_paths(root / "analysis" / "rmsf", variant)
-        if paths:
-            return paths
-        paths = find_flat_paths(root, variant)
-        if paths:
-            return paths
+    paths = find_flat_paths(root / "analysis" / "rmsf", variant)
+    if paths:
+        return paths
+    paths = find_flat_paths(root, variant)
+    if paths:
+        return paths
 
     paths = find_tree_replica_paths(root, variant)
     if paths:
         return paths
 
-    # Aggregate files are a last-resort compatibility path. Manuscript RMSF
-    # panels should normally use replica-wise inputs and mean across replicas.
+    # Aggregate files are a last-resort compatibility path.
     return find_aggregate_path(root, variant)
 
 
@@ -137,16 +174,22 @@ def input_paths(state: str, variant: str) -> list[Path]:
             return paths
         raise FileNotFoundError(f"{env_key}={root} has no RMSF inputs for {variant}")
 
+    data_dir = Path(os.environ.get("VARMDYN_DATA_ROOT", ROOT / "data"))
     if state == "apo":
         roots = [
-            LEGACY_BASE / "03_mdsim",
-            Path(os.environ.get("VARMDYN_DATA_ROOT", ROOT / "data")) / "rmsf/apo_root/03_mdsim",
+            data_dir / "mdan/dynamics/inputs/replica_agr/apo",
         ]
+        if SOURCE_BASE:
+            roots.insert(0, SOURCE_BASE / "apo")
+            roots.insert(1, SOURCE_BASE / state)
     else:
         roots = [
-            LEGACY_BASE / "05_cdkl5atpmg",
-            Path(os.environ.get("VARMDYN_DATA_ROOT", ROOT / "data")) / "rmsf/holo_raw",
+            data_dir / "mdan/dynamics/inputs/replica_agr/holo",
         ]
+        if SOURCE_BASE:
+            roots.insert(0, SOURCE_BASE / "holo")
+            roots.insert(1, SOURCE_BASE / state)
+            roots.append(data_dir / "rmsf/holo_raw")
 
     for root in roots:
         if not root.exists():
@@ -204,7 +247,7 @@ def write_source_bundle(
         window = "nlobe" if start == 13 else "y171"
         by_state_window[(state, window)] = data
         out = mean_root / f"{window}_{state}_mean_rmsf_res{start}-{end}.tsv"
-        residues = np.asarray(data["01_WT"][0], dtype=int)
+        residues = np.asarray(data["WT"][0], dtype=int)
         with out.open("w", encoding="utf-8") as handle:
             handle.write("residue\t" + "\t".join(short_variant(v) for v in VARIANTS) + "\n")
             for idx, residue in enumerate(residues):
@@ -254,7 +297,7 @@ def write_source_bundle(
 def draw_panel(ax, data: dict[str, tuple[np.ndarray, np.ndarray]], title: str, show_y: bool) -> None:
     for variant in VARIANTS:
         xs, ys = data[variant]
-        lw = 2.4 if variant == "01_WT" else 1.25
+        lw = 2.4 if variant == "WT" else 1.25
         ax.plot(xs, ys, color=COLORS[variant], lw=lw, label=short_variant(variant))
     ax.set_title(title, pad=3)
     ax.grid(True, lw=0.25, alpha=0.35)
@@ -294,8 +337,8 @@ def main() -> None:
                 fontweight="bold", va="top", ha="left")
 
     handles = [
-        Line2D([0], [0], color=COLORS[v], lw=(2.4 if v == "01_WT" else 1.25),
-               label=f"{short_variant(v)}{' (WT)' if v == '01_WT' else ''}")
+        Line2D([0], [0], color=COLORS[v], lw=(2.4 if v == "WT" else 1.25),
+               label=f"{v}{' (WT)' if v == 'WT' else ''}")
         for v in VARIANTS
     ]
     fig.legend(handles=handles, loc="upper center", ncol=6, frameon=False,

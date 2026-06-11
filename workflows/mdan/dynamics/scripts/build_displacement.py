@@ -26,20 +26,28 @@ matplotlib.rcParams.update({
 })
 
 RMSF_COLORS = {
-    "01_WT":   "#1f77b4",
-    "02_L119R":"#ff7f0e",
-    "03_D193H":"#2ca02c",
-    "04_G202E":"#d62728",
-    "05_Q219K":"#9467bd",
-    "06_C291Y":"#8c564b",
+    "WT": "#1f77b4",
+    "L119R": "#ff7f0e",
+    "D193H": "#2ca02c",
+    "G202E": "#d62728",
+    "Q219K": "#9467bd",
+    "C291Y": "#8c564b",
 }
-VARIANT_ORDER = ["01_WT","02_L119R","03_D193H","04_G202E","05_Q219K","06_C291Y"]
+VARIANT_ORDER = ["WT", "L119R", "D193H", "G202E", "Q219K", "C291Y"]
 MEDIAN_COLOR  = "#AA3333"
+
+
+def selected_variants():
+    raw = os.environ.get("VARMDYN_VARIANTS", "").strip()
+    if raw:
+        return [item.strip() for item in raw.split(",") if item.strip()]
+    return VARIANT_ORDER
+
 
 def short(v):
     return v.split("_", 1)[1] if "_" in v else v
 
-def load_dir(d, pattern="*.kept.tsv"):
+def load_dir(d, pattern="*.kept.tsv", expected_variants=None):
     d = Path(d)
     if not d.is_dir():
         raise FileNotFoundError(f"missing kept-TSV input directory: {d}")
@@ -47,11 +55,12 @@ def load_dir(d, pattern="*.kept.tsv"):
     for f in sorted(glob.glob(os.path.join(str(d), pattern))):
         name = os.path.basename(f).split(".")[0]
         if "_cr" not in name:
-            data[name] = pd.read_csv(f, sep="\t")
-    missing = [v for v in VARIANT_ORDER if v not in data]
+            data[short(name)] = pd.read_csv(f, sep="\t")
+    expected = expected_variants or VARIANT_ORDER
+    missing = [v for v in expected if v not in data]
     if missing:
         raise ValueError(f"{d} is missing kept TSVs for: {', '.join(missing)}")
-    return data
+    return {variant: data[variant] for variant in expected if variant in data}
 
 def per_res_stats(df):
     if df is None or df.empty:
@@ -138,37 +147,46 @@ def draw_diff_subplot(ax, data_apo, data_holo, variant, all_res, wt_s_apo, wt_s_
     else:
         ax.tick_params(labelleft=False, left=False)
 
-def draw_1x6_grid(outer_cell, fig, data_apo, data_holo, panel_letter, mode, hide_x, show_title=True):
+def draw_1x_grid(outer_cell, fig, data_apo, data_holo, panel_letter, mode, hide_x, variants, show_title=True):
     all_res = common_res(data_apo, data_holo)
-    inner = gridspec.GridSpecFromSubplotSpec(1, 6, subplot_spec=outer_cell, wspace=0.10)
+    inner = gridspec.GridSpecFromSubplotSpec(1, max(1, len(variants)), subplot_spec=outer_cell, wspace=0.10)
 
     axes = []
     if mode == "diff":
-        wt_key = "01_WT"
+        wt_key = "WT"
         wt_s_apo = per_res_stats(data_apo.get(wt_key)).set_index("Residue") if wt_key in data_apo else None
         wt_s_holo = per_res_stats(data_holo.get(wt_key)).set_index("Residue") if wt_key in data_holo else None
 
-    for idx, variant in enumerate(VARIANT_ORDER):
+    for idx, variant in enumerate(variants):
         ax = fig.add_subplot(inner[0, idx])
         axes.append(ax)
 
         if mode == "trend":
             draw_trend_subplot(ax, data_apo.get(variant), data_holo.get(variant), variant, all_res, (idx==0), hide_x, show_title)
         elif mode == "diff":
-            if variant == "01_WT":
+            if variant == "WT":
                 ax.axis("off")
             else:
                 draw_diff_subplot(ax, data_apo, data_holo, variant, all_res, wt_s_apo, wt_s_holo, (idx==1), hide_x)
 
-    ymin = min(ax.get_ylim()[0] for ax in axes if ax.axison)
-    ymax = max(ax.get_ylim()[1] for ax in axes if ax.axison)
+    visible_axes = [ax for ax in axes if ax.axison]
+    if not visible_axes:
+        ax0 = fig.add_subplot(outer_cell)
+        ax0.axis("off")
+        ax0.text(-0.06, 1.08, panel_letter, transform=ax0.transAxes, fontsize=7.8, fontweight="bold", va="top")
+        ax0.text(0.02, 0.5, "WT-only smoke: mutant-WT differences require at least one variant.",
+                 transform=ax0.transAxes, ha="left", va="center", fontsize=7.0, color="#555555")
+        return axes
+
+    ymin = min(ax.get_ylim()[0] for ax in visible_axes)
+    ymax = max(ax.get_ylim()[1] for ax in visible_axes)
     for ax in axes:
         if ax.axison: ax.set_ylim(ymin, ymax)
 
     if mode == "trend" and axes[0].axison:
         axes[0].set_ylabel("Median (Å)", fontsize=8.2)
-    elif mode == "diff" and len(axes) > 1 and axes[1].axison:
-        axes[1].set_ylabel("Δ Median (Å)", fontsize=8.2)
+    elif mode == "diff":
+        visible_axes[0].set_ylabel("Δ Median (Å)", fontsize=8.2)
 
     ax0 = fig.add_subplot(outer_cell)
     ax0.axis("off")
@@ -189,7 +207,9 @@ def main():
     WORKFLOW_DIR = Path(__file__).resolve().parents[1]
     ROOT = Path(os.environ.get("VARMDYN_ROOT", WORKFLOW_DIR.parents[2]))
     data_root = Path(os.environ.get("VARMDYN_DATA_ROOT", ROOT / "data"))
-    data_default = Path(os.environ.get("DYNAMICS_NLOBE_Y171_INPUT_ROOT", data_root / "dynamics")) / "kept_tsvs"
+    data_default = Path(
+        os.environ.get("DYNAMICS_NLOBE_Y171_INPUT_ROOT", data_root / "mdan" / "dynamics" / "inputs")
+    ) / "kept_tsvs"
     input_dirs = {
         "nlobe_apo": Path(os.environ.get(
             "DYNAMICS_NLOBE_Y171_GRID_NLOBE_APO",
@@ -211,10 +231,12 @@ def main():
     for label, path in input_dirs.items():
         print(f"[input] {label}: {path}")
 
-    d_nl_apo = load_dir(input_dirs["nlobe_apo"], "*res13-56*.kept.tsv")
-    d_nl_holo = load_dir(input_dirs["nlobe_holo"], "*res13-56*.kept.tsv")
-    d_y171_apo = load_dir(input_dirs["y171_apo"], "*151-191*.kept.tsv")
-    d_y171_holo = load_dir(input_dirs["y171_holo"], "*151-191*.kept.tsv")
+    variants = selected_variants()
+    print(f"[input] variants: {','.join(variants)}")
+    d_nl_apo = load_dir(input_dirs["nlobe_apo"], "*res13-56*.kept.tsv", variants)
+    d_nl_holo = load_dir(input_dirs["nlobe_holo"], "*res13-56*.kept.tsv", variants)
+    d_y171_apo = load_dir(input_dirs["y171_apo"], "*151-191*.kept.tsv", variants)
+    d_y171_holo = load_dir(input_dirs["y171_holo"], "*151-191*.kept.tsv", variants)
 
     fig = plt.figure(figsize=(7.2, 6.10), dpi=300)
 
@@ -222,10 +244,10 @@ def main():
                               hspace=0.68, left=0.08, right=0.98,
                               top=0.925, bottom=0.09)
 
-    axes_I = draw_1x6_grid(outer[0, 0], fig, d_nl_apo, d_nl_holo, "I", "trend", hide_x=False, show_title=True)
-    axes_J = draw_1x6_grid(outer[1, 0], fig, d_y171_apo, d_y171_holo, "J", "trend", hide_x=False, show_title=False)
-    axes_K = draw_1x6_grid(outer[2, 0], fig, d_nl_apo, d_nl_holo, "K", "diff", hide_x=False, show_title=False)
-    axes_L = draw_1x6_grid(outer[3, 0], fig, d_y171_apo, d_y171_holo, "L", "diff", hide_x=False, show_title=False)
+    axes_I = draw_1x_grid(outer[0, 0], fig, d_nl_apo, d_nl_holo, "I", "trend", hide_x=False, variants=variants, show_title=True)
+    axes_J = draw_1x_grid(outer[1, 0], fig, d_y171_apo, d_y171_holo, "J", "trend", hide_x=False, variants=variants, show_title=False)
+    axes_K = draw_1x_grid(outer[2, 0], fig, d_nl_apo, d_nl_holo, "K", "diff", hide_x=False, variants=variants, show_title=False)
+    axes_L = draw_1x_grid(outer[3, 0], fig, d_y171_apo, d_y171_holo, "L", "diff", hide_x=False, variants=variants, show_title=False)
 
     for row_axes in [axes_I, axes_J, axes_K, axes_L]:
         add_row_residue_label(fig, row_axes)
@@ -254,7 +276,7 @@ def main():
 
     out_dir = Path(os.environ.get(
         "DYNAMICS_NLOBE_Y171_OUT_DIR",
-        Path(os.environ.get("VARMDYN_RUN_ROOT", ROOT / "runs")) / "dynamics" / "panels_ijkl",
+        Path(os.environ.get("VARMDYN_DATA_ROOT", ROOT / "data")) / "mdan" / "dynamics" / "panels_ijkl",
     ))
     out_dir.mkdir(parents=True, exist_ok=True)
 

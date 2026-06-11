@@ -23,7 +23,7 @@ ROOT    = Path(os.environ.get("VARMDYN_ROOT", WORKFLOW_DIR.parents[2]))
 FIGS    = ROOT / "workflows" / "mdan"
 OUT_DIR = Path(os.environ.get(
     "DYNAMICS_OUT_DIR",
-    Path(os.environ.get("VARMDYN_RUN_ROOT", ROOT / "runs")) / "dynamics",
+    Path(os.environ.get("VARMDYN_DATA_ROOT", ROOT / "data")) / "mdan" / "dynamics",
 ))
 # ---------------------------------------------------------------------------
 # Panel paths
