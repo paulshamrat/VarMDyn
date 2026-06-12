@@ -234,10 +234,11 @@ Run on: local workstation from the repository root. Environment:
 ```bash
 # Build the publication-style Apo/Holo RMSF overview from generated RMSF panels.
 bash scripts/run_analysis.sh function rmsf
-
-# Inspect lower-level mechanism options only when composing custom panels.
-bash scripts/run_analysis.sh function
 ```
+
+Lower-level mechanism composition scripts live under
+`workflows/mdan/function/` and are intended for maintainer debugging rather than
+the standard user workflow.
 
 Default outputs are under:
 
