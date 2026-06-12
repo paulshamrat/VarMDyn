@@ -105,11 +105,13 @@ def main() -> int:
     env_file = Path(args.env_file).expanduser() if args.env_file else data_root / "varmdyn_data.env"
     write_env(env_file.resolve(), data_root, args.stage_tag, force=args.force)
 
-    print("\nPlace data here:")
-    print(f"  apo render PDB   : {data_root / 'mdan/network/structures/apo/WT.apo.pdb'}")
-    print(f"  holo render PDB  : {data_root / 'mdan/network/structures/holo/WT.holo.pdb'}")
-    print(f"  frequency table  : {data_root / 'mdan/network/tables/network_residue_transition_frequency.csv'}")
-    print(f"  overlap table    : {data_root / 'mdan/network/tables/network_overlap_apo_vs_holo.csv'}")
+    print("\nOptional user-supplied network inputs:")
+    print(f"  apo render PDB          : {data_root / 'mdan/network/structures/apo/WT.apo.pdb'}")
+    print(f"  holo render PDB         : {data_root / 'mdan/network/structures/holo/WT.holo.pdb'}")
+    print(f"  source frequency table  : {data_root / 'mdan/network/tables/network_residue_transition_frequency.csv'}")
+    print(f"  source overlap table    : {data_root / 'mdan/network/tables/network_overlap_apo_vs_holo.csv'}")
+    print("\nGenerated network tables from a VarMDyn run are written under:")
+    print(f"  {data_root / 'mdan/network/tables/from_run'}")
     print("\nThen run:")
     print(f"  source {env_file.resolve()}")
     print("  python scripts/checks/check_data_inputs.py --module network --profile all")
