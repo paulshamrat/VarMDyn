@@ -584,7 +584,7 @@ def plot_transition_frequency_state(state: str, out_dir: Path, top_n: int) -> li
 
 def build_figures(args: argparse.Namespace) -> None:
     states = ["apo", "holo"] if args.state == "all" else [args.state]
-    out_dir = Path(args.outdir).expanduser() if args.outdir else DATA_ROOT / "figures"
+    out_dir = (Path(args.outdir).expanduser() if args.outdir else DATA_ROOT / "figures").resolve()
     written: list[Path] = []
     for state in states:
         written += plot_overlap_state(state, out_dir)

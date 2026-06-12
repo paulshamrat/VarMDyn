@@ -874,20 +874,51 @@ OK holo overlap: 20 fields compared, 20 differences
 with supplied summary tables. They do not make the command fail unless required
 files, columns, variants, or WT outputs are missing.
 
-### 1.6.8. Build Network Figures
+### 1.6.8. Build Network Tables
+
+After both apo and holo `compare/` tables exist locally, export generic network
+tables from the VarMDyn run. Run this before the full network-figure command:
+the residue-remodel composite reads the run-derived residue-frequency table.
+
+Run on: local workstation. Environment: `varmdyn_env`.
+
+```bash
+bash scripts/run_analysis.sh network tables
+```
+
+Expected outputs:
+
+```text
+data/mdan/network/tables/from_run/network_overlap_apo_vs_holo.csv
+data/mdan/network/tables/from_run/network_residue_transition_frequency.csv
+```
+
+These tables follow the source table logic without source-project-specific
+supplement labels: the overlap table combines top-25 WT-overlap
+counts/fractions from apo and holo states by variant, and the residue-frequency
+table lists recurrent WT-lost and gained bottleneck residues. Exact residue
+identities may differ from the protected source run because the VarMDyn
+trajectories/starting structures can differ, but the calculation route and
+table semantics are the same.
+
+### 1.6.9. Build Network Figures
 
 After `compare/<state>/`, `dynetan/<state>/`, and `prepared/<state>/` exist
-locally, build network figures from the VarMDyn run. The command writes both
-table-based QC summaries and the publication-style pathway comparison panels
-that mirror the source Figure 5 logic: top-25 bottleneck residues are split
-into conserved, WT-lost, and variant-gained sets for each variant, rendered in
-PyMOL, and composed into apo/holo panels.
+locally and `tables/from_run/` has been created, build network figures from the
+VarMDyn run. This is separate from the RMSD/RMSF figure commands above; running
+the RMS section does not create `data/mdan/network/figures/`.
+
+The command writes both table-based QC summaries and the publication-style
+pathway comparison panels that mirror the source Figure 5 logic: top-25
+bottleneck residues are split into conserved, WT-lost, and variant-gained sets
+for each variant, rendered in PyMOL, and composed into apo/holo panels.
 
 Run on: local workstation. Environment: `varmdyn_env`.
 
 ```bash
 python scripts/checks/check_data_inputs.py --module network --profile apo-outputs
 python scripts/checks/check_data_inputs.py --module network --profile holo-outputs
+bash scripts/run_analysis.sh network tables
 bash scripts/run_analysis.sh network figures --state all --outdir data/mdan/network/figures
 ```
 
@@ -940,29 +971,3 @@ These are method-parity figures, not exact pixel/data copies from the protected
 source project. VarMDyn renders the same comparison logic from the current
 VarMDyn trajectories, so residue sets can differ from the protected source run if
 the trajectory ensemble or structure preparation differs.
-
-### 1.6.9. Build Network Tables
-
-After both apo and holo `compare/` tables exist locally, export generic network
-tables from the VarMDyn run:
-
-Run on: local workstation. Environment: `varmdyn_env`.
-
-```bash
-bash scripts/run_analysis.sh network tables
-```
-
-Expected outputs:
-
-```text
-data/mdan/network/tables/from_run/network_overlap_apo_vs_holo.csv
-data/mdan/network/tables/from_run/network_residue_transition_frequency.csv
-```
-
-These tables follow the source table logic without source-project-specific
-supplement labels: the overlap table combines top-25 WT-overlap
-counts/fractions from apo and holo states by variant, and the residue-frequency
-table lists recurrent WT-lost and gained bottleneck residues. Exact residue
-identities may differ from the protected source run because the VarMDyn
-trajectories/starting structures can differ, but the calculation route and
-table semantics are the same.

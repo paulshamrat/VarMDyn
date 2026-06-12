@@ -54,12 +54,18 @@ Use the repository wrapper for normal local-to-HPC work:
 ```bash
 bash scripts/run_analysis.sh network plan --state apo --variants all
 bash scripts/run_analysis.sh network submit --state apo --variants all --run
+bash scripts/run_analysis.sh network plan --state holo --variants all
+bash scripts/run_analysis.sh network submit --state holo --variants all --run
 bash scripts/run_analysis.sh network status
 bash scripts/run_analysis.sh network check-frames --state apo --variants all
+bash scripts/run_analysis.sh network check-frames --state holo --variants all
 bash scripts/run_analysis.sh network fetch --from scratch --run
-bash scripts/run_analysis.sh network figures --state all
 bash scripts/run_analysis.sh network tables
+bash scripts/run_analysis.sh network figures --state all
 ```
+
+Run `tables` before `figures`; the residue-remodel figure reads the
+run-derived residue-frequency table under `tables/from_run/`.
 
 `check-frames` verifies that prepared DCDs have enough frames for the
 750-sampled-frame DyNetAn method. A 250-frame prepared DCD is a smoke/input
