@@ -79,6 +79,11 @@ bash scripts/run_analysis.sh network figures --state all --outdir data/mdan/netw
 python workflows/mdan/network/validate_outputs.py --help
 ```
 
+`network tables` and `network figures` are local post-fetch commands. Through
+the wrapper, they read `data/mdan/network/` by default even when the shell still
+has an HPC `VARMDYN_MDAN_OUTPUT_ROOT` loaded. Set `VARMDYN_NETWORK_DATA_ROOT`
+only when intentionally reading a different local network tree.
+
 Main network figure outputs:
 
 ```text

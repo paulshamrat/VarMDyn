@@ -299,10 +299,12 @@ EOF
         "${cmd[@]}"
         ;;
       figures)
-        "$PYTHON_BIN" "$ROOT/workflows/mdan/network/network.py" figures "${forwarded[@]}"
+        local_network_root="${VARMDYN_NETWORK_DATA_ROOT:-$DATA_ROOT/mdan/network}"
+        VARMDYN_NETWORK_DATA_ROOT="$local_network_root" "$PYTHON_BIN" "$ROOT/workflows/mdan/network/network.py" figures "${forwarded[@]}"
         ;;
       tables)
-        "$PYTHON_BIN" "$ROOT/workflows/mdan/network/network.py" tables "${forwarded[@]}"
+        local_network_root="${VARMDYN_NETWORK_DATA_ROOT:-$DATA_ROOT/mdan/network}"
+        VARMDYN_NETWORK_DATA_ROOT="$local_network_root" "$PYTHON_BIN" "$ROOT/workflows/mdan/network/network.py" tables "${forwarded[@]}"
         ;;
       check-frames)
         conda_env="${VARMDYN_CONDA_ENV:-varmdyn_dynetan}"

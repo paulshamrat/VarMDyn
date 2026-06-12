@@ -647,6 +647,8 @@ then the figures:
 
 Run on: local workstation from the repository root. Environment:
 `varmdyn_env`. Paths: fetched network outputs under `data/mdan/network/`.
+These post-fetch commands read the local ignored data tree through the wrapper,
+even if the HPC analysis-root environment is still loaded in the shell.
 
 ```bash
 bash scripts/run_analysis.sh network fetch --from scratch --run
@@ -737,11 +739,16 @@ change the residue identities and counts; that is expected biology/physics, not
 a workflow failure by itself. A workflow failure is a missing required output,
 schema mismatch, wrong variant set, or a changed method setting.
 
-### 1.6.3. Validate Existing Tables
+### 1.6.3. Optional Source-Table QA
 
-After placing the frequency and overlap tables under `data/mdan/network/tables/`,
-load `data/varmdyn_data.env`. The validator then uses the standard `data/`
-paths automatically:
+This section is optional maintainer QA for checking supplied source tables. It
+is not part of the normal generated-output route. For a standard VarMDyn network
+run, skip to planning/submission, then build `tables/from_run/` with
+`bash scripts/run_analysis.sh network tables`.
+
+Run this only after placing external frequency and overlap tables under
+`data/mdan/network/tables/` and loading `data/varmdyn_data.env`. The validator
+then uses the standard `data/` paths automatically:
 
 Run on: local workstation. Environment: `varmdyn_env`.
 
@@ -902,6 +909,9 @@ files, columns, variants, or WT outputs are missing.
 After both apo and holo `compare/` tables exist locally, export generic network
 tables from the VarMDyn run. Run this before the full network-figure command:
 the residue-remodel composite reads the run-derived residue-frequency table.
+This wrapper command reads `data/mdan/network/` locally by default, so it is
+safe to run after fetching even when `VARMDYN_MDAN_OUTPUT_ROOT` still points to
+an HPC scratch or project path.
 
 Run on: local workstation. Environment: `varmdyn_env`.
 
@@ -930,6 +940,8 @@ After `compare/<state>/`, `dynetan/<state>/`, and `prepared/<state>/` exist
 locally and `tables/from_run/` has been created, build network figures from the
 VarMDyn run. This is separate from the RMSD/RMSF figure commands above; running
 the RMS section does not create `data/mdan/network/figures/`.
+Like `network tables`, this wrapper command reads the local fetched
+`data/mdan/network/` tree unless `VARMDYN_NETWORK_DATA_ROOT` is explicitly set.
 
 The command writes both table-based QC summaries and the publication-style
 pathway comparison panels that mirror the source Figure 5 logic: top-25

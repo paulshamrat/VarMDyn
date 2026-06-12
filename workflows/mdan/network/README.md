@@ -66,6 +66,11 @@ bash scripts/run_analysis.sh network figures --state all
 
 Run `tables` before `figures`; the residue-remodel figure reads the
 run-derived residue-frequency table under `tables/from_run/`.
+Both commands are local post-fetch commands through the wrapper. They read
+`data/mdan/network/` by default even when the shell still has
+`VARMDYN_MDAN_OUTPUT_ROOT` pointing at an HPC scratch or project path. Set
+`VARMDYN_NETWORK_DATA_ROOT` only when intentionally using another local network
+tree.
 
 `check-frames` verifies that prepared DCDs have enough frames for the
 750-sampled-frame DyNetAn method. A 250-frame prepared DCD is a smoke/input

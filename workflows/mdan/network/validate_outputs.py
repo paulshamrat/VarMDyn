@@ -117,6 +117,8 @@ def default_holo_comparisons(stage_tag: str) -> Path:
 
 
 def read_csv(path: Path) -> tuple[list[str], list[dict[str, str]]]:
+    if not path.is_file():
+        raise SystemExit(f"missing required CSV: {path}")
     with path.open(newline="", encoding="utf-8-sig") as handle:
         reader = csv.DictReader(handle)
         rows = list(reader)
