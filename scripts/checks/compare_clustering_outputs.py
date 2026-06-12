@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate that a clustering run produced manuscript-facing output gates."""
+"""Validate that a clustering run produced publication-style output gates."""
 
 from __future__ import annotations
 

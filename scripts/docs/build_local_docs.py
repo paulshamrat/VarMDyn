@@ -97,6 +97,7 @@ def replacement_map() -> dict[str, str]:
     hpc_scratch_data = env_path("VARMDYN_SCRATCH_DATA_ROOT")
     hpc_md_generation = env_path("VARMDYN_MD_GENERATION_ROOT")
     hpc_python = env_path("VARMDYN_HPC_PYTHON")
+    hpc_legacy_root = env_path("VARMDYN_MD_LEGACY_ROOT")
     atpmg_template = env_path("VARMDYN_MD_ATPMG_TEMPLATE_ROOT")
     if not atpmg_template and hpc_md_project:
         atpmg_template = str(Path(hpc_md_project) / "templates/atpmg")
@@ -129,6 +130,8 @@ def replacement_map() -> dict[str, str]:
         "/scratch/$USER/VarMDyn/data": hpc_scratch_data,
         "/scratch/$USER/VarMDyn": hpc_scratch,
         "/scratch/user/VarMDyn": hpc_scratch,
+        "/scratch/username/VarMDyn": hpc_scratch,
+        "/scratch/username/250820_simulation/250922_sim": hpc_legacy_root,
         "/path/to/conda/envs/varmdyn_env/bin/python": hpc_python,
         "/path/to/validated_atpmg_template_root": atpmg_template,
         "/path/to/varmdyn_pymol/bin/python -m pymol": pymol_cmd,

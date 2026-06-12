@@ -5,8 +5,6 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --time=08:00:00
-#SBATCH --output=data/mdan/network/runs/logs/network_full_%j.out
-#SBATCH --error=data/mdan/network/runs/logs/network_full_%j.err
 
 set -euo pipefail
 
@@ -15,7 +13,8 @@ NCORES="${VARMDYN_NCORES:-${SLURM_CPUS_PER_TASK:-8}}"
 export VARMDYN_NCORES="${NCORES}"
 export PYTHONNOUSERSITE=1
 
-mkdir -p data/mdan/network/runs/logs
+NETWORK_RUN_ROOT="${VARMDYN_NETWORK_RUN_ROOT:-data/mdan/network/runs}"
+mkdir -p "${NETWORK_RUN_ROOT}/logs"
 
 if command -v module >/dev/null 2>&1; then
   module purge || true

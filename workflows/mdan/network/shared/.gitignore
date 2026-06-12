@@ -1,7 +1,0 @@
-data/
-runs/
-*.png
-*.jpg
-*.svg
-*.pdf
-.last_network_hpc_job_id

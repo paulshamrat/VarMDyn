@@ -83,7 +83,6 @@ def check_required_inventory() -> list[Check]:
         "workflows/mdan/dynamics/scripts/make_displacement_tsvs.py",
         "workflows/mdan/network/network.py",
         "workflows/mdan/network/validate_outputs.py",
-        "workflows/mdan/network/remodel.sh",
         "workflows/mdan/function/msa/msa.py",
         "workflows/mdan/rms/rmsf/grid.py",
     ]

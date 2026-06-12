@@ -791,7 +791,7 @@ bash scripts/run_md.sh plan --state apo --action prepared-plan
 
 Completed PMEMD chunks are not yet analysis-ready. After the target production
 window finishes, run cpptraj post-processing once per state to create the first
-canonical `04.ptraj` products used by prepared trajectory replay and aggregate
+canonical `04.ptraj` products used by prepared trajectory analysis and aggregate
 RMSF sanity checks.
 
 Post-processing is window-based. Choose the production chunks you want to
@@ -844,7 +844,7 @@ Source protocol notes include multiple trajectory flavors:
 | Trajectory flavor | Purpose | VarMDyn handling |
 |---|---|---|
 | `striped` / sampled-20 trajectories | Older protein-only trajectory processing and plotting. | Superseded by the explicit `striped_v2` prepared route for new VarMDyn analysis. |
-| `striped_v2` prepared trajectories | Final protein-only prepared route used by DyNetAn/network replay and related residue analyses. | Default VarMDyn post-processing output. |
+| `striped_v2` prepared trajectories | Final protein-only prepared route used by DyNetAn/network analysis and related residue analyses. | Default VarMDyn post-processing output. |
 | `keepATPmg` trajectories | Holo ligand-aware inspection where ATP/Mg should remain in the trajectory. | Not the default network/RMSF route; keep raw holo trajectories for this or add an explicit ligand-aware post-processing mode when needed. |
 
 The default VarMDyn command combines the validated concat-plus-downsample idea
@@ -863,10 +863,10 @@ This is not yet every possible analysis-prep mode. Keep the boundary clear:
 | Aggregate RMSF `.agr` from the prepared trajectory | Covered by this post-processing step. |
 | RMSD/RMSF tables from per-replica stripped trajectories | Built by the Analysis page after this step with `bash scripts/run_analysis.sh rms ...`. That validated route calculates each replica first, then averages `cr1`, `cr2`, and `cr3`; it does not use the concatenated trajectory as its source. |
 | Holo ligand-retaining `keepATPmg` trajectory flavor | Not yet a default VarMDyn post-processing mode; keep raw holo outputs until a ligand-aware mode is added. |
-| Per-replica clean/aligned trajectories for RMSD and displacement replay | Not yet covered here; this belongs to the dynamics analysis-prep path. |
+| Per-replica clean/aligned trajectories for RMSD and displacement analysis | Not yet covered here; this belongs to the dynamics analysis-prep path. |
 | RMSD CSV, RMSF CSV, ROI displacement CSV, kept displacement TSVs, and figure products | Downstream analysis outputs, not outputs of this current post-processing command. |
 
-So the safe workflow is: run this post-processing before network-style replay
+So the safe workflow is: run this post-processing before network-style analysis
 and prepared-trajectory sanity checks, then run the dedicated analysis workflows
 for RMSD/RMSF, displacement, Y171, and network figures. If a downstream
 analysis asks for per-replica RMSD/RMSF tables, use the Analysis page RMS route
@@ -985,8 +985,8 @@ bash scripts/run_md.sh postprocess --state apo --action check --start 25 --end 2
 
 If the completed apo simulations are already in project storage or another
 mounted HPC path, pass that root explicitly. Do not pass a local workstation
-path such as `/home/paul/...` here unless that exact path is also mounted on
-the HPC system. The remote Palmetto command must be able to see the path.
+path such as `/home/username/...` here unless that exact path is also mounted on
+the HPC system. The remote command must be able to see the path.
 
 Run on: local workstation from the repository root. Environment:
 `varmdyn_env`; remote cpptraj jobs use AMBER modules through Slurm. Path:

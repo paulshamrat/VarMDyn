@@ -49,7 +49,7 @@ folder.
 | `mdan/rms/rmsd` | `bash scripts/run_analysis.sh rmsd all` | `varmdyn_env` | `data/mdan/rms/rmsd/` |
 | `mdan/rms/rmsf` | `bash scripts/run_analysis.sh rmsf all` | `varmdyn_env` | `data/mdan/rms/rmsf/` |
 | `mdan/dynamics` | `bash scripts/run_dynamics_local.sh` | `varmdyn_env` | `data/mdan/dynamics/` |
-| `mdan/network` | `python workflows/mdan/network/network.py --help` | `varmdyn_env`; `varmdyn_dynetan` for replay | `data/mdan/network/` |
+| `mdan/network` | `python workflows/mdan/network/network.py --help` | `varmdyn_env`; `varmdyn_dynetan` for trajectory analysis | `data/mdan/network/` |
 | `mdan/function/full` | `python workflows/mdan/function/full/schematic.py` | `varmdyn_env` | `data/function/full/` |
 | `mdan/function/kinase` | `python workflows/mdan/function/kinase/annotation.py` | `varmdyn_env`; `varmdyn_pymol` for PyMOL renders | `data/function/kinase/` |
 | `mdan/function/msa` | `python workflows/mdan/function/msa/msa.py` | `varmdyn_env` | `data/function/msa/` |

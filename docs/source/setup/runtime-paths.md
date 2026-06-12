@@ -67,7 +67,7 @@ use the remote HPC username in the scratch path. Local `$USER` can be different
 from the remote account name.
 
 Scratch is for data generation. The HPC project partition is the durable source
-for analysis, replay, network calculations, and figure preparation.
+for analysis, network calculations, and figure preparation.
 
 Private reproducibility checks against older source trees are not part of the
 normal runtime setup. Keep those paths in ignored local notes or ignored local

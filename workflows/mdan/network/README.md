@@ -1,96 +1,108 @@
-# Network Analysis Module
+# Network Analysis
 
-This folder contains the code for DyNetAn network replay, table validation, and
-comparison checks. It should stay code-only.
+This folder contains the generic VarMDyn DyNetAn workflow:
 
-Use the repository-level data layout. This is a folder map, not a shell command
-block:
+- `network.py` prepares sampled trajectory inputs, runs DyNetAn, compares
+  configured variants against WT, and supports Slurm array planning/submission.
+- `validate_outputs.py` checks user-supplied network summary tables and,
+  optionally, compares them with supplied DyNetAn output directories. Reported
+  residue/count differences are review items, not failures, when the input
+  trajectories differ.
+- `create_dynetan_env.sh`, `run_full_network.slurm`, and
+  `run_network_array.slurm` support trajectory-level network runs.
+
+Generated trajectories, DyNetAn outputs, tables, logs, and figures belong under
+ignored `data/` or another runtime output root, not in this code folder.
+Reusable scripts and templates belong in `workflows/`. Runtime directories may
+contain logs and generated scientific outputs, but should not accumulate
+workflow scripts; transient cpptraj inputs are recorded inside the corresponding
+log files instead.
+
+Runtime output map:
 
 ```text
-data/
-  network/tables/
-  network/replay/apo/
-  network/replay/holo/
-  structures/apo/
-  structures/holo_atpmg/
-  mdan/network_validation/
-  mdan/figures/
+data/mdan/network/prepared/    stripped topology and sampled trajectory products
+data/mdan/network/dynetan/     per-variant DyNetAn tables and reports
+data/mdan/network/compare/     WT-vs-variant lost/gained comparison tables
+data/mdan/network/figures/     final figures plus clearly named render subfolders
+data/mdan/network/runs/        Slurm logs, cpptraj provenance logs, and disposable cache
+data/mdan/network/tables/      user-supplied and run-derived network tables
+data/mdan/network/validation/  local QA reports only
 ```
 
-Create the folders and local env file from the repository root:
+`validation/` is for reproducibility checks, not a downstream analysis source.
+`runs/cache/` is disposable runtime cache created by dependencies such as Numba;
+it is safe to remove and is not a scientific output.
+The generic public workflow assembles the source-style network pathway
+comparison and residue-remodel figures from VarMDyn outputs. It also produces
+method-valid DyNetAn outputs, bottleneck-focused QC figures, and generic
+network tables from the VarMDyn run.
 
-Run on: local workstation. Environment: `varmdyn_env`.
+## Local Checks
 
-```bash
-python scripts/data/init_data_layout.py
-source data/varmdyn_data.env
-```
-
-Check data for network table validation, rendering, and replay:
-
-Run on: local workstation. Environment: `varmdyn_env`.
+Run on: local workstation from the repository root. Environment: `varmdyn_env`.
 
 ```bash
 python scripts/checks/check_data_inputs.py --module network --profile tables
-python scripts/checks/check_data_inputs.py --module network --profile render
-python scripts/checks/check_data_inputs.py --module network --profile apo-replay
+python workflows/mdan/network/validate_outputs.py --help
 ```
 
-Use `--profile holo-replay` only after a matching holo DyNetAn replay directory
-has been copied or fetched into `data/network/replay/holo/`.
+## Network Runs
 
-For full trajectory-level replay from user-supplied apo/holo simulation roots,
-use the consolidated CLI:
-
-Run on: machine with trajectory inputs. Environment: `varmdyn_dynetan`.
+Use the repository wrapper for normal local-to-HPC work:
 
 ```bash
-python workflows/mdan/network/network.py full --state apo
-python workflows/mdan/network/network.py full --state holo
-python workflows/mdan/network/network.py full --state all
+bash scripts/run_analysis.sh network plan --state apo --variants all
+bash scripts/run_analysis.sh network submit --state apo --variants all --run
+bash scripts/run_analysis.sh network status
+bash scripts/run_analysis.sh network check-frames --state apo --variants all
+bash scripts/run_analysis.sh network fetch --from scratch --run
+bash scripts/run_analysis.sh network figures --state all
+bash scripts/run_analysis.sh network tables
 ```
 
-It discovers system folders automatically, keeps WT first, writes
-trajectory-derived outputs under ignored `data/mdan/network/full/`, writes run
-logs under `data/mdan/network/runs/`, and skips completed DyNetAn outputs unless
-`--force` is used.
+`check-frames` verifies that prepared DCDs have enough frames for the
+750-sampled-frame DyNetAn method. A 250-frame prepared DCD is a smoke/input
+readiness artifact, not a full-method network result.
 
-For faster HPC runs, use the array wrapper so each variant gets its own Slurm
-task and the compare step runs only after the array succeeds:
+Runtime note: with the default chunks `25-29`, replicas `cr1,cr2,cr3`, and
+stride `20`, each variant preparation reads 15 raw trajectory chunks and should
+write a 3,750-frame prepared DCD. The cpptraj preparation step is normally short
+relative to DyNetAn; DyNetAn is the long-running stage. When refactoring, record
+Slurm elapsed time and prepared frame counts together so runtime changes can be
+distinguished from scheduler noise or method changes.
 
-Run on: HPC system. Environment: Slurm job activates the configured DyNetAn
-environment, usually `varmdyn_dynetan`.
+For direct execution on a machine with trajectory inputs and DyNetAn available:
 
 ```bash
-export VARMDYN_APO_ROOT=/path/to/apo/root
-export VARMDYN_HOLO_ROOT=/path/to/holo/root
-export VARMDYN_DYNETAN_STAGE_TAG=varmdyn_full_holo
-
-mkdir -p data/mdan/network/runs/logs
-jobid=$(sbatch --parsable --array=0-5 workflows/mdan/network/run_network_array.slurm holo variant)
-sbatch --dependency=afterok:${jobid} workflows/mdan/network/run_network_array.slurm holo compare
+python workflows/mdan/network/network.py full --state apo --apo-root /path/to/apo
+python workflows/mdan/network/network.py full --state holo --holo-root /path/to/holo
 ```
 
-Use `VARMDYN_VARIANTS=01_WT,02_L119R` with a matching `--array=0-1` when testing
-a small subset.
+Before moving or changing method-bearing code here, compare the behavior against
+the existing committed VarMDyn workflow and the protected source method, then
+document only the generic public command path.
 
-For a standalone collaborator-facing packet with its own runner, DyNetAn
-environment builder, Slurm array script, local sync, fetch, and rendering notes,
-see:
+Method parity means preserving the DyNetAn settings and preparation logic. Exact
+network residues may differ across trajectory ensembles or independently
+prepared structures.
 
-```text
-workflows/mdan/network/shared/
+Figure/table outputs:
+
+- Overlap table: `tables/from_run/network_overlap_apo_vs_holo.csv`.
+- Residue-frequency table: `tables/from_run/network_residue_transition_frequency.csv`.
+- Network pathway comparison: `figures/network_pathway_comparison.png`.
+- Structural residue-remodel composite: `figures/network_residue_remodel.png`
+  and `figures/network_residue_remodel.svg`.
+
+For exact residue-remodel surface-panel framing against a known reference
+structure set, pass generic reference PDBs:
+
+```bash
+bash scripts/run_analysis.sh network figures --state all \
+  --remodel-apo-reference /path/to/apo_reference.pdb \
+  --remodel-holo-reference /path/to/holo_reference.pdb
 ```
 
-Network residue renders use the prepared structure for the same state and
-variant by default:
-
-```text
-data/mdan/network/full/prepared/<state>/<variant>/<variant>.pdb
-```
-
-Existing manuscript-style DyNetAn work directories can also be staged,
-submitted, checked, compared, and fetched through the same CLI with the
-`hpc-*` subcommands.
-
-See the MkDocs page `docs/source/workflows/analysis.md` for the full protocol.
+Those references are used only to align temporary ChimeraX render inputs under
+`runs/`; prepared VarMDyn outputs are not changed.

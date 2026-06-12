@@ -241,7 +241,7 @@ EOF
   network)
     action="${1:-}"
     if [[ -z "$action" ]]; then
-      echo "[FAIL] network requires action: plan, submit, status, or fetch" >&2
+      echo "[FAIL] network requires action: plan, submit, status, fetch, figures, tables, or check-frames" >&2
       exit 2
     fi
     shift
@@ -297,6 +297,17 @@ EOF
         fi
         cmd+=("${execute[@]}")
         "${cmd[@]}"
+        ;;
+      figures)
+        "$PYTHON_BIN" "$ROOT/workflows/mdan/network/network.py" figures "${forwarded[@]}"
+        ;;
+      tables)
+        "$PYTHON_BIN" "$ROOT/workflows/mdan/network/network.py" tables "${forwarded[@]}"
+        ;;
+      check-frames)
+        conda_env="${VARMDYN_CONDA_ENV:-varmdyn_dynetan}"
+        "$PYTHON_BIN" "$ROOT/workflows/md/bridge.py" exec --execute -- \
+          conda run -n "$conda_env" python workflows/mdan/network/network.py check-frames "${forwarded[@]}"
         ;;
       *)
         echo "[FAIL] unknown network action: $action" >&2

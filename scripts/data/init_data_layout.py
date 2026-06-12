@@ -18,9 +18,20 @@ def shell_quote(path: Path) -> str:
 
 def write_env(path: Path, data_root: Path, stage_tag: str, *, force: bool) -> None:
     if path.exists() and not force:
-        print(f"[SKIP] env file already exists: {path}")
-        print("       use --force to rewrite it")
-        return
+        existing = path.read_text(encoding="utf-8", errors="replace")
+        generated = "This file is generated for your machine" in existing
+        stale_markers = (
+            "mdan/network/" + "re" + "play/",
+            "Tu" + "torial" + "Results_" + "CDKL5",
+            "mdan/network/runs/" + "apo/",
+            "mdan/network/runs/" + "holo/",
+        )
+        stale_network_layout = any(marker in existing for marker in stale_markers)
+        if not (generated and stale_network_layout):
+            print(f"[SKIP] env file already exists: {path}")
+            print("       use --force to rewrite it")
+            return
+        print(f"[UPDATE] rewriting stale generated network env file: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
     text = f"""# Local VarMDyn data paths.
 # This file is generated for your machine and is ignored by git.
@@ -38,12 +49,12 @@ export VARMDYN_NETWORK_OVERLAP_TABLE="$VARMDYN_DATA_ROOT/mdan/network/tables/net
 export VARMDYN_NETWORK_APO_PDB="$VARMDYN_DATA_ROOT/mdan/network/structures/apo/WT.apo.pdb"
 export VARMDYN_NETWORK_HOLO_PDB="$VARMDYN_DATA_ROOT/mdan/network/structures/holo/WT.holo.pdb"
 
-# Local fetched DyNetAn replay outputs.
+# Local fetched DyNetAn run outputs.
 export VARMDYN_DYNETAN_STAGE_TAG={stage_tag}
-export VARMDYN_NETWORK_APO_RESULTS="$VARMDYN_DATA_ROOT/mdan/network/replay/apo/$VARMDYN_DYNETAN_STAGE_TAG/TutorialResults_CDKL5"
-export VARMDYN_NETWORK_APO_COMPARISONS="$VARMDYN_DATA_ROOT/mdan/network/replay/apo/$VARMDYN_DYNETAN_STAGE_TAG/_comparisons_concatenated"
-export VARMDYN_NETWORK_HOLO_RESULTS="$VARMDYN_DATA_ROOT/mdan/network/replay/holo/$VARMDYN_DYNETAN_STAGE_TAG/TutorialResults_CDKL5"
-export VARMDYN_NETWORK_HOLO_COMPARISONS="$VARMDYN_DATA_ROOT/mdan/network/replay/holo/$VARMDYN_DYNETAN_STAGE_TAG/_comparisons_concatenated"
+export VARMDYN_NETWORK_APO_RESULTS="$VARMDYN_DATA_ROOT/mdan/network/dynetan/apo"
+export VARMDYN_NETWORK_APO_COMPARISONS="$VARMDYN_DATA_ROOT/mdan/network/compare/apo"
+export VARMDYN_NETWORK_HOLO_RESULTS="$VARMDYN_DATA_ROOT/mdan/network/dynetan/holo"
+export VARMDYN_NETWORK_HOLO_COMPARISONS="$VARMDYN_DATA_ROOT/mdan/network/compare/holo"
 """
     path.write_text(text, encoding="utf-8")
     print(f"[OK] wrote env file: {path}")
@@ -77,8 +88,11 @@ def main() -> int:
         data_root / "mdan/network/structures/apo",
         data_root / "mdan/network/structures/holo",
         data_root / "mdan/network/tables",
-        data_root / "mdan/network/replay/apo",
-        data_root / "mdan/network/replay/holo",
+        data_root / "mdan/network/dynetan/apo",
+        data_root / "mdan/network/dynetan/holo",
+        data_root / "mdan/network/compare/apo",
+        data_root / "mdan/network/compare/holo",
+        data_root / "mdan/network/runs/logs",
         data_root / "mdan/rms/logs",
         data_root / "mdan/rms/rmsd",
         data_root / "mdan/rms/rmsf/plots",

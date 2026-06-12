@@ -5,8 +5,6 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --time=08:00:00
-#SBATCH --output=data/mdan/network/runs/logs/network_array_%A_%a.out
-#SBATCH --error=data/mdan/network/runs/logs/network_array_%A_%a.err
 
 set -euo pipefail
 
@@ -16,7 +14,8 @@ NCORES="${VARMDYN_NCORES:-${SLURM_CPUS_PER_TASK:-8}}"
 export VARMDYN_NCORES="${NCORES}"
 export PYTHONNOUSERSITE=1
 
-mkdir -p data/mdan/network/runs/logs
+NETWORK_RUN_ROOT="${VARMDYN_NETWORK_RUN_ROOT:-data/mdan/network/runs}"
+mkdir -p "${NETWORK_RUN_ROOT}/logs"
 
 if command -v module >/dev/null 2>&1; then
   module purge || true
@@ -56,9 +55,16 @@ STAGE_ARGS=()
 if [[ -n "${VARMDYN_DYNETAN_STAGE_TAG:-}" ]]; then
   STAGE_ARGS+=(--stage-tag "${VARMDYN_DYNETAN_STAGE_TAG}")
 fi
+if [[ "${VARMDYN_ALLOW_SHORT_SAMPLE:-0}" == "1" ]]; then
+  STAGE_ARGS+=(--allow-short-sample)
+fi
 
 if [[ -n "${VARMDYN_VARIANTS:-}" ]]; then
-  IFS=',' read -r -a VARIANTS <<< "${VARMDYN_VARIANTS}"
+  if [[ "${VARMDYN_VARIANTS}" == *","* ]]; then
+    IFS=',' read -r -a VARIANTS <<< "${VARMDYN_VARIANTS}"
+  else
+    IFS=':' read -r -a VARIANTS <<< "${VARMDYN_VARIANTS}"
+  fi
 else
   mapfile -t VARIANTS < <(
     find "${ROOT}" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
@@ -82,7 +88,7 @@ case "${MODE}" in
     TASK_ID="${SLURM_ARRAY_TASK_ID:-0}"
     PACKET_DIR="${SLURM_SUBMIT_DIR:-$PWD}"
     cd "${PACKET_DIR}"
-    export NUMBA_CACHE_DIR="${NUMBA_CACHE_DIR:-${PACKET_DIR}/runs/numba_cache}"
+    export NUMBA_CACHE_DIR="${NUMBA_CACHE_DIR:-${NETWORK_RUN_ROOT}/cache/numba}"
     if (( TASK_ID < 0 || TASK_ID >= ${#VARIANTS[@]} )); then
       echo "[FAIL] SLURM_ARRAY_TASK_ID=${TASK_ID} outside variant count ${#VARIANTS[@]}" >&2
       exit 2

@@ -41,6 +41,18 @@ def path_check(label: str, path: str | Path | None, *, kind: str = "path") -> Ch
     return Check(label, ok, str(p))
 
 
+def glob_check(label: str, root: str | Path | None, pattern: str) -> Check:
+    if not root:
+        return Check(label, False, "not configured")
+    p = Path(root)
+    if not p.is_dir():
+        return Check(label, False, str(p))
+    matches = sorted(p.glob(pattern))
+    if matches:
+        return Check(label, True, f"{len(matches)} files under {p}")
+    return Check(label, False, f"no {pattern} under {p}")
+
+
 def data_root() -> Path:
     value = os.environ.get("VARMDYN_DATA_ROOT")
     return Path(value or ROOT / "data").expanduser()
@@ -61,35 +73,35 @@ def network_local_paths() -> dict[str, Path]:
     return {
         "frequency table": env_or_default(
             "VARMDYN_NETWORK_FREQUENCY_TABLE",
-            root / "network/tables/network_residue_transition_frequency.csv",
+            root / "mdan/network/tables/network_residue_transition_frequency.csv",
         ),
         "overlap table": env_or_default(
             "VARMDYN_NETWORK_OVERLAP_TABLE",
-            root / "network/tables/network_overlap_apo_vs_atpmg.csv",
+            root / "mdan/network/tables/network_overlap_apo_vs_holo.csv",
         ),
         "apo render PDB": env_or_default(
             "VARMDYN_NETWORK_APO_PDB",
-            root / "structures/apo/01_WT.apo.pdb",
+            root / "mdan/network/structures/apo/WT.apo.pdb",
         ),
         "holo render PDB": env_or_default(
             "VARMDYN_NETWORK_HOLO_PDB",
-            root / "structures/holo_atpmg/01_WT.keepATPmg.pdb",
+            root / "mdan/network/structures/holo/WT.holo.pdb",
         ),
-        "apo replay results": env_or_default(
+        "apo network results": env_or_default(
             "VARMDYN_NETWORK_APO_RESULTS",
-            root / f"network/replay/apo/{tag}/TutorialResults_CDKL5",
+            root / "mdan/network/dynetan/apo",
         ),
-        "apo replay comparisons": env_or_default(
+        "apo network comparisons": env_or_default(
             "VARMDYN_NETWORK_APO_COMPARISONS",
-            root / f"network/replay/apo/{tag}/_comparisons_concatenated",
+            root / "mdan/network/compare/apo",
         ),
-        "holo replay results": env_or_default(
+        "holo network results": env_or_default(
             "VARMDYN_NETWORK_HOLO_RESULTS",
-            root / f"network/replay/holo/{tag}/TutorialResults_CDKL5",
+            root / "mdan/network/dynetan/holo",
         ),
-        "holo replay comparisons": env_or_default(
+        "holo network comparisons": env_or_default(
             "VARMDYN_NETWORK_HOLO_COMPARISONS",
-            root / f"network/replay/holo/{tag}/_comparisons_concatenated",
+            root / "mdan/network/compare/holo",
         ),
     }
 
@@ -186,15 +198,23 @@ def network_local_checks(profile: str) -> list[Check]:
             path_check("network apo render PDB", paths["apo render PDB"], kind="file"),
             path_check("network holo render PDB", paths["holo render PDB"], kind="file"),
         ]
-    if profile in {"all", "replay", "apo-replay"}:
+    if profile in {"all", "outputs", "apo-outputs"}:
         checks += [
-            path_check("local apo replay results", paths["apo replay results"], kind="dir"),
-            path_check("local apo replay comparisons", paths["apo replay comparisons"], kind="dir"),
+            glob_check("local apo network results", paths["apo network results"], "*/bottleneck_nodes_top25*.csv"),
+            path_check(
+                "local apo network comparisons",
+                paths["apo network comparisons"] / "overlap_with_WT.csv",
+                kind="file",
+            ),
         ]
-    if profile in {"all", "replay", "holo-replay"}:
+    if profile in {"all", "outputs", "holo-outputs"}:
         checks += [
-            path_check("local holo replay results", paths["holo replay results"], kind="dir"),
-            path_check("local holo replay comparisons", paths["holo replay comparisons"], kind="dir"),
+            glob_check("local holo network results", paths["holo network results"], "*/bottleneck_nodes_top25*.csv"),
+            path_check(
+                "local holo network comparisons",
+                paths["holo network comparisons"] / "overlap_with_WT.csv",
+                kind="file",
+            ),
         ]
     return checks
 
@@ -202,18 +222,17 @@ def network_local_checks(profile: str) -> list[Check]:
 def network_checks(*, remote: bool, timeout_seconds: int, profile: str) -> list[Check]:
     host = os.environ.get("VARMDYN_HPC_HOST")
     project = os.environ.get("VARMDYN_HPC_PROJECT")
-    work = os.environ.get("VARMDYN_DYNETAN_WORK")
     conda_env = os.environ.get("VARMDYN_CONDA_ENV", "varmdyn_dynetan")
     tag = stage_tag()
     checks: list[Check] = [
         path_check(
             "local sbatch template",
-            ROOT / "workflows/mdan/network/dynetan_replay_validation_apo.sh",
+            ROOT / "workflows/mdan/network/run_network_array.slurm",
             kind="file",
         ),
         path_check(
             "local network validator",
-            ROOT / "workflows/mdan/network/validate_network_manuscript_outputs.py",
+            ROOT / "workflows/mdan/network/validate_outputs.py",
             kind="file",
         ),
         path_check(
@@ -228,7 +247,6 @@ def network_checks(*, remote: bool, timeout_seconds: int, profile: str) -> list[
         checks += [
             env_check("VARMDYN_HPC_HOST"),
             env_check("VARMDYN_HPC_PROJECT"),
-            env_check("VARMDYN_DYNETAN_WORK"),
             Check("VARMDYN_CONDA_ENV", True, conda_env),
             Check("VARMDYN_DYNETAN_STAGE_TAG", True, tag),
         ]
@@ -243,40 +261,14 @@ def network_checks(*, remote: bool, timeout_seconds: int, profile: str) -> list[
 
     if project:
         checks.append(remote_check(host, project, kind="dir", timeout_seconds=timeout_seconds))
-    if work:
-        checks += [
-            remote_check(host, work, kind="dir", timeout_seconds=timeout_seconds),
-            remote_check(
-                host,
-                Path(work) / "06_step1_CDKL5_with_lab_outputs.py",
-                kind="file",
-                timeout_seconds=timeout_seconds,
-            ),
-            remote_check(
-                host,
-                Path(work) / "07_compare_networks_all_variants.py",
-                kind="file",
-                timeout_seconds=timeout_seconds,
-            ),
-            remote_check(
-                host,
-                Path(work) / "TutorialData_CDKL5",
-                kind="dir",
-                timeout_seconds=timeout_seconds,
-            ),
-            remote_check(
-                host,
-                Path(work) / "TutorialResults_CDKL5",
-                kind="dir",
-                timeout_seconds=timeout_seconds,
-            ),
-            remote_command_check(
-                host,
-                "remote DyNetAn import",
-                f"module load anaconda3/2023.09-0 >/dev/null 2>&1; conda run -n {conda_env} python -c 'import dynetan, networkx, MDAnalysis; print(\"dynetan import OK\")'",
-                timeout_seconds=timeout_seconds,
-            ),
-        ]
+    checks.append(
+        remote_command_check(
+            host,
+            "remote DyNetAn import",
+            f"conda run -n {conda_env} python -c 'import dynetan, networkx, MDAnalysis; print(\"dynetan import OK\")'",
+            timeout_seconds=timeout_seconds,
+        )
+    )
     return checks
 
 
@@ -296,9 +288,9 @@ def main() -> int:
     parser.add_argument("--module", choices=["network"], required=True)
     parser.add_argument(
         "--profile",
-        choices=["all", "tables", "render", "replay", "apo-replay", "holo-replay", "remote"],
+        choices=["all", "tables", "render", "outputs", "apo-outputs", "holo-outputs", "remote"],
         default="all",
-        help="which network inputs to check: tables, render, apo-replay, holo-replay, replay, remote, or all",
+        help="which network inputs to check: tables, render, apo-outputs, holo-outputs, outputs, remote, or all",
     )
     parser.add_argument(
         "--remote",

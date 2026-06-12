@@ -32,9 +32,8 @@ history. They forward to the organized subfolders:
 | `bash scripts/ensure_pymol_env.sh ...` | `scripts/env/ensure_pymol_env.sh` |
 | `python scripts/check_data_inputs.py ...` | `scripts/checks/check_data_inputs.py` |
 | `python scripts/check_hpc_bridge.py ...` | `scripts/checks/check_hpc_bridge.py` |
-| `python scripts/check_manuscript_workflows.py ...` | `scripts/checks/check_manuscript_workflows.py` |
+| `python scripts/check_workflows.py ...` | `scripts/checks/check_workflows.py` |
 | `python scripts/compare_clustering_outputs.py ...` | `scripts/checks/compare_clustering_outputs.py` |
-| `python scripts/sync_data_from_sources.py ...` | `scripts/data/sync_data_from_sources.py` |
 | `bash scripts/checksums.sh ...` | `scripts/data/checksums.sh` |
 | `bash scripts/bootstrap_colab.sh ...` | `scripts/env/bootstrap_colab.sh` |
 | `bash scripts/install_miniforge.sh ...` | `scripts/env/install_miniforge.sh` |
@@ -55,9 +54,8 @@ history. They forward to the organized subfolders:
 | `data/init_data_layout.py` | Create the ignored local `data/` folder structure. |
 | `checks/check_data_inputs.py` | Validate user-supplied analysis inputs under `data/`. |
 | `checks/check_hpc_bridge.py` | Lightweight SSH bridge check used by readiness workflows. |
-| `checks/check_manuscript_workflows.py` | Internal/local publication workflow smoke check. |
+| `checks/check_workflows.py` | Workflow inventory and smoke-output check. |
 | `checks/compare_clustering_outputs.py` | Compare clustering smoke outputs. |
-| `data/sync_data_from_sources.py` | Copy selected lightweight source files into the VarMDyn data layout. |
 | `data/checksums.sh` | Small checksum helper. |
 
 ## State Wrappers

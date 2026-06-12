@@ -58,7 +58,7 @@ bash scripts/run_varmodel.sh
 
 ## 5. Network
 
-Run on: local workstation. Environment: `varmdyn_env`; remote replay commands
+Run on: local workstation. Environment: `varmdyn_env`; remote analysis commands
 use the HPC environment named by `VARMDYN_CONDA_ENV`, usually
 `varmdyn_dynetan`.
 

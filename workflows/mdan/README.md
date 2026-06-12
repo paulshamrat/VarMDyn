@@ -1,6 +1,8 @@
 # mdan
 
-This module contains scripts for RMSD, RMSF, displacement, network, and structure-rendering analyses. It does not track trajectories, generated figures, source tables, HPC job products, or replay outputs.
+This module contains scripts for RMSD, RMSF, displacement, network, and
+structure-rendering analyses. It does not track trajectories, generated
+figures, source tables, HPC job products, or DyNetAn outputs.
 
 ## 1. Analysis Environments
 
@@ -8,8 +10,8 @@ This module contains scripts for RMSD, RMSF, displacement, network, and structur
 |---|---|---|
 | RMSD/RMSF/displacement plotting and data checks | local workstation | `varmdyn_env` |
 | PyMOL-rendered structure panels | local workstation or render host | `varmdyn_pymol` via `VARMDYN_PYMOL_CMD` |
-| DyNetAn trajectory replay | local workstation or HPC compute job | `varmdyn_dynetan` |
-| HPC network staging/submission helpers | local workstation controlling HPC | `varmdyn_env`; remote replay env from `VARMDYN_CONDA_ENV` |
+| DyNetAn trajectory analysis | local workstation or HPC compute job | `varmdyn_dynetan` |
+| HPC network staging/submission helpers | local workstation controlling HPC | `varmdyn_env`; remote DyNetAn env from `VARMDYN_CONDA_ENV` |
 
 ## 2. Runtime Paths
 
@@ -91,7 +93,7 @@ The local wrapper expects kept-TSV files under
 ## 8. Dynamic Network
 
 Run on: local workstation. Environment: `varmdyn_env` for validation/help and
-`varmdyn_dynetan` for trajectory-level replay.
+`varmdyn_dynetan` for trajectory-level network analysis.
 
 ```bash
 bash scripts/run_analysis.sh network plan --state apo --variants all
@@ -103,6 +105,9 @@ bash scripts/run_analysis.sh network status
 
 Use `python scripts/data/init_data_layout.py` to create the standard `data/` layout.
 Validation reports are written to `data/mdan/network/`.
+Network scripts and Slurm templates stay under `workflows/mdan/network/`.
+Runtime folders under `data/mdan/network/` should contain logs and generated
+analysis products only; transient cpptraj inputs are captured inside logs.
 
 ## 9. Function
 

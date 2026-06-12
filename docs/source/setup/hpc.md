@@ -19,7 +19,7 @@ scratch.
 Bridge-launched commands execute the code that exists in the durable HPC
 project checkout, not the code that is only present in your local editor. After
 editing VarMDyn locally, always run `sync-code` before testing or submitting an
-HPC workflow stage. This applies to MD, post-processing, network replay, and any
+HPC workflow stage. This applies to MD, post-processing, network analysis, and any
 other workflow that runs remotely through the bridge.
 
 ## 1. Runtime Variables

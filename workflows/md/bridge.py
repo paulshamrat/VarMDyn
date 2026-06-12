@@ -344,6 +344,8 @@ def fetch(args: argparse.Namespace) -> None:
     for pattern in LIGHT_INCLUDES:
         cmd += ["--include", pattern]
     cmd += ["--exclude", "*", "-e", rsync_ssh_command(), remote, str(local)]
+    if args.execute:
+        local.mkdir(parents=True, exist_ok=True)
     run(cmd, args.execute)
 
 
@@ -388,6 +390,8 @@ def fetch_analysis(args: argparse.Namespace) -> None:
     for pattern in LIGHT_INCLUDES:
         cmd += ["--include", pattern]
     cmd += ["--exclude", "*", "-e", rsync_ssh_command(), remote, str(local)]
+    if args.execute:
+        local.mkdir(parents=True, exist_ok=True)
     run(cmd, args.execute)
 
 
