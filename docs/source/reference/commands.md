@@ -74,7 +74,17 @@ bash scripts/run_analysis.sh network submit --state holo --variants all
 bash scripts/run_analysis.sh network submit --state holo --variants all --run
 bash scripts/run_analysis.sh network status
 bash scripts/run_analysis.sh network fetch --from scratch --run
+bash scripts/run_analysis.sh network tables
+bash scripts/run_analysis.sh network figures --state all --outdir data/mdan/network/figures
 python workflows/mdan/network/validate_outputs.py --help
+```
+
+Main network figure outputs:
+
+```text
+data/mdan/network/figures/network_pathway_comparison.png
+data/mdan/network/figures/network_residue_remodel.png
+data/mdan/network/figures/network_residue_remodel.svg
 ```
 
 ## 6. RMSD/RMSF From MD Outputs
