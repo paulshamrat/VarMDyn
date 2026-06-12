@@ -3,7 +3,9 @@ import os
 from pathlib import Path
 
 # File paths
-base_dir = Path(os.environ.get("VARMDYN_STRUCTURE_ANNOTATION_DIR", Path.cwd()))
+data_root = Path(os.environ.get("VARMDYN_DATA_ROOT", Path.cwd() / "data"))
+base_dir = Path(os.environ.get("VARMDYN_STRUCTURE_ANNOTATION_DIR", data_root / "function/kinase"))
+base_dir.mkdir(parents=True, exist_ok=True)
 img_path = "cdkl5_wt_atp_mg_final.png"  # Relative - keep SVG portable
 output_svg = str(base_dir / "cdkl5_annotated.svg")
 

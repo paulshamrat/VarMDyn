@@ -1,9 +1,14 @@
+import os
+import shutil
+import subprocess
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parent
-SVG_OUT = ROOT / "cdkl5_full_length_schematic_review_v1.svg"
-PNG_OUT = ROOT / "cdkl5_full_length_schematic_review_v1.png"
+REPO_ROOT = Path(__file__).resolve().parents[4]
+DATA_ROOT = Path(os.environ.get("VARMDYN_DATA_ROOT", REPO_ROOT / "data"))
+OUT_DIR = Path(os.environ.get("VARMDYN_FUNCTION_OUT_DIR", DATA_ROOT / "function/full"))
+SVG_OUT = OUT_DIR / "cdkl5_full_length_schematic_review_v1.svg"
+PNG_OUT = OUT_DIR / "cdkl5_full_length_schematic_review_v1.png"
 
 TOTAL_LEN = 960
 KINASE_START = 1
@@ -185,6 +190,7 @@ def spread_positions(centers: list[float], widths: list[float], left_bound: floa
 
 
 def main():
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
     width = 1818
     height = 312
     x0 = 55
@@ -405,7 +411,20 @@ def main():
 
     SVG_OUT.write_text("\n".join(parts), encoding="utf-8")
     print(SVG_OUT)
-    print(PNG_OUT)
+    inkscape = shutil.which("inkscape") or ("/snap/bin/inkscape" if Path("/snap/bin/inkscape").exists() else None)
+    if inkscape:
+        proc = subprocess.run(
+            [inkscape, str(SVG_OUT), "--export-type=png", f"--export-filename={PNG_OUT}"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if proc.returncode == 0 and PNG_OUT.exists():
+            print(PNG_OUT)
+        else:
+            print(f"[WARN] Inkscape export failed; SVG written but PNG not exported: {PNG_OUT}")
+    else:
+        print(f"[WARN] Inkscape not found; SVG written but PNG not exported: {PNG_OUT}")
 
 
 if __name__ == "__main__":

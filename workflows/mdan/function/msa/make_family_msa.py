@@ -61,13 +61,21 @@ def resi_to_col(aligned_seq, target_resi):
                 return i
     return None
 
+REPO_ROOT = Path(__file__).resolve().parents[4]
+DATA_ROOT = Path(os.environ.get("VARMDYN_DATA_ROOT", REPO_ROOT / "data"))
+out_dir = Path(os.environ.get("VARMDYN_MSA_OUT_DIR", DATA_ROOT / "function/msa"))
+out_dir.mkdir(parents=True, exist_ok=True)
+
 def generate_msa_figure(fasta_path, sequence_ids, sequence_labels, label_colors, out_prefix, title):
     print(f"Aligning {out_prefix}...")
     # Load all records
-    all_records = {r.id.split("|")[0]: r for r in SeqIO.parse(fasta_path, "fasta")}
+    all_records = {r.id.split("|")[0]: r for r in SeqIO.parse(str(fasta_path), "fasta")}
     
+    temp_kd = out_dir / "temp_kd.fasta"
+    temp_kd_aligned = out_dir / "temp_kd_aligned.fasta"
+
     # Trim to Kinase Domain and write to temp fasta
-    with open("temp_kd.fasta", "w") as out:
+    with open(temp_kd, "w") as out:
         for cid in sequence_ids:
             if cid in all_records:
                 seq_trimmed = str(all_records[cid].seq)[KINASE_DOMAIN_START-1:KINASE_DOMAIN_END]
@@ -77,13 +85,13 @@ def generate_msa_figure(fasta_path, sequence_ids, sequence_labels, label_colors,
     muscle_bin = os.environ.get("MUSCLE_BIN") or shutil.which("muscle") or os.path.expanduser("~/miniforge3/envs/varmdyn_pymol/bin/muscle")
     subprocess.run(
         [muscle_bin,
-         "-align", "temp_kd.fasta",
-         "-output", "temp_kd_aligned.fasta", "-threads", "12"],
+         "-align", str(temp_kd),
+         "-output", str(temp_kd_aligned), "-threads", "12"],
         check=True, capture_output=True, text=True
     )
     
     # Load aligned records into dictionary to preserve OUR desired order
-    aligned_recs = {r.id: str(r.seq) for r in SeqIO.parse("temp_kd_aligned.fasta", "fasta")}
+    aligned_recs = {r.id: str(r.seq) for r in SeqIO.parse(str(temp_kd_aligned), "fasta")}
     
     # Extract sequences in EXACT order specified by sequence_ids
     seqs = [aligned_recs[cid] for cid in sequence_ids if cid in aligned_recs]
@@ -208,9 +216,9 @@ def generate_msa_figure(fasta_path, sequence_ids, sequence_labels, label_colors,
                framealpha=0.9, bbox_to_anchor=(0.5, 0.0))
 
     plt.tight_layout(rect=[0, 0.08, 1, 1])
-    plt.savefig(f"{out_prefix}.png", dpi=200, bbox_inches="tight", facecolor="white")
-    plt.savefig(f"{out_prefix}.svg", format="svg", bbox_inches="tight", facecolor="white")
-    print(f"Saved {out_prefix}.png and {out_prefix}.svg")
+    plt.savefig(str(out_dir / f"{out_prefix}.png"), dpi=200, bbox_inches="tight", facecolor="white")
+    plt.savefig(str(out_dir / f"{out_prefix}.svg"), format="svg", bbox_inches="tight", facecolor="white")
+    print(f"Saved {out_dir / f'{out_prefix}.png'} and {out_dir / f'{out_prefix}.svg'}")
 
 
 # RUN 1: CDKL Family Only
@@ -222,7 +230,7 @@ cdkl_only_title = (
     "Secondary structure from CDKL5 crystal structure (PDB: 4BGQ, Canning et al. 2018)"
 )
 generate_msa_figure(
-    "cdkl_kinase_family.fasta", cdkl_only_ids, cdkl_only_labels, cdkl_only_colors,
+    out_dir / "cdkl_kinase_family.fasta", cdkl_only_ids, cdkl_only_labels, cdkl_only_colors,
     "cdkl_family_msa_only", cdkl_only_title
 )
 
@@ -235,6 +243,6 @@ all_title = (
     "Secondary structure from CDKL5 crystal structure (PDB: 4BGQ, Canning et al. 2018)"
 )
 generate_msa_figure(
-    "cdkl_kinase_family.fasta", all_ids, all_labels, all_colors,
+    out_dir / "cdkl_kinase_family.fasta", all_ids, all_labels, all_colors,
     "cdkl_family_msa_all", all_title
 )

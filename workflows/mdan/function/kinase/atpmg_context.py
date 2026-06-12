@@ -226,8 +226,8 @@ def main() -> int:
     parser.add_argument("--ref8fp5", type=Path, default=source_default("251008_simulation/04_cdkl5atp/01_WT/ligprep/8FP5.pdb"))
     parser.add_argument("--atp-on-hm", type=Path, default=source_default("03_md/analysis/atpbindsite/ligand_transfer/ATP_on_hm.mol2"))
     parser.add_argument("--r38-on-hm", type=Path, default=source_default("03_md/analysis/atpbindsite/ligand_transfer/38R_on_hm.mol2"))
-    parser.add_argument("--out-dir", type=Path, default=Path("data/md/figures/atpmg_context"))
-    parser.add_argument("--out", type=Path, default=Path("data/md/figures/atpmg_context_panel.png"))
+    parser.add_argument("--out-dir", type=Path, default=Path("data/function/kinase/atpmg_context"))
+    parser.add_argument("--out", type=Path, default=Path("data/function/kinase/atpmg_context_panel.png"))
     parser.add_argument("--pymol-cmd", default=os.environ.get("VARMDYN_PYMOL_CMD", default_pymol_cmd()))
     args = parser.parse_args()
 

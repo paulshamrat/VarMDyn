@@ -2,8 +2,16 @@
 fetch_sequences.py
 Downloads kinase domain FASTA sequences from UniProt for MSA.
 """
+import os
 import urllib.request
 import time
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+DATA_ROOT = Path(os.environ.get("VARMDYN_DATA_ROOT", REPO_ROOT / "data"))
+out_dir = Path(os.environ.get("VARMDYN_MSA_OUT_DIR", DATA_ROOT / "function/msa"))
+out_dir.mkdir(parents=True, exist_ok=True)
+fasta_file = out_dir / "cdkl_kinase_family.fasta"
 
 sequences = [
     ("CDKL5_HUMAN",  "O76039"),
@@ -16,7 +24,7 @@ sequences = [
     ("PRKACA_HUMAN", "P17612"),
 ]
 
-with open("cdkl_kinase_family.fasta", "w") as out:
+with open(fasta_file, "w") as out:
     for name, uid in sequences:
         url = f"https://rest.uniprot.org/uniprotkb/{uid}.fasta"
         try:
@@ -32,4 +40,4 @@ with open("cdkl_kinase_family.fasta", "w") as out:
             print(f"  ERROR {name}: {e}")
         time.sleep(0.3)  # polite rate limit
 
-print("Done → cdkl_kinase_family.fasta")
+print(f"Done → {fasta_file.relative_to(REPO_ROOT)}")
