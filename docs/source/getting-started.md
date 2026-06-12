@@ -4,18 +4,16 @@ This page gives the shortest practical route through `VarMDyn` from the local
 workstation. It repeats only the minimum setup commands needed to start; use
 [Installation](setup/installation.md) for the detailed environment notes.
 
-Public-first path: run the bundled example locally, in a Colab notebook or
-terminal, or through an authenticated Colab CLI session. Then scale from one
-example variant to every variant discovered from your own config files and
-manifests. Local/private previews may show machine paths for HPC and larger
-project panels, but the committed public docs keep those paths generic.
+Public-first path: run the bundled example locally, then scale from one example
+variant to every variant discovered from your own config files and manifests.
+Local/private previews may show machine paths for HPC and larger project
+panels, but the committed public docs keep those paths generic.
 
 Choose the compute track before running MD commands:
 
 | Track | Use it for | Required tools |
 |---|---|---|
 | Local workstation | setup, clustering, varmodel dry-runs, docs, MD control commands | `varmdyn_env`; `varmdyn_modeller` for MODELLER |
-| Google Colab | public smoke workflows and lightweight analysis | Colab `varmdyn_env`; install AMBER/AmberTools separately before LEaP, PMEMD, or cpptraj |
 | Generic HPC | full apo/holo MD campaigns and heavy trajectory work | bridge-controlled HPC `varmdyn_env`, Slurm, and AMBER-compatible modules/tools |
 
 ## 1. Clone And Enter The Repository
@@ -84,12 +82,12 @@ track's page:
 
 | Track | Start here |
 |---|---|
-| Google Colab public smoke workflows | [Google Colab](setup/colab.md) |
+| Local analysis and smoke workflows | Workflow pages under [Workflows](workflows/index.md) |
 | Full MD campaigns through a generic HPC bridge | [HPC Bridge](setup/hpc.md) |
 
-The Colab page does not include HPC paths or bridge commands. The HPC page does
-not require Colab. Keep those tracks separate unless you are intentionally
-moving lightweight outputs between them.
+Keep local workflow commands and HPC bridge commands distinct. Local commands
+read and write ignored `data/` by default; bridge commands operate against the
+configured HPC checkout and storage paths.
 
 ## 4. Choose A Workflow
 
@@ -114,12 +112,6 @@ logic:
   `data/varmodel/manifest.csv`;
 - MD handoff reads that manifest and automatically stages WT plus the successful
   modeled variants.
-
-For Colab CLI use, complete the authentication/session setup in
-[Google Colab](setup/colab.md#4-optional-google-colab-cli-smoke-route),
-then run the same public smoke checks against that session. Keep Drive-backed
-paths under `VARMDYN_RUN_ROOT` and `VARMDYN_DATA_ROOT` if outputs need to
-persist after the Colab runtime stops.
 
 ## 5. Keep Runs Organized
 

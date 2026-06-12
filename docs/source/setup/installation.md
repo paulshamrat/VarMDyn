@@ -53,12 +53,12 @@ that track's page:
 
 | Track | Page | Boundary |
 |---|---|---|
-| Google Colab | [Google Colab](colab.md) | Public smoke workflows and lightweight analysis. Install AMBER/AmberTools separately before Colab MD engine stages. |
+| Local workstation | Workflow pages under [Workflows](../workflows/index.md) | Setup, checks, clustering, variant modeling, plotting, and bridge control. |
 | HPC bridge | [HPC Bridge](hpc.md) | Full MD campaigns and heavy trajectory work through generic, site-provided Slurm and AMBER-compatible tools. |
 
-Do not mix Colab and HPC commands in one run. Colab examples avoid private HPC
-paths. HPC examples use generic placeholders unless your local ignored path
-files fill in site-specific values during local preview.
+Local commands write ignored outputs under `data/` or `$VARMDYN_RUN_ROOT`. HPC
+examples use generic placeholders unless your local ignored path files fill in
+site-specific values during local preview.
 
 ## 3. Documentation Site
 

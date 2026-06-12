@@ -592,7 +592,7 @@ def build_figures(args: argparse.Namespace) -> None:
         if not args.summary_only:
             written += build_pathway_renders_state(state, out_dir, args)
     if not args.summary_only and args.state == "all":
-        written += compose_source_style_network_preview(out_dir)
+        written += compose_network_pathway_preview(out_dir)
         written += build_residue_remodel_figure(args, out_dir)
     for path in written:
         print(f"[OK] figure: {path}")
@@ -720,7 +720,7 @@ quit
 
 def build_pathway_renders_state(state: str, out_dir: Path, args: argparse.Namespace) -> list[Path]:
     if not shutil_which("pymol"):
-        print("[INFO] pymol not found; skipping source-style pathway renders.")
+        print("[INFO] pymol not found; skipping pathway renders.")
         return []
 
     variants = [args.wt] + [variant for variant in split_variants(args.variants) if variant != args.wt]
@@ -777,7 +777,7 @@ def crop_white_image(img, pad: int = 4):
 
 
 def apply_dynamics_protein_style(img):
-    """Match the source-style composer: fade protein, preserve network marks."""
+    """Fade protein while preserving network marks."""
     from PIL import Image
 
     arr = np.array(img.convert("RGB"), dtype=np.float32)
@@ -836,11 +836,11 @@ def paste_centered(canvas, image, box: tuple[int, int, int, int]) -> None:
     canvas.paste(resized, (x0 + (box_w - resized.width) // 2, y0 + (box_h - resized.height) // 2))
 
 
-def compose_source_style_network_preview(out_dir: Path) -> list[Path]:
+def compose_network_pathway_preview(out_dir: Path) -> list[Path]:
     try:
         from PIL import Image, ImageDraw, ImageFont
     except ImportError as exc:
-        raise SystemExit(f"missing PIL for source-style network preview: {exc}") from exc
+        raise SystemExit(f"missing PIL for network pathway preview: {exc}") from exc
 
     variants = ["WT", "L119R", "D193H", "G202E", "Q219K", "C291Y"]
     width, height = 3052, 1520

@@ -13,17 +13,14 @@ variants discovered from your own configuration and manifests. A local/private
 preview may fill in machine-specific paths, but the public pages avoid relying
 on private project roots.
 
-Public execution targets are local workstation, Google Colab notebook/terminal,
-optional Google Colab CLI sessions, and generic HPC bridge setups. Colab is the
-public smoke and lightweight-analysis route unless AMBER/AmberTools is installed
-inside the Colab runtime. HPC is the public heavy-MD route when a site provides
-Slurm and AMBER-compatible tools. Real site paths and credentials belong in
-ignored local files, not in committed documentation.
+Public execution targets are the local workstation and generic HPC bridge
+setups. The local workstation is the setup, smoke-test, plotting, and control
+point. HPC is the heavy-MD route when a site provides Slurm and
+AMBER-compatible tools. Real site paths and credentials belong in ignored local
+files, not in committed documentation.
 
 Use separate setup pages for separate compute tracks:
 
-- [Google Colab](setup/colab.md) for public smoke workflows and lightweight
-  analysis.
 - [HPC Bridge](setup/hpc.md) for full MD campaigns on generic site-provided
   Slurm and AMBER-compatible tools.
 

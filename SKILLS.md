@@ -47,7 +47,7 @@ production chunking, scratch/project storage, and cpptraj post-processing.
 - Docs: `docs/source/workflows/analysis.md`
 - Output root: `data/mdan/`
 
-Use this skill for RMSD/RMSF tables, network replay, dynamics panels, and
+Use this skill for RMSD/RMSF tables, network analysis, dynamics panels, and
 structure/function rendering. MD post-processing prepares upstream trajectories;
 analysis modules live under `workflows/mdan/`.
 

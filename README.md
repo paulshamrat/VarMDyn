@@ -11,17 +11,12 @@ Full protocol: **https://paulshamrat.github.io/VarMDyn/**
 Public-first execution targets:
 
 - local workstation;
-- Google Colab notebook/terminal for public smoke workflows and lightweight
-  analysis;
-- optional Google Colab CLI session for public smoke tests;
 - local-to-HPC bridge for heavy MD work, with site paths supplied locally and
   not committed.
 
-Google Colab does not provide the institution-managed AMBER modules that an
-HPC site may provide. Clustering, checks, docs, and lightweight analysis can run
-through the Colab setup. MD stages that call LEaP, PMEMD, or cpptraj require a
-separate AMBER/AmberTools installation and command configuration inside the
-Colab runtime before those stages are launched.
+Use the local workstation for setup, checks, documentation preview, clustering,
+variant modeling, and lightweight analysis. Use the HPC bridge when MD or
+trajectory analysis requires Slurm and AMBER-compatible tools.
 
 Local/private preview with your machine paths filled in:
 
@@ -73,19 +68,8 @@ export MPLCONFIGDIR="$VARMDYN_DATA_ROOT/.cache/matplotlib"
 python scripts/checks/check_repo_ready.py
 ```
 
-For Google Colab, use the public Colab setup in the documentation instead of
-local/HPC path files. The public smoke path is the bundled example first, then
-your Drive-backed PDB and variant/ddG inputs through the workflow configs. For
-full MD in Colab, install and configure AMBER/AmberTools in that runtime first;
-otherwise use the generic HPC bridge path for AMBER-backed simulation stages.
-
-Use separate setup pages for separate compute tracks:
-
-- Google Colab: public smoke workflows and lightweight analysis.
-- HPC Bridge: full MD campaigns through generic, site-provided Slurm and
-  AMBER-compatible tools.
-
-Do not mix Colab and HPC commands in one run.
+For AMBER-backed simulation stages, use the generic HPC bridge path with
+site-provided Slurm and AMBER-compatible tools.
 
 Optional public smoke workflows:
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Render review-only COM structural-context panels for Figure 2."""
+"""Render COM structural-context panels."""
 
 from __future__ import annotations
 
 import csv
+import os
 from pathlib import Path
 
 from PIL import Image
@@ -11,9 +12,10 @@ from pymol import cmd
 
 
 ROOT = Path(__file__).resolve().parents[4]
-OUT_DIR = ROOT / "manuscript" / "assets" / "main_candidates" / "clustering_structural_context_review"
-STRUCTURE = ROOT / "manuscript" / "assets" / "cdkl5_structure_annotation" / "cdl.com.wat.leap.pdb"
-COM_TABLE = ROOT / "manuscript" / "modules" / "01_clustering" / "tables" / "cluster_assignments_com.csv"
+DATA_ROOT = Path(os.environ.get("VARMDYN_DATA_ROOT", str(ROOT / "data"))).expanduser()
+OUT_DIR = Path(os.environ.get("VARMDYN_CLUSTERING_CONTEXT_OUT_DIR", str(DATA_ROOT / "clustering" / "structural_context"))).expanduser()
+STRUCTURE = Path(os.environ.get("VARMDYN_CLUSTERING_CONTEXT_PDB", str(DATA_ROOT / "clustering" / "structures" / "cdl.com.wat.leap.pdb"))).expanduser()
+COM_TABLE = Path(os.environ.get("VARMDYN_CLUSTERING_COM_TABLE", str(DATA_ROOT / "clustering" / "com" / "cluster_assignments_com.csv"))).expanduser()
 
 NON_PROTEIN = "ATP+ADP+AMP+ANP+ACP+MG+MG2+MGM+WAT+HOH+NA+K+CL"
 

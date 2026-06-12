@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render a clean Figure-2 review set and assemble an SVG panel.
+"""Render a clean structural-context set and assemble an SVG panel.
 
 Design rules for this review pass:
 - overview and all zooms share the same camera orientation
@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import csv
 import base64
+import os
 from pathlib import Path
 
 from PIL import Image
@@ -20,9 +21,10 @@ from pymol import cmd
 
 
 ROOT = Path(__file__).resolve().parents[4]
-OUT_DIR = ROOT / "manuscript" / "assets" / "main_candidates" / "clustering_structural_context_review"
-STRUCTURE = ROOT / "manuscript" / "assets" / "cdkl5_structure_annotation" / "cdl.com.wat.leap.pdb"
-CALPHA_TABLE = ROOT / "manuscript" / "modules" / "01_clustering" / "tables" / "cluster_assignments_calpha.csv"
+DATA_ROOT = Path(os.environ.get("VARMDYN_DATA_ROOT", str(ROOT / "data"))).expanduser()
+OUT_DIR = Path(os.environ.get("VARMDYN_CLUSTERING_CONTEXT_OUT_DIR", str(DATA_ROOT / "clustering" / "structural_context"))).expanduser()
+STRUCTURE = Path(os.environ.get("VARMDYN_CLUSTERING_CONTEXT_PDB", str(DATA_ROOT / "clustering" / "structures" / "cdl.com.wat.leap.pdb"))).expanduser()
+CALPHA_TABLE = Path(os.environ.get("VARMDYN_CLUSTERING_CALPHA_TABLE", str(DATA_ROOT / "clustering" / "calpha" / "cluster_assignments.csv"))).expanduser()
 
 NON_PROTEIN = "ATP+ADP+AMP+ANP+ACP+MG+MG2+MGM+WAT+HOH+NA+K+CL"
 PANEL_W = 720

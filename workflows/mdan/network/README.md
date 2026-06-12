@@ -33,8 +33,8 @@ data/mdan/network/validation/  local QA reports only
 `validation/` is for reproducibility checks, not a downstream analysis source.
 `runs/cache/` is disposable runtime cache created by dependencies such as Numba;
 it is safe to remove and is not a scientific output.
-The generic public workflow assembles the source-style network pathway
-comparison and residue-remodel figures from VarMDyn outputs. It also produces
+The generic public workflow assembles the network pathway comparison and
+residue-remodel figures from VarMDyn outputs. It also produces
 method-valid DyNetAn outputs, bottleneck-focused QC figures, and generic
 network tables from the VarMDyn run.
 
@@ -91,8 +91,8 @@ python workflows/mdan/network/network.py full --state holo --holo-root /path/to/
 ```
 
 Before moving or changing method-bearing code here, compare the behavior against
-the existing committed VarMDyn workflow and the protected source method, then
-document only the generic public command path.
+the existing committed VarMDyn workflow, then document only the generic public
+command path.
 
 Method parity means preserving the DyNetAn settings and preparation logic. Exact
 network residues may differ across trajectory ensembles or independently

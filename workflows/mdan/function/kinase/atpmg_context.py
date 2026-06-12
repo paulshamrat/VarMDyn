@@ -37,6 +37,11 @@ def source_default(*parts: str) -> Path | None:
     return root.joinpath(*parts)
 
 
+def data_default(*parts: str) -> Path:
+    root = Path(os.environ.get("VARMDYN_DATA_ROOT", "data")).expanduser()
+    return root.joinpath(*parts)
+
+
 def default_pymol_cmd() -> str:
     conda = os.environ.get("CONDA_EXE") or shutil.which("conda")
     if not conda:
@@ -219,20 +224,17 @@ def compose(out_dir: Path, out: Path) -> None:
 
 
 def main() -> int:
-    source = default_source_root()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--homology", type=Path, default=source_default("03_md/analysis/atpbindsite/target.B99990001_with_cryst.pdb"))
-    parser.add_argument("--ref4bgq", type=Path, default=source_default("manuscript/assets/cdkl5_structure_annotation/4BGQ.pdb"))
-    parser.add_argument("--ref8fp5", type=Path, default=source_default("251008_simulation/04_cdkl5atp/01_WT/ligprep/8FP5.pdb"))
-    parser.add_argument("--atp-on-hm", type=Path, default=source_default("03_md/analysis/atpbindsite/ligand_transfer/ATP_on_hm.mol2"))
-    parser.add_argument("--r38-on-hm", type=Path, default=source_default("03_md/analysis/atpbindsite/ligand_transfer/38R_on_hm.mol2"))
-    parser.add_argument("--out-dir", type=Path, default=Path("data/function/kinase/atpmg_context"))
-    parser.add_argument("--out", type=Path, default=Path("data/function/kinase/atpmg_context_panel.png"))
+    parser.add_argument("--homology", type=Path, default=data_default("varmodel", "target.B99990001_with_cryst.pdb"))
+    parser.add_argument("--ref4bgq", type=Path, default=data_default("function", "source_panels", "4BGQ.pdb"))
+    parser.add_argument("--ref8fp5", type=Path, default=data_default("function", "source_panels", "8FP5.pdb"))
+    parser.add_argument("--atp-on-hm", type=Path, default=data_default("function", "source_panels", "ATP_on_hm.mol2"))
+    parser.add_argument("--r38-on-hm", type=Path, default=data_default("function", "source_panels", "38R_on_hm.mol2"))
+    parser.add_argument("--out-dir", type=Path, default=data_default("function", "kinase", "atpmg_context"))
+    parser.add_argument("--out", type=Path, default=data_default("function", "kinase", "atpmg_context_panel.png"))
     parser.add_argument("--pymol-cmd", default=os.environ.get("VARMDYN_PYMOL_CMD", default_pymol_cmd()))
     args = parser.parse_args()
 
-    if not source:
-        print("[INFO] VARMDYN_SOURCE_ROOT is not set; using explicitly supplied paths only")
     args.homology = require(args.homology, "CDKL5 homology PDB")
     args.ref4bgq = require(args.ref4bgq, "4BGQ CDKL5/38R PDB")
     args.ref8fp5 = require(args.ref8fp5, "8FP5 CDK2 ATP/Mg PDB")

@@ -101,14 +101,14 @@ def check_local(args: argparse.Namespace) -> bool:
 def check_hpc(args: argparse.Namespace) -> bool:
     ok_all = True
 
-    helper = shutil.which("palmettostatus")
-    if helper:
-        ok, text = run([helper], timeout=20)
+    helper_cmd = os.environ.get("VARMDYN_SITE_STATUS_CMD", "").strip()
+    if helper_cmd:
+        ok, text = run(helper_cmd.split(), timeout=20)
         ok_all &= print_block(ok, "site bridge helper status", text)
         if not ok:
-            print("[FIX] Run palmettobridge, approve authentication, then rerun this check.")
+            print("[FIX] Run your site bridge authentication helper, then rerun this check.")
     else:
-        print("[INFO] palmettostatus not found; using generic SSH bridge checks only.")
+        print("[INFO] VARMDYN_SITE_STATUS_CMD not set; using generic SSH bridge checks only.")
 
     if not os.environ.get("VARMDYN_SSH_COMMAND") and os.environ.get("VARMDYN_SSH_CONTROL_PATH"):
         socket = os.environ["VARMDYN_SSH_CONTROL_PATH"]
@@ -139,7 +139,7 @@ def check_hpc(args: argparse.Namespace) -> bool:
     ok, text = run(bridge_cmd, timeout=30)
     ok_all &= print_block(ok, "SSH bridge remote command", text)
     if not ok:
-        print("[FIX] Run palmettobridge, approve authentication, then rerun this check.")
+        print("[FIX] Run your site bridge authentication helper, then rerun this check.")
         return False
 
     ok, text = run([sys.executable, "workflows/md/bridge.py", "check", "--execute"], timeout=45)

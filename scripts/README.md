@@ -35,7 +35,6 @@ history. They forward to the organized subfolders:
 | `python scripts/check_workflows.py ...` | `scripts/checks/check_workflows.py` |
 | `python scripts/compare_clustering_outputs.py ...` | `scripts/checks/compare_clustering_outputs.py` |
 | `bash scripts/checksums.sh ...` | `scripts/data/checksums.sh` |
-| `bash scripts/bootstrap_colab.sh ...` | `scripts/env/bootstrap_colab.sh` |
 | `bash scripts/install_miniforge.sh ...` | `scripts/env/install_miniforge.sh` |
 
 ## Environment Helpers
@@ -45,7 +44,6 @@ history. They forward to the organized subfolders:
 | `env/ensure_modeller_env.sh` | Create/update the MODELLER environment and configure the user license. |
 | `env/ensure_pymol_env.sh` | Create/update the PyMOL environment used by holo ATP/Mg transfer and rendering. |
 | `env/install_miniforge.sh` | Convenience installer for systems that do not already have conda/mamba. |
-| `env/bootstrap_colab.sh` | Colab-specific setup helper; not part of the normal local/HPC path. |
 
 ## Checks And Data Utilities
 

@@ -6,9 +6,7 @@ each run to an ignored output directory.
 The public first run should be small: WT plus one example mutation using
 `--mut`. Full panels are discovered from the configured mutation list and are
 recorded in `data/varmodel/manifest.csv`; downstream MD uses that manifest
-rather than a hard-coded variant count. In Colab, keep inputs and outputs under
-your Drive-backed `VARMDYN_RUN_ROOT`/`VARMDYN_DATA_ROOT` so the run survives the
-session.
+rather than a hard-coded variant count.
 
 ## 1. Prepare The MODELLER Environment
 
@@ -70,10 +68,6 @@ Run on: local workstation. Environment: `varmdyn_modeller`.
 ```bash
 bash scripts/run_varmodel.sh --mut L119R
 ```
-
-For Google Colab, complete the [Google Colab](../setup/colab.md) setup first,
-then run the same variant-modeling wrapper inside that Colab session with the
-appropriate MODELLER environment.
 
 This writes outputs under `data/varmodel/` for the configured mutation set or
 for the single mutation supplied with `--mut`.

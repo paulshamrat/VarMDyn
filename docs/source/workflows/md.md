@@ -80,19 +80,12 @@ AMBER modules through Slurm. Do not run MD workflow scripts from the HPC
 base/default Python because it may not include required packages such as
 PyYAML.
 
-On Google Colab, the VarMDyn Python control environment can run public smoke
-checks, planning, lightweight analysis, and documentation checks. Colab does
-not provide AMBER modules by default. Do not launch LEaP, PMEMD, or cpptraj MD
-stages in Colab until AMBER/AmberTools is installed and the corresponding
-commands are configured for that runtime.
-
 Environment summary:
 
 | Task | Where | Environment |
 |---|---|---|
 | Local MD controller, bridge, status, planning, submit dry-runs | local workstation | `varmdyn_env` |
 | Holo ATP/Mg PyMOL transfer/rendering | local workstation | `varmdyn_pymol` via `VARMDYN_PYMOL_CMD` |
-| Public Colab smoke, planning, lightweight analysis | Google Colab | Colab `varmdyn_env`; AMBER/AmberTools required before MD engine stages |
 | Remote bridge orchestration | HPC project checkout through bridge | HPC `varmdyn_env` control env |
 | LEaP, PMEMD, cpptraj simulation/trajectory stages | HPC compute jobs | AMBER modules plus Slurm |
 
@@ -331,10 +324,11 @@ Before running local holo transfer, keep the validated ATP/Mg template source
 inside VarMDyn-owned data. The default location is
 `$VARMDYN_MD_PROJECT_ROOT/templates/atpmg` for the active local run root; set
 `VARMDYN_MD_ATPMG_TEMPLATE_ROOT` only when you intentionally want to override
-that local template source. Routine VarMDyn runs should not depend on the
-protected source simulation tree. The protected source tree remains read-only provenance for
-creating or auditing the VarMDyn-owned copy. The default transfer mode uses a
-PyMOL core fit over residues 30-220 before Hu2024 ATP/Mg LEaP preparation.
+that local template source. Routine VarMDyn runs should not depend on an
+external simulation tree. Keep any external source tree read-only and use it
+only for creating or auditing the VarMDyn-owned copy. The default transfer mode
+uses a PyMOL core fit over residues 30-220 before Hu2024 ATP/Mg LEaP
+preparation.
 
 ## 7. Apo Protocol Stages
 

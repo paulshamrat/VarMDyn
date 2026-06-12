@@ -487,7 +487,7 @@ For a smaller layout test, pass `--variants WT`.
 ## 7. MD Post-Processing Before Analysis
 
 After production completes, run cpptraj post-processing before network-style
-prepared trajectory replay and aggregate RMSF sanity checks. This creates the
+prepared trajectory generation and aggregate RMSF sanity checks. This creates the
 first canonical `04.ptraj` files expected by those workflows.
 
 Post-processing is window-based. Choose the production chunks with `--start`

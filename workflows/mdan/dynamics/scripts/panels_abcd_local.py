@@ -5,7 +5,7 @@ This script owns the complete structural-strip path:
 
 1. render raw PyMOL panels from the local PDB input;
 2. assemble an editable SVG with native text labels;
-3. export the SVG to the manuscript-facing PNG/PDF assets;
+3. export the SVG to PNG/PDF assets;
 4. optionally extract edited SVG text positions back to local render
    coordinates for manual label calibration.
 

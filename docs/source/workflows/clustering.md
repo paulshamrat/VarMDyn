@@ -22,8 +22,8 @@ workflows/clustering/data/raw/target.B99990001_with_cryst.pdb
 ```
 
 For a custom run, keep the same workflow shape but replace those config paths
-with your own local input files. For Google Colab, set Drive-backed paths first
-on the dedicated [Google Colab](../setup/colab.md) page.
+with your own local input files under ignored `data/` or another configured
+local run root.
 
 ## 2. Run From Repository Root
 
@@ -35,9 +35,6 @@ conda activate varmdyn_env
 export VARMDYN_RUN_ROOT=$PWD/data
 bash scripts/run_clustering.sh
 ```
-
-For Google Colab, complete the [Google Colab](../setup/colab.md) setup first,
-then run the same clustering wrapper inside that Colab session.
 
 ## 3. What The Wrapper Does
 

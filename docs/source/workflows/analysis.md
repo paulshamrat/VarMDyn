@@ -96,9 +96,6 @@ code only; it does not copy MD trajectories or analysis products:
 python workflows/md/bridge.py sync-code --execute
 ```
 
-For Google Colab analysis, use the dedicated [Google Colab](../setup/colab.md)
-page first. Keep Colab paths and HPC paths in separate runs.
-
 ### 1.2.1. Choose The MD Source And MDAN Output Root (HPC Path Handshake)
 
 Before starting any HPC-related analysis, you must define where the completed MD folders live and where the MDAN analysis outputs should be saved.
@@ -926,13 +923,12 @@ data/mdan/network/tables/from_run/network_overlap_apo_vs_holo.csv
 data/mdan/network/tables/from_run/network_residue_transition_frequency.csv
 ```
 
-These tables follow the source table logic without source-project-specific
-supplement labels: the overlap table combines top-25 WT-overlap
-counts/fractions from apo and holo states by variant, and the residue-frequency
-table lists recurrent WT-lost and gained bottleneck residues. Exact residue
-identities may differ from the protected source run because the VarMDyn
-trajectories/starting structures can differ, but the calculation route and
-table semantics are the same.
+These tables use generic VarMDyn labels: the overlap table combines top-25
+WT-overlap counts/fractions from apo and holo states by variant, and the
+residue-frequency table lists recurrent WT-lost and gained bottleneck residues.
+Exact residue identities may differ between independent trajectory ensembles or
+structure-preparation runs, but the calculation route and table semantics are
+the same.
 
 ### 1.6.9. Build Network Figures
 
@@ -943,10 +939,10 @@ the RMS section does not create `data/mdan/network/figures/`.
 Like `network tables`, this wrapper command reads the local fetched
 `data/mdan/network/` tree unless `VARMDYN_NETWORK_DATA_ROOT` is explicitly set.
 
-The command writes both table-based QC summaries and the publication-style
-pathway comparison panels that mirror the source Figure 5 logic: top-25
-bottleneck residues are split into conserved, WT-lost, and variant-gained sets
-for each variant, rendered in PyMOL, and composed into apo/holo panels.
+The command writes both table-based QC summaries and pathway comparison panels:
+top-25 bottleneck residues are split into conserved, WT-lost, and
+variant-gained sets for each variant, rendered in PyMOL, and composed into
+apo/holo panels.
 
 Run on: local workstation. Environment: `varmdyn_env`.
 
@@ -980,17 +976,15 @@ top-node outputs, run-derived network tables, and prepared PDBs. It fails
 clearly if one state is missing. Use `--summary-only` when you only want the
 lightweight CSV summary plots and do not want PyMOL/ChimeraX renders.
 
-The pathway comparison follows the source-style pathway builder:
-top-25 bottleneck residues are split into conserved, WT-lost, and
-variant-gained sets for each variant. The residue-remodel composite follows the
-source structural map logic: recurrent WT-lost and gained residues from the
-network residue-frequency table are rendered on apo and holo structures with
-Y171 highlighted.
+The pathway comparison uses top-25 bottleneck residues split into conserved,
+WT-lost, and variant-gained sets for each variant. The residue-remodel
+composite renders recurrent WT-lost and gained residues from the network
+residue-frequency table on apo and holo structures with Y171 highlighted.
 
 For exact residue-remodel surface-panel framing against a known reference
 structure set, provide apo and holo reference PDBs. VarMDyn aligns temporary
-ChimeraX render inputs to those references, then applies the fixed source-style
-camera, zoom, canvas size, crop, and panel assembly. The prepared PDBs under
+ChimeraX render inputs to those references, then applies a fixed camera, zoom,
+canvas size, crop, and panel assembly. The prepared PDBs under
 `data/mdan/network/prepared/` are not modified.
 
 Run on: local workstation. Environment: `varmdyn_env`. Paths: reference PDBs
@@ -1002,7 +996,7 @@ bash scripts/run_analysis.sh network figures --state all \
   --remodel-holo-reference /path/to/holo_reference.pdb
 ```
 
-These are method-parity figures, not exact pixel/data copies from the protected
-source project. VarMDyn renders the same comparison logic from the current
-VarMDyn trajectories, so residue sets can differ from the protected source run if
-the trajectory ensemble or structure preparation differs.
+These are method-parity figures, not exact pixel/data copies from another run.
+VarMDyn renders the comparison logic from the current VarMDyn trajectories, so
+residue sets can differ if the trajectory ensemble or structure preparation
+differs.

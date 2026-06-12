@@ -13,7 +13,6 @@ nav:
   - Project Map: project-map.md
   - Setup:
       - Installation: setup/installation.md
-      - Google Colab: setup/colab.md
       - Environments: setup/environments.md
       - Runtime Paths: setup/runtime-paths.md
       - HPC Bridge: setup/hpc.md

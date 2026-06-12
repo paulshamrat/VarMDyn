@@ -24,15 +24,9 @@ from HPC jobs.
 
 `MPLCONFIGDIR` points Matplotlib's config/cache files into ignored project data.
 This avoids warnings or slow imports when the default home config directory is
-not writable, which can happen in headless, sandboxed, Colab, or HPC contexts.
+not writable, which can happen in headless, sandboxed, or HPC contexts.
 
-## 2. Google Colab Paths
-
-Keep Colab setup on the dedicated [Google Colab](colab.md) page. Do not mix
-Colab Drive paths into a local/HPC run unless you are intentionally running the
-Colab track.
-
-## 3. MD And HPC Paths
+## 2. MD And HPC Paths
 
 Do not set these during the basic local setup unless you are configuring HPC or
 external MD analysis sources. In a local checkout, ignored local path files can
@@ -73,7 +67,7 @@ Private reproducibility checks against older source trees are not part of the
 normal runtime setup. Keep those paths in ignored local notes or ignored local
 environment files, not in public commands.
 
-## 4. Common Layout
+## 3. Common Layout
 
 | Platform / Use | Typical path |
 |---|---|
@@ -83,7 +77,7 @@ environment files, not in public commands.
 | active MD generation | `/scratch/$USER/VarMDyn/data/md` |
 | durable HPC MD analysis | `/path/to/hpc_project/VarMDyn/data/md` |
 
-## 5. Local Documentation Preview
+## 4. Local Documentation Preview
 
 The public documentation uses template paths. To preview the same pages locally
 with values from your shell environment, run:

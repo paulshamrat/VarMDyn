@@ -99,12 +99,7 @@ export VARMDYN_HPC_PROJECT=/path/to/hpc_project_root
 export VARMDYN_HPC_HOST=user@login.example.edu
 ```
 
-## 4. Google Colab
-
-Keep Google Colab setup separate from local/HPC installation. Use the MkDocs
-`Setup -> Google Colab` page for Colab runtime, Drive, and Colab CLI commands.
-
-## 5. MODELLER
+## 4. MODELLER
 
 MODELLER requires a user license key. Use one command to create or update the
 dedicated environment and configure the key:
