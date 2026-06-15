@@ -16,7 +16,7 @@ page asks for them.
 | Run molecular dynamics control commands | `bash scripts/run_md.sh ...` |
 | Run MD-derived analysis table builders | `bash scripts/run_analysis.sh ...` |
 | Run local dynamics plotting from kept TSVs | `bash scripts/run_dynamics_local.sh` |
-| Preview local/private docs | `python scripts/docs/build_local_docs.py --serve` |
+| Preview docs with local path substitutions | `python scripts/docs/build_local_docs.py --serve` |
 
 Root-level compatibility wrappers are kept for older notes and terminal
 history. They forward to the organized subfolders:

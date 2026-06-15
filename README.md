@@ -8,47 +8,19 @@ The repository is code-focused: generated outputs and analysis inputs are suppli
 
 Full protocol: **https://paulshamrat.github.io/VarMDyn/**
 
-Public-first execution targets:
+Use the hosted documentation for setup, workflow details, runtime-path policy,
+and HPC bridge guidance. VarMDyn is designed for:
 
 - local workstation;
 - local-to-HPC bridge for heavy MD work, with site paths supplied locally and
   not committed.
 
-Use the local workstation for setup, checks, documentation preview, clustering,
-variant modeling, and lightweight analysis. Use the HPC bridge when MD or
-trajectory analysis requires Slurm and AMBER-compatible tools.
-
-Local/private preview with your machine paths filled in:
-
-Run on: local workstation from the repository root. Environment:
-`varmdyn_env`.
-
-```bash
-conda activate varmdyn_env
-python scripts/docs/build_local_docs.py --serve
-```
-
-Open the URL printed by the command, usually:
-
-```text
-http://127.0.0.1:8001/
-```
-
-Keep that terminal running while you view the docs. If port `8001` is already
-in use, the helper automatically prints the next available preview URL.
-
-Public/generic preview without private local paths:
-
-Run on: local workstation. Environment: `varmdyn_env` or any environment with
-the docs requirements installed.
+To preview the committed public docs locally:
 
 ```bash
 python -m pip install -r docs/requirements.txt
 mkdocs serve
 ```
-
-Use the public/generic preview only when checking the committed documentation
-without ignored local path substitutions.
 
 ## Quick Start
 
@@ -95,15 +67,11 @@ bash scripts/run_varmodel.sh --dry-run
 
 ```text
 VarMDyn/
-  workflows/
-    clustering/     # exposure classification and C-alpha/COM clustering
-    varmodel/       # MODELLER mutate-only workflow wrapper
-    md/             # apo/holo simulation control and HPC bridge commands
-    mdan/           # RMSD, RMSF, displacement, network, and rendering scripts
-  scripts/          # setup, checks, and top-level helpers; see scripts/README.md
-  envs/             # conda environment definitions
-  docs/             # MkDocs source and focused notes
-  data/             # user-supplied data, fetched outputs, and generated runs, ignored by git
+  workflows/   workflow implementations for clustering, modeling, MD, and analysis
+  scripts/     setup, checks, and top-level helper commands
+  envs/        conda environment definitions
+  docs/        MkDocs documentation source
+  data/        user-supplied inputs and generated outputs; ignored by git
 ```
 
 ## Outputs
