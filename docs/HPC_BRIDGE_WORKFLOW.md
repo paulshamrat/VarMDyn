@@ -32,13 +32,13 @@ authenticated bridge, project/scratch paths, and the remote control env:
 python scripts/checks/check_readiness.py --hpc
 ```
 
-For Palmetto, authentication is user-owned. Run `palmettobridge`, approve the
-prompt, and confirm with `palmettostatus` before asking a local agent to run
-remote VarMDyn bridge commands.
+Authentication is user-owned. If your HPC site requires an interactive SSH,
+VPN, or MFA bridge, establish that connection with your site-specific helper
+before asking a local agent to run remote VarMDyn bridge commands.
 
-Use `palmettorun` only for manual one-off Palmetto shell commands after the
-bridge is authenticated. Prefer `python workflows/md/bridge.py ...` for VarMDyn
-workflow control.
+Use site-specific shell helpers only for manual one-off HPC commands after the
+bridge is authenticated. Prefer `python workflows/md/bridge.py ...` for
+VarMDyn workflow control.
 
 For MD simulation campaigns, use scratch only for data generation and use the
 HPC project partition as the durable analysis source:
@@ -86,11 +86,11 @@ Point `VARMDYN_HPC_PYTHON` at that control environment's Python executable so
 bridge-launched remote commands do not fall back to a base interpreter missing
 packages such as PyYAML.
 
-For AMBER smoke/production validation, keep module names configurable. The
-current Palmetto default is:
+For AMBER smoke/production validation, keep module names configurable. For
+example:
 
 ```bash
-export VARMDYN_AMBER_MODULES="cuda/12.3.0 openmpi/5.0.1 amber/24.gpu_mpi"
+export VARMDYN_AMBER_MODULES="cuda/<version> openmpi/<version> amber/<version>"
 ```
 
 ## 3. Normal Bridge Pattern

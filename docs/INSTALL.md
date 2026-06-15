@@ -74,8 +74,9 @@ workflows/md/bridge.py setup-env --env hpc --update --execute` only when a
 package refresh is intentional; create/update operations can be killed on login
 nodes.
 
-For Palmetto, run `palmettobridge` and approve authentication first if
-`palmettostatus` is not already green.
+If your HPC site requires an interactive SSH, VPN, or MFA bridge, establish
+that connection with your site-specific helper before running remote VarMDyn
+bridge commands.
 
 > **Fallback Only**
 >
