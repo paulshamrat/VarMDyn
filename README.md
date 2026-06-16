@@ -1,8 +1,6 @@
 # VarMDyn
 
-**VarMDyn** contains reproducible workflows for variant clustering, variant modeling, molecular-dynamics simulation control, and molecular-dynamics analysis.
-
-The repository is code-focused: generated outputs and analysis inputs are supplied at run time and kept outside the public git history.
+**VarMDyn** contains workflows for variant clustering, variant modeling, molecular-dynamics simulation control, and molecular-dynamics analysis.
 
 ## Documentation
 
@@ -12,10 +10,9 @@ Use the hosted documentation for setup, workflow details, runtime-path policy,
 and HPC bridge guidance. VarMDyn is designed for:
 
 - local workstation;
-- local-to-HPC bridge for heavy MD work, with site paths supplied locally and
-  not committed.
+- local-to-HPC bridge for heavy MD work, with site paths supplied locally.
 
-To preview the committed public docs locally:
+To preview the public docs locally:
 
 ```bash
 python -m pip install -r docs/requirements.txt
@@ -40,28 +37,10 @@ export MPLCONFIGDIR="$VARMDYN_DATA_ROOT/.cache/matplotlib"
 python scripts/checks/check_repo_ready.py
 ```
 
-For AMBER-backed simulation stages, use the generic HPC bridge path with
-site-provided Slurm and AMBER-compatible tools.
-
-Optional public smoke workflows:
-
-Clustering smoke:
-
-Run on: local workstation. Environment: `varmdyn_env`.
-
-```bash
-bash scripts/run_clustering.sh
-```
-
-Variant-model dry-run:
-
-Run on: local workstation. Environment: `varmdyn_modeller`.
-
-```bash
-bash scripts/env/ensure_modeller_env.sh
-conda activate varmdyn_modeller
-bash scripts/run_varmodel.sh --dry-run
-```
+For clustering, variant-model dry-runs, MD control, and analysis entry points,
+follow the hosted Getting Started and workflow pages. For AMBER-backed
+simulation stages, use the HPC bridge path with site-provided Slurm and
+AMBER-compatible tools.
 
 ## Repository Layout
 
@@ -76,11 +55,11 @@ VarMDyn/
 
 ## Outputs
 
-Workflow outputs are written under `data/` by default. This folder is ignored by git.
-
+Workflow outputs are written under `data/` by default.
 ## License
 
 This code is released under the MIT License. See `LICENSE`.
 
+## Citation
 Citation instructions will be updated when the associated manuscript is
 published.
