@@ -1,0 +1,812 @@
+{
+  "baseline": "2c9efdbe102d56374380591710ba87dd684b3b44",
+  "records": [
+    {
+      "source": "03_md/analysis_repro/scripts/01_postprocess/00_check_postprocess_readiness.sh",
+      "destination": "scripts/analysis/01_postprocess/00_check_postprocess_readiness.sh",
+      "sha256": "cff4336b40664ee2ab11066bb2ab6464018b1f54414cc37407ff211632b74e85",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/01_postprocess/00_postprocess_settings.sh",
+      "destination": "scripts/analysis/01_postprocess/00_postprocess_settings.sh",
+      "sha256": "ee0b4036a9e08d91b59513319df54ee9bd2a9ad68c62e66967035286a4af9b3f",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/01_postprocess/01_make_equib_topologies.sbatch",
+      "destination": "scripts/analysis/01_postprocess/01_make_equib_topologies.sbatch",
+      "sha256": "ba70c3b3a099433d3ea71c87f96de05eb9ffd1feb7b837a5727ccd95a74eaf0e",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/01_postprocess/02_process_trajectories.sbatch",
+      "destination": "scripts/analysis/01_postprocess/02_process_trajectories.sbatch",
+      "sha256": "b4f6e05e9bf7023c696d4386cf6563c90d5c8e13f5caff27cb4d57f3c11ae7b9",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/01_postprocess/03_audit_postprocess.sbatch",
+      "destination": "scripts/analysis/01_postprocess/03_audit_postprocess.sbatch",
+      "sha256": "e728c0eaf26b361025a5f783378cdcd3df88e273615f443b58654d5f7c884485",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/01_postprocess/04_build_concatenated.sbatch",
+      "destination": "scripts/analysis/01_postprocess/04_build_concatenated.sbatch",
+      "sha256": "a277e0a36f4c84c6d44f6f06a93f4cd66cf4c4d2b834552ab3bc39a00c602f8d",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/01_postprocess/90_archive_obsolete_trajproc.sh",
+      "destination": "scripts/analysis/01_postprocess/90_archive_obsolete_trajproc.sh",
+      "sha256": "d1b2b618548fd68a94f7eaba24b66978d3a77a5b4bee60ad5c77e17fc896820a",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/01_postprocess/91_archive_obsolete_concatenated.sh",
+      "destination": "scripts/analysis/01_postprocess/91_archive_obsolete_concatenated.sh",
+      "sha256": "881c5ea06863e644e64883bace803d4fb6a8b89f0f941a0c9fe7ea20a2ccd1a2",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/02_metrics/00_shared/00_structural_metrics_settings.sh",
+      "destination": "scripts/analysis/02_metrics/00_shared/00_structural_metrics_settings.sh",
+      "sha256": "ae46fd40d9510bd4354d8300d215e03c2f1d583c518a415e98bc2385150d869f",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/02_metrics/01_full1-303/01_metrics/01_run_metrics.sbatch",
+      "destination": "scripts/analysis/02_metrics/01_full1-303/01_metrics/01_run_metrics.sbatch",
+      "sha256": "02ae6e60a1058635c336f28f24700ac304d51a7829fc941802a2fb847e0e2c17",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/02_metrics/01_full1-303/02_figures/01_plot_replica_metrics.py",
+      "destination": "scripts/analysis/02_metrics/01_full1-303/02_figures/01_plot_replica_metrics.py",
+      "sha256": "d4894b1d7fa05948015e6287c0c98f24046cf496b8f72000a7bcd85c41be6524",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/02_metrics/01_full1-303/02_figures/02_plot_rmsf_main_style.py",
+      "destination": "scripts/analysis/02_metrics/01_full1-303/02_figures/02_plot_rmsf_main_style.py",
+      "sha256": "7b02c7a9244d86cabfe031167cf800cbab633cf9af4a30ad8954e774d2d8d39f",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/02_metrics/02_fullcore13_297/00_settings.sh",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/00_settings.sh",
+      "sha256": "33b225ade8a469a0b28e265ed505e6ee5e205c2ff89d0fb0a62d0f529e4acd91",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/02_metrics/02_fullcore13_297/02_figures/00_plot_all_metrics.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/02_figures/00_plot_all_metrics.py",
+      "sha256": "1d55d515d6478e87d52c9d86dd615b5b59a95b990456e622a47744a98a345e05",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/01_run_rmsf_last400ns.sh",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/01_run_rmsf_last400ns.sh",
+      "sha256": "7f77faab760a1234d4f7a06abc3dc5b582f418ca1e91b29ac5f1b5eb9577115c",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/02_summarize_last400_metrics.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/02_summarize_last400_metrics.py",
+      "sha256": "b269cd9e574202bf642a25d7bb07776ce84227b73830ce8729d0b66b2473331d",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/03_plot_last400_metrics.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/03_plot_last400_metrics.py",
+      "sha256": "3bc07a73dde6c55d066b5d42433492e3b45142a4fc4afcd2ed77de26dc69f0b3",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/03_dynamics/02_fullcore13_297/00_settings.sh",
+      "destination": "scripts/analysis/03_dynamics/02_fullcore13_297/00_settings.sh",
+      "sha256": "265a0bf5bab20230b3278ce76c6d701bc1aa7be92265a8862dde197549739551",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/00_provenance/01_check_fullcore_readiness.sh",
+      "destination": "scripts/analysis/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/00_provenance/01_check_fullcore_readiness.sh",
+      "sha256": "c660c2f3f7d97038e6aff10a255bad905e310248f3dbf79ef3c53ebb150932b2",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/01_displacement_raw/01_perres_displacement.tcl",
+      "destination": "scripts/analysis/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/01_displacement_raw/01_perres_displacement.tcl",
+      "sha256": "0d0eb62da9e9c3f3c6515db62196f1bd761cc5c946b202db469e71e45ebea4e9",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/01_displacement_raw/02_extract_fullcore_displacement.sh",
+      "destination": "scripts/analysis/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/01_displacement_raw/02_extract_fullcore_displacement.sh",
+      "sha256": "e46f39d1113749892c739125a7641f091061046409c259f29617881acb1a927f",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/02_displacement_summary/01_summarize_fullcore_displacement.py",
+      "destination": "scripts/analysis/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/02_displacement_summary/01_summarize_fullcore_displacement.py",
+      "sha256": "eed7a515d0c9d5f34b252a6794f4a8f326c7e733a46bc43e623ac89317c627be",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/02_displacement_summary/02_plot_fullcore_displacement.py",
+      "destination": "scripts/analysis/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/02_displacement_summary/02_plot_fullcore_displacement.py",
+      "sha256": "575b4213809fb425fcb98d28c665a915b6a717b4d3e8940aed2207dee9c76dfb",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/02_displacement_summary/03_build_fullcore_displacement_comparisons.py",
+      "destination": "scripts/analysis/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/02_displacement_summary/03_build_fullcore_displacement_comparisons.py",
+      "sha256": "48ec2b699b4749f92a6688b10868afb18a5755ffbe15e25c13a899c6a9f5ce42",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/03_structure_panels/01_build_structure_panels.py",
+      "destination": "scripts/analysis/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/03_structure_panels/01_build_structure_panels.py",
+      "sha256": "d85cd4e1d9121f78487d081c384dbe878c8570fd0bdaa1b8f79ebfc93049f2b9",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_assembled_panels/01_assemble_panels.py",
+      "destination": "scripts/analysis/03_dynamics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_assembled_panels/01_assemble_panels.py",
+      "sha256": "7cfabf2cfefad6865b2bf4ffbf34ecc5b0853ab2e7136e036dbf9b66b524ff07",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/01_replica/02_network/02_run_replica_dynetan.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/01_replica/02_network/02_run_replica_dynetan.py",
+      "sha256": "bea745f3541c02e2b0b8019156985e6416de94f423b3538431c731416643a3d7",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/00_settings.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/00_settings.sh",
+      "sha256": "716782d47e1bb57d1aa39eae2667f4c3a229f74c68635407694d5655e7906b58",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/01_inputs/01_check_concat_inputs.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/01_inputs/01_check_concat_inputs.py",
+      "sha256": "1045fa370154d6f0f8d25433e32c17557e3e94d995bb8ecb8dca028d3f2b895d",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/01_inputs/02_check_concat_inputs.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/01_inputs/02_check_concat_inputs.sh",
+      "sha256": "d00e8f9d8b2130678db63666024e9ecc2a3beeb0dac1529b293bbf6483969941",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/02_network/01_run_all6_concat_dynetan.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/02_network/01_run_all6_concat_dynetan.py",
+      "sha256": "8835fc6baa7f7ce241b0c54a06711fb0e668b90af7331ec9fe343c4f4561eae5",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/02_network/02_run_all6_concat_dynetan.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/02_network/02_run_all6_concat_dynetan.sh",
+      "sha256": "4d59c9c5aa0208b0967dccc652646d90bacfdd7d49108ee6e90260c4bdff447a",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/03_reference/01_build_benign_supported_wt_reference.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/03_reference/01_build_benign_supported_wt_reference.sh",
+      "sha256": "53f689f4e7df76935562360e2ee05ff086487e7a4e2aed8ead5afc34e4b69c94",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/04_emergent/01_build_direct_pathogenic_candidates.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/04_emergent/01_build_direct_pathogenic_candidates.py",
+      "sha256": "dba50b465513f87d830529047ba86fbb943287b78b4c72523471f3080672577d",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/04_emergent/02_build_direct_pathogenic_candidates.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/04_emergent/02_build_direct_pathogenic_candidates.sh",
+      "sha256": "208a4dc1f6a93d3ed81ec73464be446e45e11531099e69175f77a183bf9bde7e",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/04_emergent/03_build_recurrent_pathogenic_reference.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/04_emergent/03_build_recurrent_pathogenic_reference.py",
+      "sha256": "ed7032a02cf0e0ea7d1c1d165ff834170bfb2650e4725198c847590db3abdea4",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/04_emergent/04_build_recurrent_pathogenic_reference.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/04_emergent/04_build_recurrent_pathogenic_reference.sh",
+      "sha256": "5729da99a36a49b1423f85a85a01fa53401b006a6174cbacc4b95efe4bfbecbc",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/00_settings.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/00_settings.sh",
+      "sha256": "400b28b48abf6d32440192bb6deadb09572ac4fcb32c4d81104a1139c04c650b",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/01_prepared_inputs/01_prepare_network_structure_maps.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/01_prepared_inputs/01_prepare_network_structure_maps.py",
+      "sha256": "084a7ff7d0c7bda691609d4bcd5dfbbdc3d2a1e7a6545ad06e7837dd7915adaf",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/01_prepared_inputs/02_prepare_network_structure_maps.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/01_prepared_inputs/02_prepare_network_structure_maps.sh",
+      "sha256": "66bc0a600b23b4695afeba6bbb114435bad45acfff4aabb805a2b85bf5ce1291",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/01_prepared_inputs/03_check_network_structure_maps.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/01_prepared_inputs/03_check_network_structure_maps.py",
+      "sha256": "b87e32f8dcd759a970de041be5f525e32c2b25f8cc28b095b3e038374825cf77",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/01_render_state_paired_cartoons.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/01_render_state_paired_cartoons.py",
+      "sha256": "1896926940669f763bbcb9b531c050e5191865cc932a15e470a8a5118391cf32",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/02_render_apo_surface.cxc",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/02_render_apo_surface.cxc",
+      "sha256": "366f9e581e4c113b8e75a20ad652adb8a30a335ebc960fbca0e51ec796cb9f9f",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/03_render_holo_surface.cxc",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/03_render_holo_surface.cxc",
+      "sha256": "c622e8e73a1913c55290c988a4f9b487c02cab7cc34cfd721f70b6c3841af7d6",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/03_render_state_surfaces.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/03_render_state_surfaces.py",
+      "sha256": "7da08988cf5bfcaa3c0c5723d7d4e631ef1b83304d3874cc85ffed80be122378",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/04_crop_state_paired_panels.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/04_crop_state_paired_panels.py",
+      "sha256": "3f845af9f19401ac47d42a714478e34b80e9522e3b41f983e0e83cc23e4ffa62",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/05_assemble_state_paired_figure.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/05_assemble_state_paired_figure.py",
+      "sha256": "fe65fc467854bafa5f3db7d4774cb3b690f97384cffacd0ba5948a727d5e5c3f",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/06_build_state_paired_figure.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/03_state_paired_lost_gain/06_build_state_paired_figure.sh",
+      "sha256": "797d7e587fcfaa5459bf7e546f29f768b2bff9c289010e77c9731e34c1bdd8b9",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_build_all_network_figures.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_build_all_network_figures.sh",
+      "sha256": "3e6be7395a6d12fd835afd57ac2730ee8517d1caa5be07efc468c8354c366f4b",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/00_settings.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/00_settings.sh",
+      "sha256": "6d3ec3a95b467135dc2ba1297018290ead69e0c0b96478c5f0f6eafda749514b",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/01_render_apo_cartoon.cxc",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/01_render_apo_cartoon.cxc",
+      "sha256": "e7cf4778132ca43a23c7eb3fcbb8d14f07b8d6ad4c3bec220eabecca6181f7e1",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/02_render_apo_surface.cxc",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/02_render_apo_surface.cxc",
+      "sha256": "d94cdc447d9d7710da405c6c3b51d788cc2caac0cd9d4f11e537a2684c5077d6",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/03_render_holo_cartoon.cxc",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/03_render_holo_cartoon.cxc",
+      "sha256": "cff403db5e6b1d0e20f7f8ba0446141c11a4b7b8375218b0bba3a5444601314b",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/04_render_holo_surface.cxc",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/04_render_holo_surface.cxc",
+      "sha256": "6a2838d0c352c3ee822e3654b45a66e40688f9d634205697e546a64edcdca091",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/05_render_all_panels.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/05_render_all_panels.py",
+      "sha256": "07968169281c8e8c0ca44ec69f816dede7099ece0f3f494caf706b22d3f8110c",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/05_render_apo_surface_back.cxc",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/05_render_apo_surface_back.cxc",
+      "sha256": "207b27c5455dd5f1491d6c237bd74e34faa5563f2d18b630efd29b48c6c90745",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/06_assemble_target_figure.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/06_assemble_target_figure.py",
+      "sha256": "9ac4de6fc4bfa52997bd08c7c904ac212ece0a08279434bbfc8eeb4cd4c1167f",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/06_render_holo_surface_back.cxc",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/06_render_holo_surface_back.cxc",
+      "sha256": "e57e014c1444fab756d262e2c38c48ff702afbcd0f526c6fa1b4485a2feb6e2f",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/07_build_target_figure.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/07_build_target_figure.sh",
+      "sha256": "5f7fbcd2445cece4bfd23de675bd79cae0c02c7b65f0c55d2181d47ecd6b9640",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/08_build_manual_holo_target_view.cxc",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/08_build_manual_holo_target_view.cxc",
+      "sha256": "14c849c385746795afef15253486d007d7665d8160613980e7428828f7c074e3",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/09_render_apo_target_sites_cartoon.cxc",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/09_render_apo_target_sites_cartoon.cxc",
+      "sha256": "aacde965869895a2a4f5fef9f39ff731115e0c97a6401077dcc9a6034bc04cc6",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/10_render_apo_target_sites_surface.cxc",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/10_render_apo_target_sites_surface.cxc",
+      "sha256": "751ba6f75f887bf3c3ddc7bad0a908a6cb1b63fa5995d768743e451f56682e23",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/11_render_apo_target_sites_surface_back.cxc",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/11_render_apo_target_sites_surface_back.cxc",
+      "sha256": "4314b7fb2c1906a6405071a7a5b2c8c046312a38b549a500e8f4fcfdbdb8eca3",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/12_render_apo_target_sites.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/12_render_apo_target_sites.py",
+      "sha256": "f33f17492cf6210c7268cd83892287a584079cc32f1bad9b87e9cfd5c3abd1be",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/13_assemble_apo_target_sites_figure.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/13_assemble_apo_target_sites_figure.py",
+      "sha256": "8a4dd588f0824069cd0be02217af2526ce99fe8c6a857c86c95c091f10c0503a",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/14_build_apo_target_sites_figure.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/14_build_apo_target_sites_figure.sh",
+      "sha256": "82c4a92a68f496df4fa1f7516772f7dff37a69796a71629317de57b6ec90933e",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/15_target_sites_6panel/01_build_target_sites_6panel.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/15_target_sites_6panel/01_build_target_sites_6panel.py",
+      "sha256": "bd6e31b4a5ac327dfa7c5108f41c8e190422eda775fa45853898d132a3d2fdba",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/15_target_sites_6panel/02_build_target_sites_6panel.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/15_target_sites_6panel/02_build_target_sites_6panel.sh",
+      "sha256": "4b7ef50d78c112008f8cb98cd614cafe31853768e2a50ae1f721684161edc035",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/05_combined/01_assemble_lost_gain_apo_targets.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/05_combined/01_assemble_lost_gain_apo_targets.py",
+      "sha256": "cd3397afb75aff0f07f10b5d0b6cfc65543055656e7aa68d3b3714f9886ae28d",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/06_pathogenic_network_maps/01_render_pathogenic_network_maps.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/06_pathogenic_network_maps/01_render_pathogenic_network_maps.py",
+      "sha256": "ecad45e339808f1c640799ffb12cebcb0eb582d933df875a995bb202542e77ff",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/06_pathogenic_network_maps/02_assemble_pathogenic_network_figure.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/06_pathogenic_network_maps/02_assemble_pathogenic_network_figure.py",
+      "sha256": "36df0659379b66181ebabf61e44479fac15900ea33ed9f34be361c4fa7768364",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/06_pathogenic_network_maps/03_build_pathogenic_network_figure.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/06_pathogenic_network_maps/03_build_pathogenic_network_figure.sh",
+      "sha256": "78cb6fae5593b03fc0d5d20ab29a96fc59c086eb0d552627c0d5089024ced353",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/archive/20260820_pre_pathogenic_only_8variant/02_variant_network_maps/01_render_variant_network_maps.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/archive/20260820_pre_pathogenic_only_8variant/02_variant_network_maps/01_render_variant_network_maps.py",
+      "sha256": "b8187218394d599e092ec102291c467f891094e96d24610540a6426b78086cb2",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/archive/20260820_pre_pathogenic_only_8variant/02_variant_network_maps/02_assemble_variant_network_figure.py",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/archive/20260820_pre_pathogenic_only_8variant/02_variant_network_maps/02_assemble_variant_network_figure.py",
+      "sha256": "e2c3db6c5b33fcaa1233d6125cc118b7ad51d93162c31756250d3fd9be7ce5c0",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/archive/20260820_pre_pathogenic_only_8variant/02_variant_network_maps/03_build_variant_network_figure.sh",
+      "destination": "scripts/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/archive/20260820_pre_pathogenic_only_8variant/02_variant_network_maps/03_build_variant_network_figure.sh",
+      "sha256": "7d45a00bc42190503327bd35f3ba72a8b55059a22075c0d150671ced17957b43",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/03_stablecore13_297/00_settings.sh",
+      "destination": "scripts/analysis/04_network/03_stablecore13_297/00_settings.sh",
+      "sha256": "984e4d1f18b2a48605046411b0430be6e5bb9554dd07fdb1a1999dc5a7812809",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/03_stablecore13_297/02_concat/01_selected_triplet/08_build_concat_pi_reference.py",
+      "destination": "scripts/analysis/04_network/03_stablecore13_297/02_concat/01_selected_triplet/08_build_concat_pi_reference.py",
+      "sha256": "c3ff4378f312d6b26e91548c62c36e4cd69ae703b93c7d6ec40fb34565162793",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/04_network/03_stablecore13_297/02_concat/02_sensitivity/01_run_all6_concat_dynetan.py",
+      "destination": "scripts/analysis/04_network/03_stablecore13_297/02_concat/02_sensitivity/01_run_all6_concat_dynetan.py",
+      "sha256": "f48cfd433e46bfa38d89bcc495b143ff5c603fc252da2b0a939afc0b0ecacbe1",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "03_md/analysis_repro/scripts/0x_vardist/01_stablecore_holo/01_build_distance_context.py",
+      "destination": "scripts/analysis/0x_vardist/01_stablecore_holo/01_build_distance_context.py",
+      "sha256": "90dc9914e3920b97f4db2c12199d3a2305614a18daf643a448499f61457ba9c8",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/analyze_equilibration.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/analyze_equilibration.py",
+      "sha256": "0c3494233d2ebe2d68ecae4ef7fa570e417babc511f00011b69bc23371cd23be",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/check-trajectory-manifest.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/check-trajectory-manifest.py",
+      "sha256": "189f72a7c2b59d510f22855a69a80fae4f508f425af2a819d29c1a4e0fab755b",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/plot-rmsd-full-range.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/plot-rmsd-full-range.py",
+      "sha256": "bc9ff51626aeebc77582cb7505866a049ddff41f870215e84eea49dd9b030fd6",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/plot_panelB_rg.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/plot_panelB_rg.py",
+      "sha256": "4a5e606f785d4467923a02953e0ba7dfc930241043cfafa3625422d97ea03da3",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/plot_panelC_domain_loo.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/plot_panelC_domain_loo.py",
+      "sha256": "8d283db495f72fdf64f60f6875c5d6cb077df043d5520e4752ea4eadc112472e",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/plot_rmsf_publication.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/plot_rmsf_publication.py",
+      "sha256": "dcb55356db87a9c5f8fa87b6330c3731915108ab525ba7edf5ca5807b1d61288",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/plot_rmsf_publication_pooled.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/plot_rmsf_publication_pooled.py",
+      "sha256": "fa993ff276e2930f32a48da13d1203c7323cdab77a339c703085e93c8a84c187",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/render_rmsf_cpptraj.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/render_rmsf_cpptraj.py",
+      "sha256": "dc69f85770fa79f912ce0b5f3c1a244427deb72abb0bf2adb01d6f398bd794f6",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/rmsf.cpptraj.template",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/rmsf.cpptraj.template",
+      "sha256": "d349a99ddfa75d993f36ad75daea32663c0de115fce477ce83c0b623b9f23a37",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/run-ensemble-rmsf.sh",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/run-ensemble-rmsf.sh",
+      "sha256": "48dd5b430134cf77cc6e262930b1e9df2c8e9edbd3fd8124e72cdc1f5729be18",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/run-qc-a.sh",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/run-qc-a.sh",
+      "sha256": "095fab2d0d05c90642c11c1b901e5104412d97f604a79cd0af27f9d9bb964238",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/run-qc-b.sh",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/run-qc-b.sh",
+      "sha256": "214167ec24e40473f79480ed6a9856f3cfdbaec403225162589bb73b13773b5f",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/run-qc-c.sh",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/run-qc-c.sh",
+      "sha256": "820548181700ded42ff6455493e1c4a7c6d18146ecb707ac9aee58490192d916",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/run-regional-rmsd.sh",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/run-regional-rmsd.sh",
+      "sha256": "80ad73bdf779c6fc46576554b38e153d7188a34750992e5ba30df668624590b8",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/summarize_ensemble_rmsf.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/summarize_ensemble_rmsf.py",
+      "sha256": "200ca40b25eb267657c30fec5381c7ca3a4d1f78ba5ec5b6c7275339bd6d0abd",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/summarize_qc.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/summarize_qc.py",
+      "sha256": "02ef46f9332e942477406d6580038e0b58037f2869bfe36b11741fd954d1d638",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/summarize_regional.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/summarize_regional.py",
+      "sha256": "61c56148f8135f7db6b20c4af14c6412b7834a9f0744935bd810d509f2614371",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/qc/summarize_regional_rmsd.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/summarize_regional_rmsd.py",
+      "sha256": "a091b56cfebb2745eba0d55c7f714a91b324d3a26a3b313b80a81dc25dee5b3d",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/step7/analyze-rotamer-network.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/analyze-rotamer-network.py",
+      "sha256": "641b3d1eedc4539abcc47d06f06af627ee9db4f063cc480a3a61df53287695d4",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/step7/analyze-sidechain-entropy-fast.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/analyze-sidechain-entropy-fast.py",
+      "sha256": "0d5a6f2aab97ca3712e100d607baa9bb89fdf7f66e80808dd64133309957ef65",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/step7/build-network-feature-panel.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/build-network-feature-panel.py",
+      "sha256": "a0dde810cbb4e5ca284ac5a3101cc996e010bbc35e0bafd36a642572dd21a56f",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/step7/build-rotamer-states.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/build-rotamer-states.py",
+      "sha256": "88c8d46cc0e7235308d652f43dca7329a7e61993b72e5dab4d5a6eb237f6203b",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/step7/build-selected-feature-matrix.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/build-selected-feature-matrix.py",
+      "sha256": "ff7fd643e131c3af2503c64fe1d7ed5877174d22457c68dbfd60c44f6b75826a",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/step7/build-step7-figure-data.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/build-step7-figure-data.py",
+      "sha256": "9acccff23a70b96ff7196aca9920667694840b8c0188fcd1c23f4b110b964ab0",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/step7/compare-apo-holo-entropy.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/compare-apo-holo-entropy.py",
+      "sha256": "3f0c9877f460bd4d78ebfbf0d7e123eec6efaf3461cc4e7d5541de9e7ddbba62",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/step7/compare-network-apo-holo.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/compare-network-apo-holo.py",
+      "sha256": "bef467233faa627e1e88e6537daa33e6b67f04abf885555efa80a9971cb7fd60",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/step7/export-rotamer-state-occupancy.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/export-rotamer-state-occupancy.py",
+      "sha256": "a2cabe25565cc4a6028b5c38483f48420c651ce17e4291ec8f0bfb22d3967be8",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/step7/extract-sidechain-dihedrals.sh",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/extract-sidechain-dihedrals.sh",
+      "sha256": "71b24fa8889ac41036d9dd0be314e11909c7b6a1435e4357ac265dd0b22ae1be",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/step7/select-sidechain-candidates.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/select-sidechain-candidates.py",
+      "sha256": "5d7e4872c85e4ecff182e4287b475eae2acfb419d26dc2a443fd61be2af112ca",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "collaborator-package/step7/validate-step7-occupancy-figuredata.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/validate-step7-occupancy-figuredata.py",
+      "sha256": "0a4cdf729304b204dc159151b68498fe27fa8d39409cccfd3967394ada59d496",
+      "status": "ported; validation pending"
+    },
+    {
+      "source": "archive/03_md/analysis_repro/20260827_pre_rev1_branches/scripts/03_dynamics/03_stablecore13_297/02_displacement_summary/02_plot_selected_triplet_displacement.py",
+      "destination": "scripts/analysis/03_dynamics/03_stablecore13_297/02_displacement_summary/02_plot_selected_triplet_displacement.py",
+      "sha256": "a14c6d1810f45350e697b8705134f7b3c0b3f760bf3216c2af50b5024b33326e",
+      "status": "recovered renderer dependency; validation pending"
+    },
+    {
+      "source": "archive/03_md/analysis_repro/20260827_pre_rev1_branches/scripts/03_dynamics/03_stablecore13_297/02_displacement_summary/03_build_selected_triplet_displacement_comparisons.py",
+      "destination": "scripts/analysis/03_dynamics/03_stablecore13_297/02_displacement_summary/03_build_selected_triplet_displacement_comparisons.py",
+      "sha256": "d62020e913aa9a4c3dcdd5a92a2b55034b91d1d9ac65f4818c2426bdf6b969ac",
+      "status": "recovered renderer dependency; validation pending"
+    },
+    {
+      "source": "archive/03_md/analysis_repro/20260827_pre_rev1_branches/scripts/03_dynamics/03_stablecore13_297/02_displacement_summary/01_summarize_selected_triplet_displacement.py",
+      "destination": "scripts/analysis/03_dynamics/03_stablecore13_297/02_displacement_summary/01_summarize_selected_triplet_displacement.py",
+      "sha256": "79107c2f4046805200f08efb2f39d2ee7b0517e5b46954be978a439e86c07f8d",
+      "status": "recovered renderer dependency; validation pending"
+    },
+    {
+      "source": "archive/03_md/analysis_repro/20260827_pre_rev1_branches/scripts/03_dynamics/03_stablecore13_297/03_structure_panels/01_build_structure_panels.py",
+      "destination": "scripts/analysis/03_dynamics/03_stablecore13_297/03_structure_panels/01_build_structure_panels.py",
+      "sha256": "f805a8e302d701d421a01abff890b7ada70f6066b72616c5e66465002e071a4b",
+      "status": "recovered renderer dependency; validation pending"
+    },
+    {
+      "source": "archive/03_md/analysis_repro/20260827_pre_rev1_branches/scripts/03_dynamics/03_stablecore13_297/01_displacement_raw/01_perres_displacement.tcl",
+      "destination": "scripts/analysis/03_dynamics/03_stablecore13_297/01_displacement_raw/01_perres_displacement.tcl",
+      "sha256": "cea11b3a41003abfe4b5213f106a259571c775400efe6dc8ac4528567840f398",
+      "status": "recovered renderer dependency; validation pending"
+    },
+    {
+      "source": "archive/03_md/analysis_repro/20260827_pre_rev1_branches/scripts/03_dynamics/03_stablecore13_297/04_assembled_panels/01_assemble_panels.py",
+      "destination": "scripts/analysis/03_dynamics/03_stablecore13_297/04_assembled_panels/01_assemble_panels.py",
+      "sha256": "2ebbf286c50cef797118b0c8b4207707ed65a090afa8e17a18b3a48495d0dc05",
+      "status": "recovered renderer dependency; validation pending"
+    },
+    {
+      "source": "archive/03_md/analysis_repro/20260827_pre_rev1_branches/scripts/03_dynamics/00_legacy_cr1_cr3/02_displacement_summary/01_summarize_displacement.py",
+      "destination": "scripts/analysis/03_dynamics/00_legacy_cr1_cr3/02_displacement_summary/01_summarize_displacement.py",
+      "sha256": "d46769069d138758ed32dafd2a701dc56d4a84bd7cac9347bf12ce67b76757a7",
+      "status": "recovered renderer dependency; validation pending"
+    },
+    {
+      "source": "archive/03_md/analysis_repro/20260827_pre_rev1_branches/scripts/03_dynamics/00_legacy_cr1_cr3/03_structure_panels/01_build_structure_panels.py",
+      "destination": "scripts/analysis/03_dynamics/00_legacy_cr1_cr3/03_structure_panels/01_build_structure_panels.py",
+      "sha256": "7f21b9f3ab07fbb42b3e7035fc39ecd87f5a2345b778ee8d66f83c91a7fe0b76",
+      "status": "recovered renderer dependency; validation pending"
+    },
+    {
+      "source": "archive/03_md/analysis_repro/20260827_pre_rev1_branches/scripts/03_dynamics/00_legacy_cr1_cr3/01_displacement_raw/02_perres_displacement.tcl",
+      "destination": "scripts/analysis/03_dynamics/00_legacy_cr1_cr3/01_displacement_raw/02_perres_displacement.tcl",
+      "sha256": "7518e11f4d0e88bc326aead06f25a18ebf3b3198a4df0b10aa707193dad3fc91",
+      "status": "recovered renderer dependency; validation pending"
+    },
+    {
+      "source": "archive/03_md/analysis_repro/20260827_pre_rev1_branches/scripts/03_dynamics/00_legacy_cr1_cr3/04_assembled_panels/01_assemble_panels.py",
+      "destination": "scripts/analysis/03_dynamics/00_legacy_cr1_cr3/04_assembled_panels/01_assemble_panels.py",
+      "sha256": "f8785d49e3c5834ffa56716ddd6edbdb2360296c6cf5a3174c256a9f825b02ff",
+      "status": "recovered renderer dependency; validation pending"
+    },
+    {
+      "source": "scripts/clustering/01_exposure.py",
+      "destination": "scripts/clustering/01_exposure.py",
+      "sha256": "532137e4a301433a1f901988b243d35149912563ba50a8c4e32610a7f67c621d",
+      "status": "ported study runner; input parity pending"
+    },
+    {
+      "source": "scripts/clustering/02_calpha.py",
+      "destination": "scripts/clustering/02_calpha.py",
+      "sha256": "898cc1287263b8d3150eec16648a6e8c97c7675057b1c36a6d1735709db5d66c",
+      "status": "ported study runner; input parity pending"
+    },
+    {
+      "source": "scripts/clustering/03_com.py",
+      "destination": "scripts/clustering/03_com.py",
+      "sha256": "52c152e22b254c4e6143fdfd82b6f4ed7ab73208110cd8875a00a03013049538",
+      "status": "ported study runner; input parity pending"
+    },
+    {
+      "source": "scripts/clustering/04_qc.py",
+      "destination": "scripts/clustering/04_qc.py",
+      "sha256": "5eafb4ab88ceb36651582a47862ca6938712ea8b311ad2f9dbf83f6c0eeba84f",
+      "status": "ported study runner; input parity pending"
+    },
+    {
+      "source": "scripts/clustering/05_mapping.py",
+      "destination": "scripts/clustering/05_mapping.py",
+      "sha256": "e4c3331cec76ecd27243b7bc51dbfc9564af71f7c1aa3536822b02ea981a4367",
+      "status": "ported study runner; input parity pending"
+    },
+    {
+      "source": "scripts/clustering/06_prioritization.py",
+      "destination": "scripts/clustering/06_prioritization.py",
+      "sha256": "24241eaa70f945b90b8936c1a74ec94e9d7986bcfce20f7f2215acd564a06415",
+      "status": "ported study runner; input parity pending"
+    },
+    {
+      "source": "scripts/clustering/run.py",
+      "destination": "scripts/clustering/run_cdkl5.py",
+      "sha256": "2b3f853ffcb233d44733d3ca7bcf7ae3bc0afeaa5528b44d1309729ba8ca11da",
+      "status": "ported study runner; input parity pending"
+    },
+    {
+      "source": "scripts/varmodel/01_mutate.py",
+      "destination": "scripts/varmodel/01_mutate.py",
+      "sha256": "af899349b9c7c0440d0843912446ca85a98e41cb6cd94fd68e0da5d4c565f68b",
+      "status": "ported study runner; input parity pending"
+    },
+    {
+      "source": "scripts/varmodel/02_qc.py",
+      "destination": "scripts/varmodel/02_qc.py",
+      "sha256": "c53b18e57ffae19d04cf68afcb47e0ad24ef96754cada467a0c90cea7f1112c0",
+      "status": "ported study runner; input parity pending"
+    },
+    {
+      "source": "scripts/varmodel/run_all.py",
+      "destination": "scripts/varmodel/run_all.py",
+      "sha256": "66517ed3d931c1a23d33e269183bf0fc0ef493b331f0793f9d950adc0eaed879",
+      "status": "ported study runner; input parity pending"
+    },
+    {
+      "source": "scripts/manuscript/revision/rev1/build/04_build_supplementary_data.py",
+      "destination": "scripts/analysis/tables/01_build_supplementary_data.py",
+      "sha256": "9711dabd6e38ef4755b76947d4cc8c77b08a2f9c402f62cd16e751d8d20341fd",
+      "status": "adapted numerical workbook builder; input parity pending"
+    },
+    {
+      "source": "collaborator-package/step7/plotting/plot-step7-state.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/02_figures/plot-step7-state.py",
+      "sha256": "cc1fd47bf88bb117bf603ee85ee17bcb8dd541de4c6feb93e41e894305ec05de",
+      "status": "figure renderer; visual parity pending"
+    },
+    {
+      "source": "collaborator-package/step7/plotting/plot-step7-entropy.py",
+      "destination": "scripts/analysis/05_entropy/02_fullcore13_297/03_windows/02_last400ns_100_500/02_figures/plot-step7-entropy.py",
+      "sha256": "93e4a7cbcda5179c2bfa9455fd6ced006069581a1a6e3ab0a18c03634c097910",
+      "status": "figure renderer; visual parity pending"
+    },
+    {
+      "source": "collaborator-package/qc/results/regional/rmsd/plot-S3-regional-rmsd.py",
+      "destination": "scripts/analysis/02_metrics/02_fullcore13_297/03_windows/02_last400ns_100_500/04_qc/plot-S3-regional-rmsd.py",
+      "sha256": "822f67f3673df359368220d9429d543141320da7041ef283282ab9daba67cfaf",
+      "status": "figure renderer; visual parity pending"
+    }
+  ],
+  "validation": {
+    "syntax": "passed",
+    "lint": "passed",
+    "focused_tests": "9 passed",
+    "trajectory_replay": "pending",
+    "figure_and_workbook_parity": "pending",
+    "entropy_criterion": "unresolved historical discrepancy",
+    "entropy_table_replay": "13 received tables reproduced exactly, using historical 50-transition threshold"
+  }
+}

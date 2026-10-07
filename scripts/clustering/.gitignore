@@ -1,0 +1,10 @@
+# new standardized outputs
+outputs/
+
+# python cache
+__pycache__/
+*.pyc
+
+# OS junk
+desktop.ini
+.DS_Store

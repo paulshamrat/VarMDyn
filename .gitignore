@@ -1,0 +1,38 @@
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local run products. Wrappers write here by default.
+runs/
+outputs/
+run_*/
+reference_outputs/
+site/
+*.log
+
+# OS/editor noise.
+.DS_Store
+desktop.ini
+.idea/
+
+# Local maintainer/agent notes, not public docs.
+/CHECKPOINT.md
+.agents/
+.codex/
+.local_notes/
+.local_docs/
+
+# Runtime job state.
+.last_hpc_job_id
+.last_network_hpc_job_id
+*.runtime.cxc
+
+# Runtime scaffolds only; all generated contents remain private and ignored.
+/data/**
+!/data/**/
+!/data/**/.gitkeep
+/logs/**
+!/logs/**/
+!/logs/**/.gitkeep
+/config/paths.sh

@@ -1,0 +1,24 @@
+# RMSF CPPTRAJ runtime template.
+# This file is rendered by render_rmsf_cpptraj.py.
+# Keep the PASS2 marker unchanged.
+
+# PASS1 constructs the pooled selected-replicate ensemble average.
+reference {{REFERENCE}} [initial_reference]
+{{TRAJIN}}
+autoimage
+rms reference {{FIT_MASK}} ref [initial_reference]
+average {{AVERAGE_PDB}} pdb
+run
+quit
+
+# === PASS2 ===
+
+# PASS2 calculates either pooled-ensemble RMSF or one leave-one-out RMSF,
+# always after fitting to the frozen full-six pooled ensemble average.
+reference {{AVERAGE_PDB}} [ensemble_average]
+{{TRAJIN}}
+autoimage
+rms reference {{FIT_MASK}} ref [ensemble_average] out {{FIT_RMSD}}
+atomicfluct out {{RMSF_DAT}} {{RMSF_MASK}} byres
+run
+quit

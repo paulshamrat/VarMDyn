@@ -1,0 +1,9 @@
+parm ../../../02.leap/com/cdl.com.gas.leap.prmtop
+
+trajin ../concatenated/production-25-to-29-concatenated-sampled-20.striped.mdcrd.nc
+
+rms first
+average crdset MyAvg
+run
+rms ref MyAvg
+atomicfluct out rmsf.byresidue.agr @C,CA,N byres

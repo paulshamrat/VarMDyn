@@ -1,0 +1,26 @@
+open data/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/01_prepared_inputs/05_holo_wt_equilibrium.pdb
+color #1 #d9d9d9
+hide atoms
+label delete
+set bgColor white
+lighting gentle
+lighting depthCue false
+graphics silhouettes false
+
+# Match the manual Holo session surface style, but keep it fully opaque.
+surface #1 & protein
+transparency #1 & protein 0 target s
+show :93,143,170,188,190,304,305
+style :93,143,170,188,190,304 stick
+style :305 sphere
+size :305 atomRadius 1.25
+color :93,143 #eb6b00
+color :170,188,190 blue
+color :304,305 #00ff00
+
+# Locked canonical kinase camera, then the matching opposite surface view.
+view matrix camera -0.31169,0.79727,0.51692,212.61,-0.87489,-0.028557,-0.48348,-118.97,-0.37071,-0.60294,0.70642,283.72 models #1,1,0,0,0,0,1,0,0,0,0,1,0
+zoom 0.75
+turn y 180
+
+save data/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/06_holo_surface_back.png width 1400 height 1600 supersample 3

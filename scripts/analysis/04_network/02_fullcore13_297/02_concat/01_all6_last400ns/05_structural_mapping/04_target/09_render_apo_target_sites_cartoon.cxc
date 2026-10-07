@@ -1,0 +1,21 @@
+open data/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/01_prepared_inputs/04_apo_wt_equilibrium.pdb
+color #1 #808080 target c
+transparency #1 60 target c
+hide atoms
+label delete
+set bgColor white
+lighting gentle
+lighting depthCue false
+graphics silhouettes false
+
+# Target-site-only view.
+show :93,143,170,188,190
+style :93,143,170,188,190 stick
+transparency :93,143,170,188,190 0 target ab
+color :93,143,170,188,190 #d62728
+
+# Locked canonical kinase camera.
+view matrix camera -0.31169,0.79727,0.51692,212.61,-0.87489,-0.028557,-0.48348,-118.97,-0.37071,-0.60294,0.70642,283.72 models #1,1,0,0,0,0,1,0,0,0,0,1,0
+zoom 0.75
+
+save data/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/09_apo_target_sites_cartoon.png width 1400 height 1600 supersample 3

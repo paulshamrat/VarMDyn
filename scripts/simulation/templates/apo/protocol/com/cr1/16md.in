@@ -1,0 +1,40 @@
+"16md.in: restrained MD 10ns, system heat raised to 300K, NVT,restraining everything except solvent with restraint weight 5.0 kcal/mol-A2"
+  
+&cntrl
+  imin = 0,                         ! Run dynamics heating
+  ntx = 5,                          ! 
+  irest = 1,                        ! Restart the simulation, reading coordinates and velocities from a previously saved restart file.
+  dt = 0.002,      
+  nstlim = 50000,                   ! 100 ps
+  nmropt = 0,    		    ! =0 default No nmr-type analysis will be done.
+       
+  ntc = 2,                          ! =2 SHAKE Bonds involving hydrogen are constrained
+  ntf = 2,                          ! interaction involving H bonds are omitted
+  
+  ig = -1,                          ! If ig=-1, the random seed will be based on the current date and time, and hence will be different for every run         
+  tempi =  300.0,                   ! Initial Temeprature
+  temp0 =  300.0,                   ! Reference temperature at which the system is to be kept,  
+  ntt = 3,                          ! =3 Constant Temperature, Use Langevin dynamics with the collision frequency γ given by gamma_ln
+  gamma_ln = 1.0, 
+  
+  ntb = 1,                          ! =1 Constant volume (defualt when ntp and igb both are 0) =2 Constant pressure (defualt when ntp > 0)
+  ntp = 0,
+    
+  ioutfm = 1,                       ! Binary NetCDF trajectory (mdcrd, mdvel and inptraj, mdfrc)
+  iwrap = 1,                        ! If iwrap = 1, the coordinates written to the restart and trajectory files will be "wrapped" into a primary box.
+                                    ! This means that for each molecule, its periodic image closest to the middle of the "primary box"
+                                    
+  ntwx = 10000,                     ! Every ntwx step coordinates are written to mdcrd file
+  ntwe = 0,                         ! every ntwe step energies and temperature will be writtein to “mden” file
+  ntpr = 10000,                     ! Every ntpr step energy is writtein human readable format in mdout file
+  ntwr = 10000,                     ! Every ntwr steps, the restart files will be written.
+  cut = 10.0,                       ! This is used to specify the nonbonded cutoff, in Angstroms. For PME, the cutoff is used to limit direct space sum.
+  fswitch = 8.0,                    ! sets a force switching region where the force cutoff smoothly approaches 0 between the region of the fswitch = 8.0 to the cut = 10.0 value
+
+ 
+  nscm = 100,                       ! Flag for the removal of translational and rotational center-of-mass (COM) motion at regular intervals(default is 1000).    
+  ntr = 1,                          ! >0 Restrain atoms in Cartesian space using a harmonic potential
+  restraintmask = ':1-303 & !@H=',  ! mask for protein, ligand, lipid, ions in protein , and crystal water if present, water and neutralizing ions free.
+  restraint_wt = 5.0,               ! Weight for positional restraint in ( kcal/mol-A2 )
+  /
+

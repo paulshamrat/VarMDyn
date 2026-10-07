@@ -1,0 +1,14 @@
+open __PDB__
+hide atoms
+surface #1 & protein
+color #1 & protein wheat target s
+transparency #1 & protein 18 target s
+color #1:__LOST__ blue
+color #1:__GAIN__ orangered
+color #1:171 magenta
+set bgColor white
+lighting full
+graphics silhouettes true
+view matrix camera -0.31169,0.79727,0.51692,212.61,-0.87489,-0.028557,-0.48348,-118.97,-0.37071,-0.60294,0.70642,283.72 models #1,1,0,0,0,0,1,0,0,0,0,1,0
+zoom 0.75
+save __OUTPUT__ width 1400 height 1600 supersample 3

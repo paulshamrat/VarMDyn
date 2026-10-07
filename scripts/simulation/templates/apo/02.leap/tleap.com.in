@@ -1,0 +1,18 @@
+	set default PBradii mbondi3                                      
+	source leaprc.protein.ff19SB
+        WAT = OPC
+	source leaprc.water.opc                                           
+	loadoff solvents.lib
+	loadoff atomic_ions.lib
+	
+	REC = loadpdb ../01.prep/cdl.prot.noH.pdb
+	COM2  =  REC
+	charge COM2
+	saveamberparm  COM2  cdl.com.gas.leap.prmtop cdl.com.gas.leap.inpcrd
+	savepdb COM2 cdl.com.gas.leap.pdb
+	solvateBox COM2 OPCBOX 14.0
+	# VARMDYN_ION_COMMANDS
+	charge COM2
+	saveamberparm  COM2  cdl.com.wat.leap.prmtop cdl.com.wat.leap.inpcrd
+	savepdb COM2 cdl.com.wat.leap.pdb
+	quit

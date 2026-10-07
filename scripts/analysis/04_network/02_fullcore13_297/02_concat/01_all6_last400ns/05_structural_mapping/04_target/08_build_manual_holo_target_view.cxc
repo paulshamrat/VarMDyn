@@ -1,0 +1,25 @@
+# Save a directly openable ChimeraX manual-inspection session for the current
+# Holo WT equilibrium structure used by the page-33 target-residue figure.
+open data/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/01_prepared_inputs/05_holo_wt_equilibrium.pdb
+color #1 lightgray
+hide atoms
+label delete
+set bgColor white
+lighting soft
+
+# SIRPA-style transparent protein surface with fully visible targets.
+surface #1 & protein
+transparency #1 & protein 60 target s
+show :93,143,170,188,190
+style :93,143,170,188,190 stick
+color :170,188,190 blue
+color :93,143 darkorange
+
+label :93 text "E93" height 2.6 color black
+label :143 text "I143" height 2.6 color black
+label :170 text "E170" height 2.6 color black
+label :188 text "Y188" height 2.6 color black
+label :190 text "K190" height 2.6 color black
+view :93,143,170,188,190
+
+save data/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/08_manual_holo_target_view.cxs

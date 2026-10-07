@@ -1,0 +1,15 @@
+name: varmdyn_env
+channels:
+  - conda-forge
+  - salilab
+dependencies:
+  - python=3.10
+  - pip
+  - pyyaml
+  - pandas
+  - openpyxl
+  - numpy
+  - biopython
+  - pdb2pqr
+  - propka
+  - pytest

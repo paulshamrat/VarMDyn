@@ -1,0 +1,6 @@
+name	type	mask	description
+N_lobe	domain	:13-88	Kinase N-lobe through beta5
+Hinge	domain	:89-95	Inter-lobe hinge
+C_lobe	domain	:96-299	Kinase C-lobe through alphaJ
+Activation_loop	region	:156-181	DFG-following activation loop including TEY
+C_lobe_no_Aloop	region	:96-155,182-299	C-lobe excluding activation loop

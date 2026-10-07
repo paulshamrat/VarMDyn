@@ -1,0 +1,22 @@
+open data/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/01_prepared_inputs/04_apo_wt_equilibrium.pdb
+color #1 #d9d9d9
+hide atoms
+label delete
+set bgColor white
+lighting gentle
+lighting depthCue false
+graphics silhouettes false
+
+surface #1 & protein
+transparency #1 & protein 0 target s
+# Target-site-only view.
+show :93,143,170,188,190
+style :93,143,170,188,190 stick
+color :93,143,170,188,190 #d62728
+
+# Locked canonical kinase camera, then the opposite surface-facing view.
+view matrix camera -0.31169,0.79727,0.51692,212.61,-0.87489,-0.028557,-0.48348,-118.97,-0.37071,-0.60294,0.70642,283.72 models #1,1,0,0,0,0,1,0,0,0,0,1,0
+zoom 0.75
+turn y 180
+
+save data/analysis/04_network/02_fullcore13_297/02_concat/01_all6_last400ns/05_structural_mapping/04_target/11_apo_target_sites_surface_back.png width 1400 height 1600 supersample 3
